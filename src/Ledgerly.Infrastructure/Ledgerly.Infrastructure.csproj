@@ -19,8 +19,8 @@
     <!--
       Keep code warnings-as-errors (NFR-09) but don't let a transitive NuGet
       vulnerability advisory hard-fail restore; the vulnerable package is also pinned
-      to a fixed version below. Confirm the fully-patched version with
-      `dotnet list package --vulnerable` on a dev machine.
+      to a fixed version below. Confirm the fully-patched version with the NuGet
+      vulnerability audit on a dev machine.
     -->
     <WarningsNotAsErrors>NU1903</WarningsNotAsErrors>
   </PropertyGroup>
