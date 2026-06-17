@@ -62,10 +62,11 @@ public static class DependencyInjection
         services.AddSingleton<IFileStore, EncryptedFileStore>();
         services.AddSingleton<IAttachmentService, AttachmentService>();
 
-        // Scanning: document classification + parsing (engines are Windows-only, added
-        // in the App/Windows layer).
+        // Scanning: document classification + parsing (OCR engines are Windows-only, added
+        // in the App/Windows layer). The PDF text-layer extractor is cross-platform.
         services.AddSingleton<IDocumentClassifier, KeywordDocumentClassifier>();
         services.AddSingleton<IDocumentParser, ReceiptParser>();
+        services.AddSingleton<IPdfTextExtractor, PdfPigTextExtractor>();
         services.AddSingleton<ICategorizationService, CategorizationService>();
 
         // The scan pipeline. The IOcrEngine implementation is Windows-only and registered

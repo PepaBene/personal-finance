@@ -11,26 +11,34 @@ public sealed class ScanService : IScanService
     private readonly IDocumentClassifier _classifier;
     private readonly IReadOnlyList<IDocumentParser> _parsers;
     private readonly ICategorizationService _categorization;
+    private readonly IPdfTextExtractor? _pdfTextExtractor;
 
     public ScanService(
         IOcrEngine ocrEngine,
         IDocumentClassifier classifier,
         IEnumerable<IDocumentParser> parsers,
-        ICategorizationService categorization)
+        ICategorizationService categorization,
+        IPdfTextExtractor? pdfTextExtractor = null)
     {
         _ocrEngine = ocrEngine;
         _classifier = classifier;
         _parsers = parsers.ToList();
         _categorization = categorization;
+        _pdfTextExtractor = pdfTextExtractor;
     }
 
     public async Task<DocumentDraft> ScanAsync(ScanInput input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var ocr = await _ocrEngine
-            .RecognizeAsync(new OcrImage(input.ImageData, input.FileName), input.Options, cancellationToken)
-            .ConfigureAwait(false);
+        // Prefer the PDF text layer when the input is a digital PDF — it's exact and skips
+        // OCR (docs/05 §2). Fall back to the OCR engine for images (and scanned PDFs that
+        // carry no text layer would yield an empty result, handled downstream as no draft).
+        var ocr = _pdfTextExtractor is { } extractor && extractor.CanExtract(input.ImageData, input.FileName)
+            ? extractor.Extract(input.ImageData)
+            : await _ocrEngine
+                .RecognizeAsync(new OcrImage(input.ImageData, input.FileName), input.Options, cancellationToken)
+                .ConfigureAwait(false);
 
         var type = _classifier.Classify(ocr);
         var draft = SelectParser(type).Parse(ocr);

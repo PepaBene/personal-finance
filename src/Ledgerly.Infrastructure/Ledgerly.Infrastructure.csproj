@@ -40,6 +40,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <!-- Cross-platform PDF text-layer extraction (digital invoices/bills skip OCR). -->
+    <PackageReference Include="PdfPig" Version="0.1.15" />
     <!--
       Override the transitive System.Security.Cryptography.Xml with the patched
       release. GHSA-37gx-xxp4-5rgx (CVE-2026-33116, EncryptedXml DoS) affects
