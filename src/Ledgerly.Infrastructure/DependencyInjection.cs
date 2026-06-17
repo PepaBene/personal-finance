@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddSingleton<IAnalyticsService, AnalyticsService>();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImportExportService, CsvImportExportService>();
+        services.AddSingleton<IFileStore, EncryptedFileStore>();
 
         // Scanning: document classification + parsing (engines are Windows-only, added
         // in the App/Windows layer).
