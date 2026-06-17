@@ -54,3 +54,22 @@ public enum RuleMatchType
     DescriptionContains,
     Regex,
 }
+
+/// <summary>The kind of attached document (docs/04 §2.6).</summary>
+public enum AttachmentDocType
+{
+    Receipt,
+    Invoice,
+    Bill,
+    Paycheck,
+    Other,
+}
+
+/// <summary>Scan lifecycle state of an attachment (docs/04 §2.6).</summary>
+public enum ScanStatus
+{
+    Pending,
+    Parsed,
+    Reviewed,
+    Failed,
+}

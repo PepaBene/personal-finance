@@ -4,6 +4,7 @@ using Ledgerly.Infrastructure.Analytics;
 using Ledgerly.Infrastructure.Categories;
 using Ledgerly.Infrastructure.Categorization;
 using Ledgerly.Infrastructure.DocumentParsing;
+using Ledgerly.Infrastructure.Documents;
 using Ledgerly.Infrastructure.Fx;
 using Ledgerly.Infrastructure.IO;
 using Ledgerly.Infrastructure.Persistence;
@@ -59,6 +60,7 @@ public static class DependencyInjection
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImportExportService, CsvImportExportService>();
         services.AddSingleton<IFileStore, EncryptedFileStore>();
+        services.AddSingleton<IAttachmentService, AttachmentService>();
 
         // Scanning: document classification + parsing (engines are Windows-only, added
         // in the App/Windows layer).

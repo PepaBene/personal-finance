@@ -38,6 +38,8 @@ public sealed class LedgerlyDbContext : DbContext
 
     public DbSet<CategorizationRule> CategorizationRules => Set<CategorizationRule>();
 
+    public DbSet<Attachment> Attachments => Set<Attachment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
@@ -51,5 +53,6 @@ public sealed class LedgerlyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TagConfiguration());
         modelBuilder.ApplyConfiguration(new LineItemTagConfiguration());
         modelBuilder.ApplyConfiguration(new CategorizationRuleConfiguration());
+        modelBuilder.ApplyConfiguration(new AttachmentConfiguration());
     }
 }
