@@ -3,20 +3,23 @@ using Ledgerly.Application.Abstractions;
 using Ledgerly.Application.Ocr;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
 using Windows.Storage.Streams;
 
 namespace Ledgerly.App.Services;
 
+// NOTE: Windows.Media.Ocr is intentionally NOT imported — it declares OcrResult/OcrLine/
+// OcrWord which would clash with Ledgerly.Application.Ocr. The only Windows OCR type we
+// name explicitly is the engine; the rest are inferred via var.
+
 /// <summary>
 /// Offline OCR via the built-in Windows.Media.Ocr engine (docs/05 §3, ADR-003). No
-/// install, no cloud. This is the Windows-only implementation of <see cref="IOcrEngine"/>;
-/// it is registered in the App's composition root.
+/// install, no cloud. Windows-only implementation of <see cref="IOcrEngine"/>, registered
+/// in the App's composition root.
 /// </summary>
 public sealed class WindowsOcrEngine : IOcrEngine
 {
     public IReadOnlyList<string> SupportedLanguages =>
-        OcrEngine.AvailableRecognizerLanguages.Select(l => l.LanguageTag).ToList();
+        Windows.Media.Ocr.OcrEngine.AvailableRecognizerLanguages.Select(l => l.LanguageTag).ToList();
 
     public async Task<OcrResult> RecognizeAsync(OcrImage image, OcrOptions options, CancellationToken cancellationToken = default)
     {
@@ -53,18 +56,18 @@ public sealed class WindowsOcrEngine : IOcrEngine
         return new OcrResult(lines, result.Text);
     }
 
-    private static OcrEngine? TryCreateEngine(OcrOptions options)
+    private static Windows.Media.Ocr.OcrEngine? TryCreateEngine(OcrOptions options)
     {
         foreach (var tag in options.Languages)
         {
-            var engine = OcrEngine.TryCreateFromLanguage(new Language(tag));
+            var engine = Windows.Media.Ocr.OcrEngine.TryCreateFromLanguage(new Language(tag));
             if (engine is not null)
             {
                 return engine;
             }
         }
 
-        return OcrEngine.TryCreateFromUserProfileLanguages();
+        return Windows.Media.Ocr.OcrEngine.TryCreateFromUserProfileLanguages();
     }
 
     private static OcrBox UnionBox(IReadOnlyList<OcrWord> words)
