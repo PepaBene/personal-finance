@@ -16,11 +16,11 @@
                     <StackPanel Orientation="Horizontal" Spacing="32">
                         <StackPanel>
                             <TextBlock Text="Income" Opacity="0.7" />
-                            <TextBlock x:Name="IncomeText" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock x:Name="IncomeText" Foreground="{ThemeResource IncomeBrush}" Style="{StaticResource SubtitleTextBlockStyle}" />
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="Expense" Opacity="0.7" />
-                            <TextBlock x:Name="ExpenseText" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock x:Name="ExpenseText" Foreground="{ThemeResource ExpenseBrush}" Style="{StaticResource SubtitleTextBlockStyle}" />
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="Net" Opacity="0.7" />

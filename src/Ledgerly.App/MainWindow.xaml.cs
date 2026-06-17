@@ -17,6 +17,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        App.WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
         _appLock = App.Services.GetRequiredService<IAppLock>();
 
         LockPrompt.Text = _appLock.IsInitialized

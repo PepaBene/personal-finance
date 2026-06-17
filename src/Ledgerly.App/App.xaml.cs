@@ -40,6 +40,9 @@ public partial class App : Microsoft.UI.Xaml.Application
     /// <summary>Service provider for resolving services from views/pages.</summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
+    /// <summary>HWND of the main window, needed to initialize file pickers (unpackaged).</summary>
+    public static nint WindowHandle { get; internal set; }
+
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
