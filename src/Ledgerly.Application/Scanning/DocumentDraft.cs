@@ -28,6 +28,9 @@ public sealed record DraftLineItem
     public decimal? UnitPrice { get; init; }
 
     public double Confidence { get; init; }
+
+    /// <summary>Category suggested by the categorization engine (FR-SCAN-07); null = uncategorized.</summary>
+    public Guid? SuggestedCategoryId { get; init; }
 }
 
 /// <summary>

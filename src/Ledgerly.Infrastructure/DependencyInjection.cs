@@ -68,6 +68,10 @@ public static class DependencyInjection
         services.AddSingleton<IDocumentParser, ReceiptParser>();
         services.AddSingleton<ICategorizationService, CategorizationService>();
 
+        // The scan pipeline. The IOcrEngine implementation is Windows-only and registered
+        // by the App; resolving IScanService requires it.
+        services.AddSingleton<IScanService, Scanning.ScanService>();
+
         return services;
     }
 }
