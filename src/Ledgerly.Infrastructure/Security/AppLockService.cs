@@ -62,7 +62,10 @@ public sealed class AppLockService : IAppLock
         try
         {
             await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await db.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+
+            // Apply migrations to build/upgrade the schema (FR-DAT-07), replacing the
+            // Phase 0 EnsureCreated bootstrap.
+            await db.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
 
             // Seed reference data (settings, currencies, ...) into the new encrypted DB.
             await _seeder.SeedAsync(db, cancellationToken).ConfigureAwait(false);
