@@ -56,4 +56,7 @@ public sealed record DocumentDraft
 
     /// <summary>True when the line amounts reconcile to the detected total (docs/05 §5).</summary>
     public bool IsReconciled { get; init; }
+
+    /// <summary>The full OCR text, stored with the attachment for full-text search (FR-SCAN-08).</summary>
+    public string FullText { get; init; } = string.Empty;
 }

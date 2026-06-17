@@ -70,6 +70,7 @@ public sealed partial class MainWindow : Window
         {
             "Dashboard" => typeof(DashboardPage),
             "Transactions" => typeof(TransactionsPage),
+            "Scan" => typeof(ScanPage),
             "Accounts" => typeof(AccountsPage),
             "Categories" => typeof(CategoriesPage),
             "Analytics" => typeof(AnalyticsPage),

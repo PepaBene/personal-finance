@@ -1,0 +1,36 @@
+<Page
+    x:Class="Ledgerly.App.Pages.ScanPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="900">
+            <TextBlock Text="Scan / Import" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock
+                Opacity="0.7"
+                TextWrapping="Wrap"
+                Text="Pick a receipt image; it is OCR'd offline, parsed and category-suggested for review before saving (FR-SCAN-06)." />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="ScanButton" Content="Pick image &amp; scan" Click="OnScanClicked" />
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Opacity="0.8" />
+            </StackPanel>
+
+            <Border x:Name="DraftPanel" Visibility="Collapsed"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Review" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock x:Name="SummaryText" TextWrapping="Wrap" />
+                    <ListView x:Name="LineItemsList" SelectionMode="None" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Save transaction + attachment" Style="{StaticResource AccentButtonStyle}" Click="OnSaveClicked" />
+                        <TextBlock x:Name="SaveStatus" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

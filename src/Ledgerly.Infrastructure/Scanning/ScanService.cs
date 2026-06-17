@@ -46,7 +46,7 @@ public sealed class ScanService : IScanService
             enriched.Add(line with { SuggestedCategoryId = categoryId });
         }
 
-        return draft with { Type = type, LineItems = enriched };
+        return draft with { Type = type, FullText = ocr.FullText, LineItems = enriched };
     }
 
     private IDocumentParser SelectParser(DocumentType type) =>

@@ -20,6 +20,7 @@
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem Content="Dashboard" Tag="Dashboard" IsSelected="True" />
                 <muxc:NavigationViewItem Content="Transactions" Tag="Transactions" />
+                <muxc:NavigationViewItem Content="Scan / Import" Tag="Scan" />
                 <muxc:NavigationViewItem Content="Accounts" Tag="Accounts" />
                 <muxc:NavigationViewItem Content="Categories" Tag="Categories" />
                 <muxc:NavigationViewItem Content="Analytics" Tag="Analytics" />

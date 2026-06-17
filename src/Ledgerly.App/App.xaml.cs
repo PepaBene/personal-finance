@@ -1,3 +1,5 @@
+using Ledgerly.App.Services;
+using Ledgerly.Application.Abstractions;
 using Ledgerly.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +33,12 @@ public partial class App : Microsoft.UI.Xaml.Application
                     Path.Combine(options.LogsDirectory, "ledgerly-.log"),
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 14))
-            .ConfigureServices(services => services.AddLedgerlyInfrastructure(options))
+            .ConfigureServices(services =>
+            {
+                services.AddLedgerlyInfrastructure(options);
+                // The Windows-only OCR engine that the scan pipeline depends on.
+                services.AddSingleton<IOcrEngine, WindowsOcrEngine>();
+            })
             .Build();
 
         Services = _host.Services;
