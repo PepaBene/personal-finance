@@ -1,10 +1,16 @@
 name: CI
 
 on:
+  # Run on PRs and on pushes to main. Feature-branch pushes are covered by the
+  # pull_request event, avoiding duplicate runs for the same commit.
   push:
-    branches: [main, "claude/**"]
-  pull_request:
     branches: [main]
+  pull_request:
+
+# Cancel superseded runs for the same ref so only the latest commit's run survives.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Gating job: cross-platform core libraries + unit/integration tests.

@@ -66,11 +66,16 @@ public sealed class TransactionService : ITransactionService
             .AsNoTracking()
             .Where(t => t.Status == TransactionStatus.Active)
             .OrderByDescending(t => t.Date)
-            .ThenByDescending(t => t.CreatedAt)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return entities.Select(Map).ToList();
+        // SQLite can't ORDER BY a DateTimeOffset, so apply the CreatedAt tiebreaker
+        // client-side after materializing (the Date ordering above uses the index).
+        return entities
+            .OrderByDescending(t => t.Date)
+            .ThenByDescending(t => t.CreatedAt)
+            .Select(Map)
+            .ToList();
     }
 
     public async Task<TransactionDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
