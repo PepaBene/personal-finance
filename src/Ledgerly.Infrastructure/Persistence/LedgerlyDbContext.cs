@@ -24,11 +24,17 @@ public sealed class LedgerlyDbContext : DbContext
 
     public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
 
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<LineItem> LineItems => Set<LineItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
         modelBuilder.ApplyConfiguration(new SettingConfiguration());
         modelBuilder.ApplyConfiguration(new CurrencyConfiguration());
         modelBuilder.ApplyConfiguration(new ExchangeRateConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new LineItemConfiguration());
     }
 }

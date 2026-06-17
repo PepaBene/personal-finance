@@ -41,4 +41,11 @@ public class Transaction
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    /// <summary>
+    /// The transaction's line items. A transaction with line items in different
+    /// categories is a multi-category split (ADR-006). Empty means a single implicit
+    /// line (FR-CAP-04), materialized by the capture service.
+    /// </summary>
+    public List<LineItem> LineItems { get; set; } = [];
 }

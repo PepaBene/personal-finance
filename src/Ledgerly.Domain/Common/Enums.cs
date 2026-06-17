@@ -30,3 +30,10 @@ public enum RateSource
     Manual,
     Fetched,
 }
+
+/// <summary>Whether a category accumulates expenses or income (docs/04 §2.3).</summary>
+public enum CategoryKind
+{
+    Expense,
+    Income,
+}

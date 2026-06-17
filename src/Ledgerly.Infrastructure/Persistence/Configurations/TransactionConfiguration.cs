@@ -41,6 +41,12 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
 
         builder.Property(t => t.Note).HasMaxLength(1000);
 
+        // Line items belong to the transaction and are cascade-deleted with it.
+        builder.HasMany(t => t.LineItems)
+            .WithOne()
+            .HasForeignKey(li => li.TransactionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Indexes that the analytics layer and list views will rely on (docs/04 §5).
         builder.HasIndex(t => t.Date);
         builder.HasIndex(t => t.Status);
