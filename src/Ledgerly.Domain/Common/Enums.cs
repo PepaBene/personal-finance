@@ -46,3 +46,11 @@ public enum AccountKind
     Card,
     Other,
 }
+
+/// <summary>How an auto-categorization rule matches (docs/04 §4.1, FR-CAT-05).</summary>
+public enum RuleMatchType
+{
+    MerchantEquals,
+    DescriptionContains,
+    Regex,
+}

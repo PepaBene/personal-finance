@@ -36,6 +36,8 @@ public sealed class LedgerlyDbContext : DbContext
 
     public DbSet<LineItemTag> LineItemTags => Set<LineItemTag>();
 
+    public DbSet<CategorizationRule> CategorizationRules => Set<CategorizationRule>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
@@ -48,5 +50,6 @@ public sealed class LedgerlyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new MerchantConfiguration());
         modelBuilder.ApplyConfiguration(new TagConfiguration());
         modelBuilder.ApplyConfiguration(new LineItemTagConfiguration());
+        modelBuilder.ApplyConfiguration(new CategorizationRuleConfiguration());
     }
 }

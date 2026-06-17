@@ -2,6 +2,7 @@ using Ledgerly.Application.Abstractions;
 using Ledgerly.Infrastructure.Accounts;
 using Ledgerly.Infrastructure.Analytics;
 using Ledgerly.Infrastructure.Categories;
+using Ledgerly.Infrastructure.Categorization;
 using Ledgerly.Infrastructure.DocumentParsing;
 using Ledgerly.Infrastructure.Fx;
 using Ledgerly.Infrastructure.IO;
@@ -62,6 +63,7 @@ public static class DependencyInjection
         // in the App/Windows layer).
         services.AddSingleton<IDocumentClassifier, KeywordDocumentClassifier>();
         services.AddSingleton<IDocumentParser, ReceiptParser>();
+        services.AddSingleton<ICategorizationService, CategorizationService>();
 
         return services;
     }
