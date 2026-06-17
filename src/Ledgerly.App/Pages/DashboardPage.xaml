@@ -1,0 +1,40 @@
+<Page
+    x:Class="Ledgerly.App.Pages.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="900">
+            <TextBlock Text="Dashboard" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="This month" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="32">
+                        <StackPanel>
+                            <TextBlock Text="Income" Opacity="0.7" />
+                            <TextBlock x:Name="IncomeText" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Expense" Opacity="0.7" />
+                            <TextBlock x:Name="ExpenseText" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Net" Opacity="0.7" />
+                            <TextBlock x:Name="NetText" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Accounts" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ListView x:Name="AccountsList" SelectionMode="None" />
+
+            <TextBlock Text="Recent transactions" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ListView x:Name="RecentList" SelectionMode="None" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

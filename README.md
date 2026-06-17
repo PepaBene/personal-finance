@@ -26,6 +26,31 @@ CI, and one end-to-end vertical slice.
 transaction and reopens it after restart; the database is unreadable without the key;
 the wrong password is rejected; unit/integration tests are green in CI.
 
+## Status — Phase 1 (MVP core)
+
+The **backend is feature-complete and tested in CI** (gating `Core build & test`):
+
+| Phase 1 backend area | Status |
+|----------------------|--------|
+| Money value object + banker's rounding (ADR-005) | ✅ |
+| Multi-currency / FX engine — historical rates, fallbacks, base conversion (FR-CUR) | ✅ |
+| Line-item-grain data model: Category (seeded), LineItem, Merchant, Account, Tag (FR-CAT, docs/04) | ✅ |
+| Capture: multi-category splits, reconciliation, soft-delete (FR-CAP-01..05, 08) | ✅ |
+| Accounts, balances, transfers (FR-ACC) | ✅ |
+| Category management (CRUD, re-parent) + tags (FR-CAT-01..04, 08) | ✅ |
+| Analytics: totals, spend-by-category, over-time (FR-ANL-01..05) | ✅ |
+| Backup/restore + CSV import/export (FR-DAT-02..05) | ✅ |
+
+The **WinUI frontend** (NavigationView shell + Lock, Dashboard, Transactions, Accounts,
+Categories, Analytics, Settings pages) is implemented but builds only in the
+**non-gating** CI job — it requires a Windows + Windows App SDK machine to compile, run
+and polish. Known follow-ups for the UI: the multi-category split editor (backend ready;
+UI currently does single-category quick add), LiveCharts2 charts (analytics is tabular),
+the design-token system (docs/12), and file pickers (Settings uses path text boxes).
+
+Aggregations (balances, analytics) are computed in-memory because SQLite stores decimals
+as TEXT and can't `SUM` them reliably; SQL-side rollups are a Phase 3 perf task.
+
 ## Solution layout
 
 ```

@@ -1,28 +1,23 @@
-using System.Globalization;
+using Ledgerly.App.Pages;
 using Ledgerly.Application.Abstractions;
-using Ledgerly.Application.Transactions;
-using Ledgerly.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Ledgerly.App;
 
 /// <summary>
-/// Minimal Phase 0 shell: unlock with the master password, then create and list
-/// transactions through all layers (plan Task 0.5). The full NavigationView shell
-/// and design system arrive in Phase 1 (docs/06, docs/12).
+/// Shell window: master-password unlock, then a NavigationView hosting the MVP pages
+/// (docs/06 §1). The full design-token styling (docs/12) is a follow-up.
 /// </summary>
 public sealed partial class MainWindow : Window
 {
     private readonly IAppLock _appLock;
-    private readonly ITransactionService _transactions;
 
     public MainWindow()
     {
         InitializeComponent();
-
         _appLock = App.Services.GetRequiredService<IAppLock>();
-        _transactions = App.Services.GetRequiredService<ITransactionService>();
 
         LockPrompt.Text = _appLock.IsInitialized
             ? "Enter your master password to unlock your encrypted data."
@@ -34,7 +29,6 @@ public sealed partial class MainWindow : Window
     {
         LockError.Visibility = Visibility.Collapsed;
         var password = PasswordInput.Password;
-
         if (string.IsNullOrEmpty(password))
         {
             ShowLockError("Please enter a password.");
@@ -46,53 +40,43 @@ public sealed partial class MainWindow : Window
             var ok = _appLock.IsInitialized
                 ? await _appLock.UnlockAsync(password)
                 : await _appLock.InitializeAsync(password);
-
             if (!ok)
             {
                 ShowLockError("Incorrect master password.");
                 return;
             }
-
-            PasswordInput.Password = string.Empty;
-            LockPanel.Visibility = Visibility.Collapsed;
-            ContentPanel.Visibility = Visibility.Visible;
-            await RefreshAsync();
         }
         catch (Exception ex)
         {
             ShowLockError($"Could not unlock: {ex.Message}");
+            return;
         }
+
+        PasswordInput.Password = string.Empty;
+        LockPanel.Visibility = Visibility.Collapsed;
+        Nav.Visibility = Visibility.Visible;
+        ContentFrame.Navigate(typeof(DashboardPage));
     }
 
-    private async void OnAddClicked(object sender, RoutedEventArgs e)
+    private void OnNavSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (!decimal.TryParse(AmountInput.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var amount))
+        if (args.SelectedItem is not NavigationViewItem item)
         {
             return;
         }
 
-        var currency = string.IsNullOrWhiteSpace(CurrencyInput.Text) ? "EUR" : CurrencyInput.Text;
-
-        await _transactions.CreateAsync(new CreateTransactionRequest
+        var pageType = item.Tag switch
         {
-            Type = TransactionType.Expense,
-            Date = DateOnly.FromDateTime(DateTime.Today),
-            CurrencyCode = currency,
-            TotalAmount = amount,
-            Note = string.IsNullOrWhiteSpace(NoteInput.Text) ? null : NoteInput.Text,
-        });
+            "Dashboard" => typeof(DashboardPage),
+            "Transactions" => typeof(TransactionsPage),
+            "Accounts" => typeof(AccountsPage),
+            "Categories" => typeof(CategoriesPage),
+            "Analytics" => typeof(AnalyticsPage),
+            "Settings" => typeof(SettingsPage),
+            _ => typeof(DashboardPage),
+        };
 
-        NoteInput.Text = string.Empty;
-        AmountInput.Text = string.Empty;
-        await RefreshAsync();
-    }
-
-    private async Task RefreshAsync()
-    {
-        var all = await _transactions.GetAllAsync();
-        TransactionList.ItemsSource = all
-            .Select(t => $"{t.Date:yyyy-MM-dd}  {t.TotalAmount} {t.CurrencyCode}  {t.Note}")
-            .ToList();
+        ContentFrame.Navigate(pageType);
     }
 
     private void ShowLockError(string message)
