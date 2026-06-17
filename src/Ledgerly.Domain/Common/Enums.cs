@@ -23,3 +23,10 @@ public enum TransactionStatus
     Active,
     Deleted,
 }
+
+/// <summary>Where an exchange rate came from (docs/04 §3.2).</summary>
+public enum RateSource
+{
+    Manual,
+    Fetched,
+}

@@ -2,8 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Ledgerly.Application.Abstractions;
-using Ledgerly.Application.Common;
 using Ledgerly.Infrastructure.Persistence;
+using Ledgerly.Infrastructure.Persistence.Seeding;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,17 +19,20 @@ public sealed class AppLockService : IAppLock
 
     private readonly IEncryptionKeyProvider _keyProvider;
     private readonly IDbContextFactory<LedgerlyDbContext> _contextFactory;
+    private readonly IDatabaseSeeder _seeder;
     private readonly LedgerlyOptions _options;
     private readonly ILogger<AppLockService> _logger;
 
     public AppLockService(
         IEncryptionKeyProvider keyProvider,
         IDbContextFactory<LedgerlyDbContext> contextFactory,
+        IDatabaseSeeder seeder,
         LedgerlyOptions options,
         ILogger<AppLockService> logger)
     {
         _keyProvider = keyProvider;
         _contextFactory = contextFactory;
+        _seeder = seeder;
         _options = options;
         _logger = logger;
     }
@@ -61,9 +64,8 @@ public sealed class AppLockService : IAppLock
             await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
             await db.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
 
-            db.Settings.Add(new SettingEntity(SettingKeys.SchemaVersion, "0"));
-            db.Settings.Add(new SettingEntity(SettingKeys.Initialized, "true"));
-            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            // Seed reference data (settings, currencies, ...) into the new encrypted DB.
+            await _seeder.SeedAsync(db, cancellationToken).ConfigureAwait(false);
 
             // Persist KDF params only after the encrypted DB exists, so a failure
             // never leaves a config pointing at a non-existent database.

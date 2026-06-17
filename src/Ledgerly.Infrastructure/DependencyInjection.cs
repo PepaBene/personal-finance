@@ -1,5 +1,7 @@
 using Ledgerly.Application.Abstractions;
+using Ledgerly.Infrastructure.Fx;
 using Ledgerly.Infrastructure.Persistence;
+using Ledgerly.Infrastructure.Persistence.Seeding;
 using Ledgerly.Infrastructure.Security;
 using Ledgerly.Infrastructure.Settings;
 using Ledgerly.Infrastructure.Transactions;
@@ -39,9 +41,11 @@ public static class DependencyInjection
                 .AddInterceptors(serviceProvider.GetRequiredService<SqlCipherConnectionInterceptor>());
         });
 
+        services.AddSingleton<IDatabaseSeeder, DatabaseSeeder>();
         services.AddSingleton<IAppLock, AppLockService>();
         services.AddSingleton<ISettingsStore, SettingsStore>();
         services.AddSingleton<ITransactionService, TransactionService>();
+        services.AddSingleton<ICurrencyService, CurrencyService>();
 
         return services;
     }

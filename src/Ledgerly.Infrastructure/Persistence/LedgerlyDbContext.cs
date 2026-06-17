@@ -20,9 +20,15 @@ public sealed class LedgerlyDbContext : DbContext
 
     public DbSet<SettingEntity> Settings => Set<SettingEntity>();
 
+    public DbSet<Currency> Currencies => Set<Currency>();
+
+    public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
         modelBuilder.ApplyConfiguration(new SettingConfiguration());
+        modelBuilder.ApplyConfiguration(new CurrencyConfiguration());
+        modelBuilder.ApplyConfiguration(new ExchangeRateConfiguration());
     }
 }
