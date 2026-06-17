@@ -3,6 +3,7 @@ using Ledgerly.Infrastructure.Accounts;
 using Ledgerly.Infrastructure.Analytics;
 using Ledgerly.Infrastructure.Categories;
 using Ledgerly.Infrastructure.Fx;
+using Ledgerly.Infrastructure.IO;
 using Ledgerly.Infrastructure.Persistence;
 using Ledgerly.Infrastructure.Persistence.Seeding;
 using Ledgerly.Infrastructure.Security;
@@ -53,6 +54,8 @@ public static class DependencyInjection
         services.AddSingleton<ICategoryService, CategoryService>();
         services.AddSingleton<ITagService, Tags.TagService>();
         services.AddSingleton<IAnalyticsService, AnalyticsService>();
+        services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IImportExportService, CsvImportExportService>();
 
         return services;
     }
