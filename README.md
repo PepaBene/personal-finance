@@ -15,7 +15,7 @@ CI, and one end-to-end vertical slice.
 
 | Phase 0 task | Status |
 |--------------|--------|
-| 0.1 Layered solution + central package management + build props | ✅ |
+| 0.1 Layered solution (4 projects + 3 test projects), reference direction enforced | ✅ |
 | 0.2 DI/host composition root, Serilog (local file sink), settings store | ✅ |
 | 0.3 Encrypted persistence (EF Core 10 + SQLite + **SQLCipher**), `foreign_keys` + WAL | ✅ |
 | 0.4 App lock: master password → **KDF** → DB key (FR-SEC-01/02), re-key on change | ✅ |
@@ -88,5 +88,12 @@ dotnet build src/Ledgerly.App/Ledgerly.App.csproj -c Release -p:Platform=x64
   and FR-DAT-07 (auto-migrations + pre-migration snapshot) is implemented.
 - **WinUI app is built in a non-gating CI job.** It only builds on Windows with the
   Windows App SDK; the gating job is the cross-platform core + tests. The Windows App
-  SDK package versions in `Directory.Packages.props` are a baseline to verify on a
-  Windows dev machine before the Phase 1 UI work.
+  SDK package versions in `src/Ledgerly.App/Ledgerly.App.csproj` are a baseline to
+  verify on a Windows dev machine before the Phase 1 UI work.
+- **Package versions are pinned inline; no shared `Directory.*.props`.** ADR-008 prefers
+  Central Package Management via `Directory.Packages.props`, but the CI runner's restore
+  did not apply it (every `PackageReference` reported `NU1015`). To keep the build fully
+  deterministic, each project is self-contained: versions and compile settings
+  (`ImplicitUsings`, `Nullable`, `LangVersion`) are set per-project. CPM and the
+  warnings-as-errors gate for core libs (NFR-09) will be reintroduced once verified on a
+  Windows .NET 10 environment.

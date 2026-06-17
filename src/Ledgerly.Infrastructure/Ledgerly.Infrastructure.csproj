@@ -4,9 +4,17 @@
     Infrastructure layer: EF Core + SQLCipher persistence, KDF/app-lock security,
     settings store and service implementations.
     Reference direction (docs/03 §3): Infrastructure -> Application, Domain.
+
+    NOTE: package versions are pinned inline. Central Package Management
+    (Directory.Packages.props, ADR-008) was not being applied by the CI runner's
+    restore (NU1015); inline versions keep one well-documented baseline until CPM
+    can be verified on a Windows dev machine.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,18 +27,18 @@
       Sqlite.Core (not the regular Sqlite package) so we can supply the SQLCipher
       native bundle ourselves without the default bundle_e_sqlite3 conflicting.
     -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11" />
     <!--
       Design package provides IDesignTimeDbContextFactory (referenced in code) and
       the migrations tooling. PrivateAssets=all keeps it from flowing to consumers,
       but compile assets stay available within this project.
     -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
 </Project>

@@ -6,8 +6,8 @@
     App -> Application, and composes Infrastructure only at the DI root.
 
     NOTE: This project requires the Windows App SDK and only builds on Windows.
-    The package versions in Directory.Packages.props are a documented baseline to
-    verify on a Windows dev machine before the Phase 1 UI work.
+    The Windows App SDK package versions here are a documented baseline to verify
+    on a Windows dev machine before the Phase 1 UI work.
   -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -21,18 +21,20 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <!-- Unpackaged (xcopy) run model for development (docs/03 §2, NFR-11). -->
     <WindowsPackageType>None</WindowsPackageType>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Extensions.Hosting" />
-    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
