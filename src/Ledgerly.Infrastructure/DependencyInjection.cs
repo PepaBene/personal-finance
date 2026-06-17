@@ -1,5 +1,6 @@
 using Ledgerly.Application.Abstractions;
 using Ledgerly.Infrastructure.Accounts;
+using Ledgerly.Infrastructure.Analytics;
 using Ledgerly.Infrastructure.Categories;
 using Ledgerly.Infrastructure.Fx;
 using Ledgerly.Infrastructure.Persistence;
@@ -51,6 +52,7 @@ public static class DependencyInjection
         services.AddSingleton<IAccountService, AccountService>();
         services.AddSingleton<ICategoryService, CategoryService>();
         services.AddSingleton<ITagService, Tags.TagService>();
+        services.AddSingleton<IAnalyticsService, AnalyticsService>();
 
         return services;
     }
