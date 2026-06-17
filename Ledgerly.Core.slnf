@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "Ledgerly.sln",
+    "projects": [
+      "src\\Ledgerly.Domain\\Ledgerly.Domain.csproj",
+      "src\\Ledgerly.Application\\Ledgerly.Application.csproj",
+      "src\\Ledgerly.Infrastructure\\Ledgerly.Infrastructure.csproj",
+      "tests\\Ledgerly.Domain.Tests\\Ledgerly.Domain.Tests.csproj",
+      "tests\\Ledgerly.Application.Tests\\Ledgerly.Application.Tests.csproj",
+      "tests\\Ledgerly.Infrastructure.Tests\\Ledgerly.Infrastructure.Tests.csproj"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+<Project>
+
+  <!-- Shared build settings for every project in the solution. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>          <!-- C# 14 on the .NET 10 SDK -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    NFR-09: warnings-as-errors in CI for the core libraries only.
+    The WinUI App and test projects are excluded to avoid XAML-generation /
+    test-framework analyzer noise breaking the build.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Ledgerly.Domain' Or '$(MSBuildProjectName)' == 'Ledgerly.Application' Or '$(MSBuildProjectName)' == 'Ledgerly.Infrastructure'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Gating job: cross-platform core libraries + unit/integration tests.
+  # SQLCipher (bundle_e_sqlcipher) ships the win-x64 native binaries used by the
+  # encryption tests, so this runs on a Windows runner.
+  core:
+    name: Core build & test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore Ledgerly.Core.slnf
+
+      - name: Build
+        run: dotnet build Ledgerly.Core.slnf --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Ledgerly.Core.slnf --configuration Release --no-build --verbosity normal
+
+  # Non-gating job: the WinUI 3 desktop app requires the Windows App SDK and only
+  # builds on Windows. Kept separate (and continue-on-error) so any Windows App SDK
+  # version/tooling drift does not block the gating core build.
+  app:
+    name: WinUI app build (non-gating)
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build app (x64)
+        run: dotnet build src/Ledgerly.App/Ledgerly.App.csproj --configuration Release -p:Platform=x64

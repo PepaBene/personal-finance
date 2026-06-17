@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Presentation layer: WinUI 3 (Windows App SDK) desktop app, MVVM (docs/03).
+    Windows-only; built on a Windows runner. Reference direction (docs/03 §3):
+    App -> Application, and composes Infrastructure only at the DI root.
+
+    NOTE: This project requires the Windows App SDK and only builds on Windows.
+    The package versions in Directory.Packages.props are a documented baseline to
+    verify on a Windows dev machine before the Phase 1 UI work.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Ledgerly.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Unpackaged (xcopy) run model for development (docs/03 §2, NFR-11). -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ledgerly.Application\Ledgerly.Application.csproj" />
+    <ProjectReference Include="..\Ledgerly.Infrastructure\Ledgerly.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

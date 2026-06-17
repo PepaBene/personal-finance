@@ -1,0 +1,43 @@
+<Window
+    x:Class="Ledgerly.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Ledgerly">
+
+    <Grid Padding="24" RowSpacing="16">
+        <!-- Lock screen (docs/06 §2.1) -->
+        <StackPanel x:Name="LockPanel" MaxWidth="360" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+            <TextBlock Text="Ledgerly" Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Center" />
+            <TextBlock x:Name="LockPrompt" TextWrapping="Wrap" HorizontalAlignment="Center"
+                       Text="Enter your master password to unlock your encrypted data." />
+            <PasswordBox x:Name="PasswordInput" PlaceholderText="Master password" />
+            <Button x:Name="UnlockButton" Content="Unlock" HorizontalAlignment="Stretch" Click="OnUnlockClicked" />
+            <TextBlock x:Name="LockError" Foreground="Red" TextWrapping="Wrap" Visibility="Collapsed" />
+            <TextBlock TextWrapping="Wrap" Opacity="0.7" FontSize="12"
+                       Text="There is no password recovery. Keep your password and a backup safe." />
+        </StackPanel>
+
+        <!-- Main content: minimal transaction list + add (Phase 0 vertical slice) -->
+        <Grid x:Name="ContentPanel" Visibility="Collapsed" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Transactions" Style="{StaticResource SubtitleTextBlockStyle}" />
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="NoteInput" PlaceholderText="Note" Width="200" />
+                <TextBox x:Name="AmountInput" PlaceholderText="Amount" Width="120" />
+                <TextBox x:Name="CurrencyInput" PlaceholderText="CUR" Width="72" Text="EUR" />
+                <Button Content="Add expense" Click="OnAddClicked" />
+            </StackPanel>
+
+            <ListView Grid.Row="2" x:Name="TransactionList" />
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Application layer: use-case service contracts (ports), DTOs and request models.
+    Reference direction (docs/03 §3): Application -> Domain only.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ledgerly.Domain\Ledgerly.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
