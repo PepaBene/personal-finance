@@ -13,4 +13,5 @@ public sealed record TransactionDto(
     decimal ExchangeRate,
     string? Note,
     TransactionSource Source,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<LineItemDto> LineItems);

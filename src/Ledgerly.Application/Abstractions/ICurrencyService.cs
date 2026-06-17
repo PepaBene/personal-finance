@@ -12,6 +12,9 @@ public interface ICurrencyService
     /// <summary>The home/base currency used for all aggregated reporting (FR-CUR-01).</summary>
     Task<string> GetBaseCurrencyAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>The number of fractional digits for a currency (defaults to 2 if unknown).</summary>
+    Task<int> GetDecimalDigitsAsync(string code, CancellationToken cancellationToken = default);
+
     /// <summary>Sets the base currency. Throws if the currency is unknown.</summary>
     Task SetBaseCurrencyAsync(string code, CancellationToken cancellationToken = default);
 

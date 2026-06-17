@@ -18,8 +18,10 @@ public sealed class CreateTransactionRequestTests
             TotalAmount = 12.34m,
         };
 
-        request.ExchangeRate.Should().Be(1m);
+        request.ExchangeRate.Should().BeNull("the rate is looked up unless supplied");
         request.Source.Should().Be(TransactionSource.Manual);
         request.Note.Should().BeNull();
+        request.LineItems.Should().BeEmpty();
+        request.CategoryId.Should().BeNull();
     }
 }

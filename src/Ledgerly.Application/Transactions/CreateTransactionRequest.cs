@@ -2,7 +2,7 @@ using Ledgerly.Domain.Common;
 
 namespace Ledgerly.Application.Transactions;
 
-/// <summary>Input for creating a transaction (Phase 0 minimal slice).</summary>
+/// <summary>Input for creating a transaction (FR-CAP-01..05).</summary>
 public sealed record CreateTransactionRequest
 {
     public required TransactionType Type { get; init; }
@@ -15,10 +15,23 @@ public sealed record CreateTransactionRequest
     /// <summary>Amount in the original currency.</summary>
     public required decimal TotalAmount { get; init; }
 
-    /// <summary>Exchange rate (original → base). Defaults to 1 (already in base currency).</summary>
-    public decimal ExchangeRate { get; init; } = 1m;
+    /// <summary>
+    /// Optional explicit exchange rate (original → base). When supplied for a foreign
+    /// currency it is recorded as a manual historical rate; otherwise the rate is looked
+    /// up from the FX engine. Null/omitted means "look it up".
+    /// </summary>
+    public decimal? ExchangeRate { get; init; }
 
     public string? Note { get; init; }
 
     public TransactionSource Source { get; init; } = TransactionSource.Manual;
+
+    /// <summary>
+    /// Line items making up the transaction (FR-CAP-03). When empty, a single implicit
+    /// line in <see cref="CategoryId"/> is created (FR-CAP-04).
+    /// </summary>
+    public IReadOnlyList<LineItemRequest> LineItems { get; init; } = [];
+
+    /// <summary>Category for the implicit single line when no <see cref="LineItems"/> are given.</summary>
+    public Guid? CategoryId { get; init; }
 }

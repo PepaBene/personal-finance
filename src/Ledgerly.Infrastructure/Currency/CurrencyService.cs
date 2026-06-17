@@ -33,6 +33,12 @@ public sealed class CurrencyService : ICurrencyService
         return string.IsNullOrWhiteSpace(code) ? DatabaseSeeder.DefaultBaseCurrency : code;
     }
 
+    public async Task<int> GetDecimalDigitsAsync(string code, CancellationToken cancellationToken = default)
+    {
+        await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        return await GetDecimalDigitsAsync(db, Normalize(code), cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task SetBaseCurrencyAsync(string code, CancellationToken cancellationToken = default)
     {
         var normalized = Normalize(code);

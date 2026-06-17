@@ -14,4 +14,7 @@ public interface ITransactionService
     Task<IReadOnlyList<TransactionDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<TransactionDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>Soft-deletes a transaction (recoverable until purged, FR-CAP-08).</summary>
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
