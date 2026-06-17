@@ -12,13 +12,13 @@
             <TextBlock
                 Opacity="0.7"
                 TextWrapping="Wrap"
-                Text="Tabular MVP. Charts (LiveCharts2) are a follow-up." />
+                Text="Lightweight bar charts drawn with WinUI primitives. LiveCharts2 can be dropped in for richer, animated charts on a Windows dev machine." />
 
             <TextBlock Text="Spend by category (this year)" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <ListView x:Name="CategorySpendList" SelectionMode="None" />
+            <StackPanel x:Name="CategoryBars" Spacing="6" />
 
             <TextBlock Text="Income vs expense by month" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <ListView x:Name="OverTimeList" SelectionMode="None" />
+            <StackPanel x:Name="MonthBars" Spacing="12" />
         </StackPanel>
     </ScrollViewer>
 </Page>
