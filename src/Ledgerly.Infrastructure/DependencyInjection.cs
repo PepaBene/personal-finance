@@ -1,4 +1,5 @@
 using Ledgerly.Application.Abstractions;
+using Ledgerly.Infrastructure.Accounts;
 using Ledgerly.Infrastructure.Fx;
 using Ledgerly.Infrastructure.Persistence;
 using Ledgerly.Infrastructure.Persistence.Seeding;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddSingleton<ISettingsStore, SettingsStore>();
         services.AddSingleton<ITransactionService, TransactionService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
+        services.AddSingleton<IAccountService, AccountService>();
 
         return services;
     }

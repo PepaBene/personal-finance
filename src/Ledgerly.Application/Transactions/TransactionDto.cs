@@ -14,4 +14,7 @@ public sealed record TransactionDto(
     string? Note,
     TransactionSource Source,
     DateTimeOffset CreatedAt,
+    Guid? AccountId,
+    Guid? CounterAccountId,
+    Guid? MerchantId,
     IReadOnlyList<LineItemDto> LineItems);

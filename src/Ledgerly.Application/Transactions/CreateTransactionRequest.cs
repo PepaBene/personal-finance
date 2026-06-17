@@ -34,4 +34,12 @@ public sealed record CreateTransactionRequest
 
     /// <summary>Category for the implicit single line when no <see cref="LineItems"/> are given.</summary>
     public Guid? CategoryId { get; init; }
+
+    /// <summary>Source account (FR-ACC-02).</summary>
+    public Guid? AccountId { get; init; }
+
+    /// <summary>Destination account — required when <see cref="Type"/> is Transfer (FR-ACC-03).</summary>
+    public Guid? CounterAccountId { get; init; }
+
+    public Guid? MerchantId { get; init; }
 }

@@ -50,18 +50,35 @@ public sealed class TransactionService : ITransactionService
             ? 1m
             : await _currency.GetRateAsync(currency, baseCode, request.Date, cancellationToken).ConfigureAwait(false) ?? 1m;
 
-        var lineItems = BuildLineItems(request);
-        if (lineItems.Count > 0)
+        // Transfers move money between accounts; they are not categorized and carry no
+        // line items (docs/04 §2.1, FR-ACC-03).
+        List<LineItem> lineItems;
+        if (request.Type == TransactionType.Transfer)
         {
-            var digits = await _currency.GetDecimalDigitsAsync(currency, cancellationToken).ConfigureAwait(false);
-            var tolerance = TransactionReconciler.ToleranceFor(digits);
-            var lineAmounts = lineItems.Select(li => li.LineAmount).ToList();
-            if (!TransactionReconciler.IsBalanced(request.TotalAmount, lineAmounts, tolerance))
+            if (request.AccountId is null || request.CounterAccountId is null
+                || request.AccountId == request.CounterAccountId)
             {
-                throw new ReconciliationException(
-                    request.TotalAmount,
-                    TransactionReconciler.SumLineAmounts(lineAmounts),
-                    currency);
+                throw new ArgumentException(
+                    "A transfer requires distinct source and destination accounts.", nameof(request));
+            }
+
+            lineItems = [];
+        }
+        else
+        {
+            lineItems = BuildLineItems(request);
+            if (lineItems.Count > 0)
+            {
+                var digits = await _currency.GetDecimalDigitsAsync(currency, cancellationToken).ConfigureAwait(false);
+                var tolerance = TransactionReconciler.ToleranceFor(digits);
+                var lineAmounts = lineItems.Select(li => li.LineAmount).ToList();
+                if (!TransactionReconciler.IsBalanced(request.TotalAmount, lineAmounts, tolerance))
+                {
+                    throw new ReconciliationException(
+                        request.TotalAmount,
+                        TransactionReconciler.SumLineAmounts(lineAmounts),
+                        currency);
+                }
             }
         }
 
@@ -74,6 +91,9 @@ public sealed class TransactionService : ITransactionService
             TotalAmount = request.TotalAmount,
             ExchangeRate = rate,
             BaseAmount = baseMoney.Amount,
+            AccountId = request.AccountId,
+            CounterAccountId = request.Type == TransactionType.Transfer ? request.CounterAccountId : null,
+            MerchantId = request.MerchantId,
             Note = request.Note,
             Source = request.Source,
             Status = TransactionStatus.Active,
@@ -186,6 +206,9 @@ public sealed class TransactionService : ITransactionService
         t.Note,
         t.Source,
         t.CreatedAt,
+        t.AccountId,
+        t.CounterAccountId,
+        t.MerchantId,
         t.LineItems
             .OrderBy(li => li.SortOrder)
             .Select(li => new LineItemDto(li.Id, li.Description, li.Quantity, li.UnitPrice, li.LineAmount, li.CategoryId, li.SortOrder))

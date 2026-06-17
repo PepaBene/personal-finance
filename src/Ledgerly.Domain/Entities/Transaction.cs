@@ -20,6 +20,15 @@ public class Transaction
     /// <summary>Event date — drives the FX rate and the reporting period.</summary>
     public DateOnly Date { get; set; }
 
+    /// <summary>Source account (nullable until accounts are assigned).</summary>
+    public Guid? AccountId { get; set; }
+
+    /// <summary>Destination account — only for transfers (docs/04 §2.1).</summary>
+    public Guid? CounterAccountId { get; set; }
+
+    /// <summary>Payee/merchant (nullable for income/transfer).</summary>
+    public Guid? MerchantId { get; set; }
+
     /// <summary>Original currency (ISO 4217).</summary>
     public string CurrencyCode { get; set; } = "EUR";
 
@@ -31,6 +40,8 @@ public class Transaction
 
     /// <summary>Exchange rate (original → base) effective on <see cref="Date"/>.</summary>
     public decimal ExchangeRate { get; set; } = 1m;
+
+    public decimal? TaxAmount { get; set; }
 
     public string? Note { get; set; }
 

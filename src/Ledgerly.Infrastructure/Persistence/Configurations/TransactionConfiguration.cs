@@ -38,6 +38,7 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.Property(t => t.TotalAmount).HasPrecision(19, 4);
         builder.Property(t => t.BaseAmount).HasPrecision(19, 4);
         builder.Property(t => t.ExchangeRate).HasPrecision(19, 8);
+        builder.Property(t => t.TaxAmount).HasPrecision(19, 4);
 
         builder.Property(t => t.Note).HasMaxLength(1000);
 
@@ -47,8 +48,26 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
             .HasForeignKey(li => li.TransactionId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Account / merchant references never cascade-delete a transaction.
+        builder.HasOne<Account>()
+            .WithMany()
+            .HasForeignKey(t => t.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Account>()
+            .WithMany()
+            .HasForeignKey(t => t.CounterAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Merchant>()
+            .WithMany()
+            .HasForeignKey(t => t.MerchantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Indexes that the analytics layer and list views will rely on (docs/04 §5).
         builder.HasIndex(t => t.Date);
         builder.HasIndex(t => t.Status);
+        builder.HasIndex(t => t.AccountId);
+        builder.HasIndex(t => t.MerchantId);
     }
 }

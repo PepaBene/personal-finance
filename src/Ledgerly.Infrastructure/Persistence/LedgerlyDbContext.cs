@@ -28,6 +28,10 @@ public sealed class LedgerlyDbContext : DbContext
 
     public DbSet<LineItem> LineItems => Set<LineItem>();
 
+    public DbSet<Account> Accounts => Set<Account>();
+
+    public DbSet<Merchant> Merchants => Set<Merchant>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
@@ -36,5 +40,7 @@ public sealed class LedgerlyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ExchangeRateConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new LineItemConfiguration());
+        modelBuilder.ApplyConfiguration(new AccountConfiguration());
+        modelBuilder.ApplyConfiguration(new MerchantConfiguration());
     }
 }

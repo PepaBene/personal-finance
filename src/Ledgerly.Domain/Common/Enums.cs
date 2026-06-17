@@ -37,3 +37,12 @@ public enum CategoryKind
     Expense,
     Income,
 }
+
+/// <summary>The kind of account money sits in (docs/04 §2.5).</summary>
+public enum AccountKind
+{
+    Cash,
+    Bank,
+    Card,
+    Other,
+}
