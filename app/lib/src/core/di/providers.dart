@@ -3,11 +3,20 @@ import 'dart:typed_data';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:powersync/powersync.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// `show` avoids name clashes: powersync also exports `SyncStatus` and
+// supabase_flutter (gotrue) also exports `AuthState`, which collide with our
+// application-layer types of the same name.
+import 'package:powersync/powersync.dart' show PowerSyncDatabase;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show Supabase, SupabaseClient;
 
+import '../../application/account_service.dart';
+import '../../application/analytics_service.dart';
 import '../../application/app_lock_service.dart';
 import '../../application/auth_service.dart';
+import '../../application/category_service.dart';
+import '../../application/currency_service.dart';
+import '../../application/import_export_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
@@ -15,6 +24,12 @@ import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
+import '../../data/seed/database_seeder.dart';
+import '../../data/services/drift_account_service.dart';
+import '../../data/services/drift_analytics_service.dart';
+import '../../data/services/drift_category_service.dart';
+import '../../data/services/drift_currency_service.dart';
+import '../../data/services/drift_import_export_service.dart';
 import '../../data/services/drift_transaction_service.dart';
 import '../../data/services/supabase_auth_service.dart';
 import '../env/app_config.dart';
@@ -72,7 +87,9 @@ final databaseKeyProvider = StateProvider<Uint8List?>((ref) => null);
 ///
 /// Throws while locked; the router guard keeps DB-backed screens unreachable
 /// until unlocked.
-final powerSyncDatabaseProvider = FutureProvider<PowerSyncDatabase>((ref) async {
+final powerSyncDatabaseProvider = FutureProvider<PowerSyncDatabase>((
+  ref,
+) async {
   final key = ref.watch(databaseKeyProvider);
   if (key == null) {
     throw StateError('Database is locked: no encryption key available.');
@@ -92,10 +109,65 @@ final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
   return db;
 });
 
-final transactionServiceProvider =
-    FutureProvider<TransactionService>((ref) async {
+final transactionServiceProvider = FutureProvider<TransactionService>((
+  ref,
+) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftTransactionService(db, ref.watch(authServiceProvider));
+});
+
+final categoryServiceProvider = FutureProvider<CategoryService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCategoryService(db, ref.watch(authServiceProvider));
+});
+
+final accountServiceProvider = FutureProvider<AccountService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAccountService(db, ref.watch(authServiceProvider));
+});
+
+final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCurrencyService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
+
+final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAnalyticsService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
+
+final importExportServiceProvider = FutureProvider<ImportExportService>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  final tx = await ref.watch(transactionServiceProvider.future);
+  final currency = await ref.watch(currencyServiceProvider.future);
+  return DriftImportExportService(
+    db,
+    ref.watch(authServiceProvider),
+    tx,
+    currency,
+  );
+});
+
+/// Seeds reference + per-user default data once the store is open and the user
+/// is known (FR-CAT-01, FR-CUR-01). Awaited by the unlock flow.
+final bootstrapProvider = FutureProvider<void>((ref) async {
+  final auth = ref.watch(authServiceProvider).current;
+  if (!auth.isSignedIn) return;
+  final db = await ref.watch(appDatabaseProvider.future);
+  await DatabaseSeeder(db).seed(
+    userId: auth.session!.userId,
+    baseCurrency: ref.watch(appConfigProvider).baseCurrencyCode,
+  );
 });
 
 // --- Sync (PowerSync) ---------------------------------------------------

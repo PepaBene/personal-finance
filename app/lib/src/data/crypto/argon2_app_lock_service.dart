@@ -107,8 +107,6 @@ class Argon2AppLockService implements AppLockService {
 
   Uint8List _randomBytes(int n) {
     final rng = Random.secure();
-    return Uint8List.fromList(
-      List<int>.generate(n, (_) => rng.nextInt(256)),
-    );
+    return Uint8List.fromList(List<int>.generate(n, (_) => rng.nextInt(256)));
   }
 }

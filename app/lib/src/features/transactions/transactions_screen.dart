@@ -1,17 +1,17 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/router/app_router.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/transaction.dart';
-import 'add_transaction_sheet.dart';
 import 'transactions_view_model.dart';
 
-/// The Phase 0 vertical slice: create & list transactions through every layer,
-/// persisted to the encrypted local DB and (when cloud-configured) converging
-/// across devices via PowerSync.
+/// Transaction list. Tapping the FAB opens the editor (quick or split capture);
+/// tapping a row edits it. Swiping a row soft-deletes (undoable).
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
 
@@ -22,7 +22,7 @@ class TransactionsScreen extends ConsumerWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddTransactionSheet.show(context, ref),
+        onPressed: () => context.push(Routes.transactionNew),
         icon: const Icon(Icons.add),
         label: Text(l10n.transactionsAddAction),
       ),
@@ -73,14 +73,12 @@ class _TransactionTile extends StatelessWidget {
       ),
       onDismissed: (_) {
         ref.read(transactionsControllerProvider).delete(tx.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
       },
       child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(_iconFor(tx), size: 20),
-        ),
+        leading: CircleAvatar(child: Icon(_iconFor(tx), size: 20)),
         title: Text(tx.note?.isNotEmpty == true ? tx.note! : dateText),
         subtitle: Text(dateText),
         trailing: MoneyText(
@@ -91,6 +89,7 @@ class _TransactionTile extends StatelessWidget {
             MoneyDirection.neutral => MoneySign.neutral,
           },
         ),
+        onTap: () => context.push(Routes.transactionEdit(tx.id)),
       ),
     );
   }
@@ -114,16 +113,20 @@ class _Empty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 56, color: context.colors.onSurfaceVariant),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 56,
+              color: context.colors.onSurfaceVariant,
+            ),
             SizedBox(height: context.space.md),
             Text(l10n.transactionsEmptyTitle, style: context.texts.titleLarge),
             SizedBox(height: context.space.xs),
             Text(
               l10n.transactionsEmptyBody,
               textAlign: TextAlign.center,
-              style: context.texts.bodyMedium
-                  ?.copyWith(color: context.colors.onSurfaceVariant),
+              style: context.texts.bodyMedium?.copyWith(
+                color: context.colors.onSurfaceVariant,
+              ),
             ),
           ],
         ),

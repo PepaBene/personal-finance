@@ -24,6 +24,17 @@ pubspec_overrides.yaml
 *.iml
 *.log
 
+# Generated platform runners + flutter-create boilerplate (regenerated in CI)
+app/android/
+app/ios/
+app/linux/
+app/macos/
+app/windows/
+app/web/
+app/.metadata
+app/.gitignore
+app/README.md
+
 # Platform / build artifacts
 **/ios/Pods/
 **/ios/.symlinks/

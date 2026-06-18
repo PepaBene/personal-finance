@@ -15,6 +15,9 @@ enum DocType { receipt, invoice, bill, paycheck, other }
 
 enum ScanStatus { pending, parsed, reviewed, failed }
 
+/// Provenance of an exchange rate (docs/04 §3.2).
+enum RateSource { manual, fetched }
+
 /// Resolve an enum from its stored [Enum.name], falling back to [fallback].
 T enumByName<T extends Enum>(List<T> values, String? name, T fallback) {
   for (final v in values) {

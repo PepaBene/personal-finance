@@ -43,6 +43,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       // observes this and brings PowerSync online now that we have both a
       // session and an unlocked store.
       ref.read(databaseKeyProvider.notifier).state = key;
+      // Seed reference + default data on first unlock (idempotent).
+      await ref.read(bootstrapProvider.future);
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {
@@ -65,8 +67,11 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(Icons.lock_outline,
-                    size: 48, color: context.colors.primary),
+                Icon(
+                  Icons.lock_outline,
+                  size: 48,
+                  color: context.colors.primary,
+                ),
                 SizedBox(height: context.space.md),
                 Text(
                   l10n.lockTitle,
@@ -76,8 +81,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                 SizedBox(height: context.space.xs),
                 Text(
                   l10n.lockHint,
-                  style: context.texts.bodyMedium
-                      ?.copyWith(color: context.colors.onSurfaceVariant),
+                  style: context.texts.bodyMedium?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: context.space.lg),
@@ -85,16 +91,18 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   controller: _passphrase,
                   obscureText: true,
                   autofocus: true,
-                  decoration:
-                      InputDecoration(labelText: l10n.lockPassphraseLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.lockPassphraseLabel,
+                  ),
                   onSubmitted: (_) => _busy ? null : _submit(),
                 ),
                 if (_error != null) ...[
                   SizedBox(height: context.space.sm),
                   Text(
                     _error!,
-                    style: context.texts.bodySmall
-                        ?.copyWith(color: context.semantic.danger),
+                    style: context.texts.bodySmall?.copyWith(
+                      color: context.semantic.danger,
+                    ),
                   ),
                 ],
                 SizedBox(height: context.space.lg),

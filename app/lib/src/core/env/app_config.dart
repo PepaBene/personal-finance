@@ -21,8 +21,10 @@ class AppConfig {
         supabaseUrl: String.fromEnvironment('SUPABASE_URL'),
         supabaseAnonKey: String.fromEnvironment('SUPABASE_ANON_KEY'),
         powersyncUrl: String.fromEnvironment('POWERSYNC_URL'),
-        baseCurrencyCode:
-            String.fromEnvironment('BASE_CURRENCY', defaultValue: 'EUR'),
+        baseCurrencyCode: String.fromEnvironment(
+          'BASE_CURRENCY',
+          defaultValue: 'EUR',
+        ),
       );
 
   final String supabaseUrl;

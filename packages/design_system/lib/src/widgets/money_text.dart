@@ -33,11 +33,11 @@ class MoneyText extends StatelessWidget {
       MoneySign.neutral => context.colors.onSurface,
     };
 
-    final base = (style ?? context.texts.bodyMedium ?? const TextStyle())
-        .copyWith(
-          color: color,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        );
+    final base =
+        (style ?? context.texts.bodyMedium ?? const TextStyle()).copyWith(
+      color: color,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
 
     return Text(
       formattedAmount,

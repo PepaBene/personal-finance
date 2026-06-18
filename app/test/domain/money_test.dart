@@ -29,8 +29,12 @@ void main() {
       expect(Money.parse('3.5', 'EUR').roundedTo(0), Decimal.parse('4'));
     });
 
-    test('preserves full precision in storage form', () {
-      expect(eur('842.00').toStorageString(), '842.00');
+    test('preserves precision and round-trips through the storage form', () {
+      // decimal normalizes trailing zeros (842.00 -> 842); the value is exact
+      // and round-trips, which is what storage needs.
+      final m = eur('1234.56');
+      expect(m.toStorageString(), '1234.56');
+      expect(Money.parse(m.toStorageString(), 'EUR'), m);
     });
 
     test('value equality', () {

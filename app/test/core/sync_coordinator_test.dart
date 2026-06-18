@@ -15,7 +15,10 @@ class _FakeAuth implements AuthService {
 
   void emit(AuthEvent e) => _events.add(e);
   set signedIn(bool v) => _current = v
-      ? const AuthState(AuthStatus.signedIn, AuthSession(userId: 'u', email: 'e'))
+      ? const AuthState(
+          AuthStatus.signedIn,
+          AuthSession(userId: 'u', email: 'e'),
+        )
       : const AuthState.signedOut();
 
   @override
@@ -25,9 +28,15 @@ class _FakeAuth implements AuthService {
   @override
   Stream<AuthState> watch() => Stream.value(_current);
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
   @override
-  Future<void> signUp({required String email, required String password}) async {}
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {}
   @override
   Future<void> signOut() async {}
 }

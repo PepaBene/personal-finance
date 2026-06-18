@@ -11,5 +11,7 @@ export 'src/tokens/motion.dart';
 export 'src/tokens/semantic_colors.dart';
 export 'src/tokens/category_colors.dart';
 export 'src/theme/app_theme.dart';
+export 'src/widgets/category_chip.dart';
+export 'src/widgets/kpi_card.dart';
 export 'src/widgets/money_text.dart';
 export 'src/widgets/sync_status_indicator.dart';
