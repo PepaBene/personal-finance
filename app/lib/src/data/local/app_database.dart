@@ -5,38 +5,30 @@ import 'tables/transactions_table.dart';
 
 part 'app_database.g.dart';
 
-/// The encrypted local Drift database — the single working source of truth on
-/// each device (docs/13 golden rule 1). Opened over an encrypted executor
-/// (SQLCipher on native, OPFS+WebCrypto on web) supplied at the composition
-/// root; this class is storage-agnostic so it stays testable with an in-memory
-/// executor.
+/// The local Drift database — the single working source of truth on each device
+/// (docs/13 golden rule 1). It runs **on top of the PowerSync-managed SQLite
+/// store** (via `SqliteAsyncDriftConnection`), so the synced tables and indexes
+/// are created and owned by PowerSync, not Drift.
+///
+/// Consequently the Drift [migration] is a no-op for synced tables: Drift only
+/// *mirrors* them as queryable, reactive tables. (Local-only, unsynced tables —
+/// none in Phase 0 — would be created in `onCreate`.) The class stays
+/// storage-agnostic so tests can drive it with an in-memory executor, calling
+/// `createMigrator().createAll()` to materialize the schema themselves.
 @DriftDatabase(tables: [Transactions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  /// Phase 0 schema. Bump on every schema change; add a stepwise migration.
+  /// Phase 0 schema. Bump on every schema change; PowerSync's schema (and the
+  /// Postgres migration) move in lockstep — docs/04 §8.
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          // Accelerate sync scans and common queries (docs/04 §7).
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_tx_date ON transactions (date)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_tx_account ON transactions (account_id)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_tx_user_updated '
-            'ON transactions (user_id, updated_at)',
-          );
-        },
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
+        // Synced tables are owned by PowerSync; Drift must not (re)create them.
+        onCreate: (m) async {},
+        onUpgrade: (m, from, to) async {},
       );
 
   /// Active (non-tombstoned) transactions for [userId], newest first.

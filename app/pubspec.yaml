@@ -18,11 +18,12 @@ dependencies:
   riverpod_annotation: ^2.3.5
   go_router: ^14.2.7
 
-  # --- Local DB (encrypted SQLite via Drift) ---
+  # --- Local DB (Drift over the PowerSync-managed SQLite store) ---
   drift: ^2.20.0
+  drift_sqlite_async: ^0.2.1        # runs Drift on top of the PowerSync DB
+  sqlite_async: ^0.11.5             # SqliteConnection / open-factory types
   sqlite3: ^2.4.6
-  sqlite3_flutter_libs: ^0.5.24
-  sqlcipher_flutter_libs: ^0.6.4
+  sqlcipher_flutter_libs: ^0.6.4    # SQLCipher native libs (encryption)
   path_provider: ^2.1.4
   path: ^1.9.0
 

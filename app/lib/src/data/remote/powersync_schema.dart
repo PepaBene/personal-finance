@@ -23,6 +23,9 @@ const powersyncSchema = Schema([
     Column.integer('deleted'),
     Column.integer('version'),
   ], indexes: [
-    Index('tx_user_updated', [IndexedColumn('user_id'), IndexedColumn('updated_at')]),
+    Index('tx_user_updated', [
+      IndexedColumn.ascending('user_id'),
+      IndexedColumn.ascending('updated_at'),
+    ]),
   ]),
 ]);

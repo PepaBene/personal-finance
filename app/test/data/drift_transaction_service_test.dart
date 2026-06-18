@@ -51,8 +51,11 @@ void main() {
     );
   }
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    // In production PowerSync creates the synced tables; the Drift migration is
+    // a no-op. For an isolated in-memory test we materialize the schema here.
+    await db.createMigrator().createAll();
     service = DriftTransactionService(db, _FakeAuth('user-1'));
   });
 

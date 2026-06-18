@@ -85,9 +85,13 @@ melos run test      # unit + widget tests
   locally, references to those parts will show as unresolved.
 - **Platform runner folders** (`android/`, `ios/`, `web/`, …) are generated via
   `flutter create`, not committed, so the repo stays focused on source.
-- The **Drift ⇄ PowerSync** shared-database wiring and the live **two-device**
-  integration assertion are the remaining Phase 0 seams — marked in
-  `data/remote/` and `integration_test/`, pending a provisioned test backend.
+- **Drift runs on top of the PowerSync database** (`SqliteAsyncDriftConnection`
+  in `core/di/providers.dart`): one shared SQLite store, encrypted on native via
+  a SQLCipher `PowerSyncOpenFactory`. PowerSync owns the synced-table DDL, so the
+  Drift migration is a no-op for them (`data/local/app_database.dart`).
+- The live **two-device** integration assertion is the remaining Phase 0 seam
+  (`integration_test/`), pending a provisioned test backend. The web SQLCipher
+  asymmetry is documented in `ledgerly_powersync_web.dart` (docs/09 §2).
 
 ## Status
 

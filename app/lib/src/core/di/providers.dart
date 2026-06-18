@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../application/app_lock_service.dart';
@@ -10,8 +12,7 @@ import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
 import '../../data/local/app_database.dart';
-import '../../data/local/encrypted_executor.dart';
-import '../../data/remote/powersync_factory.dart';
+import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
 import '../../data/services/drift_transaction_service.dart';
@@ -62,39 +63,51 @@ final lockStateProvider = StreamProvider<LockState>(
 /// app is locked. Set by the lock flow (features/lock), cleared on sign-out.
 final databaseKeyProvider = StateProvider<Uint8List?>((ref) => null);
 
-// --- Local database -----------------------------------------------------
+// --- Local store: one PowerSync DB, with Drift layered on top -----------
 
-/// Opens the encrypted local DB once a key is available. Throws while locked —
-/// the router guard ensures DB-backed screens are only reached when unlocked.
-final appDatabaseProvider = Provider<AppDatabase>((ref) {
+/// The single PowerSync-managed SQLite database — the device's working store.
+/// Opened (encrypted on native) once an unlock key is available; both the Drift
+/// layer and the sync service share this exact instance so reads, local writes,
+/// and synced changes all flow through one database (docs/13 §5.4).
+///
+/// Throws while locked; the router guard keeps DB-backed screens unreachable
+/// until unlocked.
+final powerSyncDatabaseProvider = FutureProvider<PowerSyncDatabase>((ref) async {
   final key = ref.watch(databaseKeyProvider);
   if (key == null) {
     throw StateError('Database is locked: no encryption key available.');
   }
-  final db = AppDatabase(openEncryptedExecutor(dbName: 'ledgerly', key: key));
+  final db = await openLedgerlyPowerSyncDatabase(encryptionKey: key);
   ref.onDispose(db.close);
   return db;
 });
 
-final transactionServiceProvider = Provider<TransactionService>(
-  (ref) => DriftTransactionService(
-    ref.watch(appDatabaseProvider),
-    ref.watch(authServiceProvider),
-  ),
-);
+/// Drift running on top of the PowerSync database (shared connection). Drift's
+/// reactive `Stream` queries update on any change to the store — including rows
+/// applied by the sync engine (FR-SYNC-02).
+final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
+  final powersync = await ref.watch(powerSyncDatabaseProvider.future);
+  final db = AppDatabase(SqliteAsyncDriftConnection(powersync));
+  ref.onDispose(db.close);
+  return db;
+});
+
+final transactionServiceProvider =
+    FutureProvider<TransactionService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftTransactionService(db, ref.watch(authServiceProvider));
+});
 
 // --- Sync (PowerSync) ---------------------------------------------------
 
-/// Builds the PowerSync-backed sync service when the cloud is configured;
-/// returns `null` otherwise so the app stays fully usable offline
-/// (FR-SYNC-01). This is the Phase 0 sync seam (see PowerSyncSyncService).
+/// Builds the sync service over the *shared* PowerSync database when the cloud
+/// is configured; returns `null` otherwise so the app stays fully usable
+/// offline against the same local store (FR-SYNC-01).
 final syncServiceProvider = FutureProvider<SyncService?>((ref) async {
   final config = ref.watch(appConfigProvider);
   if (!config.hasCloud) return null;
 
-  final db = await openPowerSyncDatabase();
-  ref.onDispose(db.close);
-
+  final db = await ref.watch(powerSyncDatabaseProvider.future);
   final connector = SupabasePowerSyncConnector(
     supabase: ref.watch(supabaseClientProvider),
     powersyncUrl: config.powersyncUrl,

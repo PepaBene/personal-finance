@@ -8,10 +8,12 @@ import '../../domain/enums.dart';
 import '../../domain/money.dart';
 
 /// Reactive list of the signed-in user's active transactions (FR-SYNC-02:
-/// refreshes on local *and* sync-applied writes since it streams from Drift).
+/// refreshes on local *and* sync-applied writes since it streams from Drift,
+/// which shares the PowerSync store).
 final transactionsProvider =
-    StreamProvider.autoDispose<List<TransactionEntity>>((ref) {
-  return ref.watch(transactionServiceProvider).watchAll();
+    StreamProvider.autoDispose<List<TransactionEntity>>((ref) async* {
+  final service = await ref.watch(transactionServiceProvider.future);
+  yield* service.watchAll();
 });
 
 /// Intents for the transactions screen. Phase 0 ships create + soft-delete of a
@@ -52,9 +54,12 @@ class TransactionsController {
       createdAt: now,
       updatedAt: now,
     );
-    await _ref.read(transactionServiceProvider).upsert(tx);
+    final service = await _ref.read(transactionServiceProvider.future);
+    await service.upsert(tx);
   }
 
-  Future<void> delete(String id) =>
-      _ref.read(transactionServiceProvider).softDelete(id);
+  Future<void> delete(String id) async {
+    final service = await _ref.read(transactionServiceProvider.future);
+    await service.softDelete(id);
+  }
 }
