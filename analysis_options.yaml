@@ -1,0 +1,38 @@
+# Shared, strict analyzer config for the whole workspace.
+# Per docs/03 §9 and docs/13 §12: lints-as-errors in core libs, layering rules,
+# no implicit casts/dynamic, custom_lint + riverpod_lint.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # Treat the highest-signal correctness lints as build-breaking.
+    invalid_annotation_target: ignore # freezed/json_serializable false positives
+    missing_required_param: error
+    missing_return: error
+    todo: ignore
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.drift.dart"
+    - "**/*.config.dart"
+    - "**/generated/**"
+
+  plugins:
+    - custom_lint
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_locals
+    - require_trailing_commas
+    - sort_pub_dependencies
+    - unawaited_futures
+    - use_super_parameters

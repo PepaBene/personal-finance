@@ -1,0 +1,18 @@
+# build_runner configuration for codegen (drift, freezed, json, riverpod).
+# Run: dart run build_runner build --delete-conflicting-outputs
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Stored money as TEXT decimal, dates as ISO-8601 UTC text — see docs/04.
+          store_date_time_values_as_text: true
+          named_parameters: true
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.39"
+      riverpod_generator:
+        options:
+          # Keep generated provider names stable for the composition root.
+          provider_name_suffix: "Provider"

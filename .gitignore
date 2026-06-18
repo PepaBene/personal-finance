@@ -1,0 +1,50 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.pub/
+**/doc/api/
+.fvm/
+
+# Generated code (generated in CI before analyze/test — see docs/13 §3.2)
+*.g.dart
+*.freezed.dart
+*.drift.dart
+*.config.dart
+app/lib/src/core/l10n/generated/
+
+# Melos
+.melos_tool/
+pubspec_overrides.yaml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Platform / build artifacts
+**/ios/Pods/
+**/ios/.symlinks/
+**/android/.gradle/
+**/android/local.properties
+**/macos/Pods/
+**/windows/flutter/ephemeral/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# Env / secrets — never commit real keys
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/

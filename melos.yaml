@@ -1,0 +1,30 @@
+name: ledgerly
+
+packages:
+  - app
+  - packages/**
+
+command:
+  bootstrap:
+    runPubGetInParallel: true
+
+scripts:
+  analyze:
+    description: Run dart analyze across all packages (fails on warnings/errors).
+    exec: dart analyze --fatal-warnings .
+
+  format:
+    description: Verify formatting; fails CI if anything is unformatted.
+    exec: dart format --set-exit-if-changed .
+
+  test:
+    description: Run unit + widget + golden tests across packages that have tests.
+    run: melos exec --dir-exists=test -- flutter test
+
+  generate:
+    description: Run build_runner codegen (drift, freezed, json, riverpod) across packages.
+    run: melos exec --depends-on="build_runner" -- dart run build_runner build --delete-conflicting-outputs
+
+  gen-l10n:
+    description: Generate localization (intl ARB -> Dart) in the app package.
+    run: melos exec --scope="ledgerly_app" -- flutter gen-l10n

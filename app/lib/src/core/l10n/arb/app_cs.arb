@@ -1,0 +1,41 @@
+{
+  "@@locale": "cs",
+  "appTitle": "Ledgerly",
+
+  "navDashboard": "Přehled",
+  "navTransactions": "Transakce",
+  "navAnalytics": "Analýzy",
+  "navSettings": "Nastavení",
+
+  "authSignInTitle": "Vítejte zpět",
+  "authSignUpTitle": "Vytvořte si účet",
+  "authEmailLabel": "E-mail",
+  "authPasswordLabel": "Heslo",
+  "authSignInAction": "Přihlásit se",
+  "authSignUpAction": "Registrovat se",
+  "authToggleToSignUp": "Nemáte účet? Zaregistrujte se",
+  "authToggleToSignIn": "Už máte účet? Přihlaste se",
+
+  "lockTitle": "Odemknout Ledgerly",
+  "lockPassphraseLabel": "Přístupová fráze",
+  "lockUnlockAction": "Odemknout",
+  "lockHint": "Vaše data jsou na tomto zařízení šifrovaná. Pokračujte zadáním přístupové fráze.",
+
+  "transactionsEmptyTitle": "Zatím žádné transakce",
+  "transactionsEmptyBody": "Začněte přidáním první transakce.",
+  "transactionsAddAction": "Přidat transakci",
+
+  "addTxTitle": "Nová transakce",
+  "addTxAmountLabel": "Částka",
+  "addTxNoteLabel": "Poznámka (nepovinné)",
+  "addTxSaveAction": "Uložit",
+  "addTxCancelAction": "Zrušit",
+
+  "syncStatusSynced": "Synchronizováno",
+  "syncStatusSyncing": "Synchronizace…",
+  "syncStatusOffline": "Offline",
+  "syncStatusError": "Chyba synchronizace",
+
+  "commonRetry": "Zkusit znovu",
+  "commonSignOut": "Odhlásit se"
+}

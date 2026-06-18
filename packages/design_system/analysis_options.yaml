@@ -1,0 +1,11 @@
+# Design system is a plain Flutter package (no Riverpod / custom_lint), so it
+# uses the standard Flutter lints rather than the app's stricter, plugin-backed
+# config.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
