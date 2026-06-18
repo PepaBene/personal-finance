@@ -21,7 +21,9 @@ dependencies:
   drift: ^2.23.0
   drift_sqlite_async: ^0.2.1        # runs Drift on top of the PowerSync DB
   sqlite_async: ^0.11.5             # SqliteConnection / open-factory types
-  sqlite3: ^2.4.6
+  # Pin to 2.8.x: sqlite_async 0.11.x doesn't implement the abstract members
+  # sqlite3 2.9 added to CommonDatabase (only fails on the web worker path).
+  sqlite3: ">=2.8.0 <2.9.0"
   sqlcipher_flutter_libs: ^0.6.4    # SQLCipher native libs (encryption)
   path_provider: ^2.1.4
   path: ^1.9.0
