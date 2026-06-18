@@ -12,7 +12,7 @@ part 'transaction.freezed.dart';
 /// `freezed` generates equality, copyWith, and immutability. Money is held as
 /// the [Money] value object (never a double).
 @freezed
-class TransactionEntity with _$TransactionEntity {
+abstract class TransactionEntity with _$TransactionEntity {
   const factory TransactionEntity({
     required String id,
     required String userId,

@@ -4,7 +4,7 @@ part 'currency.freezed.dart';
 
 /// Currency reference data (docs/04 §3.1).
 @freezed
-class CurrencyEntity with _$CurrencyEntity {
+abstract class CurrencyEntity with _$CurrencyEntity {
   const factory CurrencyEntity({
     required String code, // ISO 4217
     required String symbol,

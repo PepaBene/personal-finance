@@ -8,7 +8,7 @@ part 'line_item.freezed.dart';
 /// One purchased item / charge (docs/04 §2.2). Categorization and multi-category
 /// splitting happen here. Carries sync metadata (FR-SYNC-03).
 @freezed
-class LineItemEntity with _$LineItemEntity {
+abstract class LineItemEntity with _$LineItemEntity {
   const factory LineItemEntity({
     required String id,
     required String userId,

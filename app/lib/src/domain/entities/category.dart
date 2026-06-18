@@ -6,7 +6,7 @@ part 'category.freezed.dart';
 
 /// Hierarchical category (docs/04 §2.3). `parentId` null = root.
 @freezed
-class CategoryEntity with _$CategoryEntity {
+abstract class CategoryEntity with _$CategoryEntity {
   const factory CategoryEntity({
     required String id,
     required String userId,

@@ -1,8 +1,2 @@
-# Inherits the strict workspace config; adds Riverpod lints + layering guards.
+# Inherits the strict workspace analyzer config.
 include: ../analysis_options.yaml
-
-custom_lint:
-  rules:
-    # Riverpod best-practice lints (provider scope, ref usage, etc.)
-    - provider_dependencies
-    - avoid_manual_providers_as_generated_provider_dependency

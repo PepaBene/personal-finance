@@ -7,7 +7,7 @@ part 'account.freezed.dart';
 
 /// Account (docs/04 §2.5).
 @freezed
-class AccountEntity with _$AccountEntity {
+abstract class AccountEntity with _$AccountEntity {
   const factory AccountEntity({
     required String id,
     required String userId,
