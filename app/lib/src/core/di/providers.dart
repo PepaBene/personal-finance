@@ -7,6 +7,7 @@ import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../application/account_service.dart';
+import '../../application/analytics_service.dart';
 import '../../application/app_lock_service.dart';
 import '../../application/auth_service.dart';
 import '../../application/category_service.dart';
@@ -20,6 +21,7 @@ import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
 import '../../data/seed/database_seeder.dart';
 import '../../data/services/drift_account_service.dart';
+import '../../data/services/drift_analytics_service.dart';
 import '../../data/services/drift_category_service.dart';
 import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_transaction_service.dart';
@@ -118,6 +120,15 @@ final accountServiceProvider = FutureProvider<AccountService>((ref) async {
 final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftCurrencyService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
+
+final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAnalyticsService(
     db,
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,

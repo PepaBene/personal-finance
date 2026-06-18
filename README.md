@@ -112,6 +112,10 @@ and **split** (multi-category line-item) modes, **transfers**, account & currenc
 pickers, manual exchange-rate entry, a hierarchical **category picker**, and an
 **Accounts** screen with live balances.
 
-Next in Phase 1: **core analytics** (dashboard + spend-by-category / over-time /
-income-vs-expense with global filters and drill-down, via `fl_chart`), then CSV
-import/export and categories management (docs/08 workstreams 6–7).
+Core **analytics** have landed: a dashboard with KPI cards (income/expense/net),
+a spend-by-category donut, spending-over-time and income-vs-expense charts
+(`fl_chart`), a date-range filter, and category drill-down — all in base
+currency, computed offline, with multi-currency splits attributed per line.
+
+Next in Phase 1: CSV import/export and a categories-management screen
+(docs/08 workstream 7).
