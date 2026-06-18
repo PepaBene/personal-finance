@@ -77,6 +77,9 @@ class DraftMapper {
       date: DateTime.utc(date.year, date.month, date.day),
       accountId: ctx.accountId,
       merchantId: ctx.merchantId,
+      // Until the Merchant table is wired (FR-CAT-06), keep the scanned merchant
+      // name in the note when we have no merchant id, so it isn't lost.
+      note: ctx.merchantId == null ? _trimToNull(draft.merchant) : null,
       total: total,
       base: ctx.base,
       source: TxSource.scan,
@@ -136,5 +139,10 @@ class DraftMapper {
   String _desc(String? raw) {
     final t = raw?.trim() ?? '';
     return t.isEmpty ? 'Item' : t;
+  }
+
+  String? _trimToNull(String? raw) {
+    final t = raw?.trim() ?? '';
+    return t.isEmpty ? null : t;
   }
 }

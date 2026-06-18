@@ -106,6 +106,16 @@ void main() {
     expect(m.header.total, Money(Decimal.parse('234.10'), 'CZK'));
   });
 
+  test('keeps the merchant id out of the note when one is resolved', () {
+    expect(mapper.map(receipt(), ctx()).header.note, isNull);
+  });
+
+  test('falls back to the merchant name as note when no merchant id', () {
+    final m = mapper.map(receipt(), ctx(merchantId: null));
+    expect(m.header.merchantId, isNull);
+    expect(m.header.note, 'Albert');
+  });
+
   test('maps paychecks to income', () {
     final draft = receipt().copyWith(type: DocType.paycheck);
     expect(mapper.map(draft, ctx()).header.type, TxType.income);
