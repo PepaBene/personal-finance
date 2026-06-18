@@ -16,3 +16,5 @@ bucket_definitions:
       - select * from line_item_tags where user_id = bucket.user_id
       - select * from exchange_rates where user_id = bucket.user_id
       - select * from settings       where user_id = bucket.user_id
+      - select * from categorization_rules where user_id = bucket.user_id
+      - select * from attachments          where user_id = bucket.user_id

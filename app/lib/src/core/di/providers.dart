@@ -13,13 +13,17 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 import '../../application/account_service.dart';
 import '../../application/analytics_service.dart';
 import '../../application/app_lock_service.dart';
+import '../../application/attachment_service.dart';
 import '../../application/auth_service.dart';
+import '../../application/categorization_rule_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
 import '../../application/import_export_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
+import '../../data/services/drift_attachment_service.dart';
+import '../../data/services/drift_categorization_rule_service.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
@@ -133,6 +137,19 @@ final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,
   );
+});
+
+final categorizationRuleServiceProvider =
+    FutureProvider<CategorizationRuleService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCategorizationRuleService(db, ref.watch(authServiceProvider));
+});
+
+final attachmentServiceProvider = FutureProvider<AttachmentService>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAttachmentService(db, ref.watch(authServiceProvider));
 });
 
 final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {

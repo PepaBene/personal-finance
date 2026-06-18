@@ -4,7 +4,9 @@ import 'package:drift/drift.dart';
 import '../../domain/enums.dart';
 import 'converters.dart'; // converters referenced by generated companions
 import 'tables/accounts_table.dart';
+import 'tables/attachments_table.dart';
 import 'tables/categories_table.dart';
+import 'tables/categorization_rules_table.dart';
 import 'tables/currencies_table.dart';
 import 'tables/exchange_rates_table.dart';
 import 'tables/line_items_table.dart';
@@ -35,15 +37,17 @@ part 'app_database.g.dart';
     Currencies,
     ExchangeRates,
     Settings,
+    CategorizationRules,
+    Attachments,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  /// Phase 1 schema. PowerSync's schema and the Postgres migration move in
-  /// lockstep (docs/04 §8).
+  /// Schema moves in lockstep with PowerSync's schema and the Postgres
+  /// migration (docs/04 §8). v3 adds the Phase 2 scan tables.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +143,15 @@ class AppDatabase extends _$AppDatabase {
   Stream<List<Currency>> watchCurrencies() =>
       (select(currencies)..orderBy([(c) => OrderingTerm.asc(c.id)])).watch();
 
+  /// Lowercased category name → id, for resolving keyword-dictionary hits to the
+  /// user's actual categories (docs/05 §6). Last write wins on duplicate names.
+  Future<Map<String, String>> categoryIdsByName(String userId) async {
+    final rows = await (select(categories)
+          ..where((c) => c.userId.equals(userId) & c.deleted.equals(false)))
+        .get();
+    return {for (final c in rows) c.name.toLowerCase(): c.id};
+  }
+
   Future<int> countCategories(String userId) async {
     final count = countAll();
     final row = await (selectOnly(categories)
@@ -167,5 +180,62 @@ class AppDatabase extends _$AppDatabase {
           ..orderBy([(r) => OrderingTerm.desc(r.date)])
           ..limit(1))
         .getSingleOrNull();
+  }
+
+  // --- Scan: categorization rules + attachments -------------------------
+
+  /// Enabled rules for [userId], highest priority first (docs/04 §4.1).
+  Stream<List<CategorizationRuleRow>> watchCategorizationRules(String userId) {
+    return (select(categorizationRules)
+          ..where((r) => r.userId.equals(userId) & r.deleted.equals(false))
+          ..orderBy([(r) => OrderingTerm.desc(r.priority)]))
+        .watch();
+  }
+
+  Future<void> upsertCategorizationRule(CategorizationRulesCompanion rule) =>
+      into(categorizationRules).insertOnConflictUpdate(rule);
+
+  Future<void> softDeleteCategorizationRule(String id, DateTime now) {
+    return (update(categorizationRules)..where((r) => r.id.equals(id))).write(
+      CategorizationRulesCompanion(
+        deleted: const Value(true),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  /// Merchant → learned default category (FR-CAT-06), for categorization memory.
+  Future<Map<String, String>> merchantDefaultCategories(String userId) async {
+    final rows = await (select(merchants)
+          ..where(
+            (m) =>
+                m.userId.equals(userId) &
+                m.deleted.equals(false) &
+                m.defaultCategoryId.isNotNull(),
+          ))
+        .get();
+    return {
+      for (final m in rows) m.name.toLowerCase(): m.defaultCategoryId!,
+    };
+  }
+
+  /// Attachments for a transaction (docs/04 §2.6), newest first.
+  Stream<List<AttachmentRow>> watchAttachments(String transactionId) {
+    return (select(attachments)
+          ..where(
+            (a) =>
+                a.transactionId.equals(transactionId) & a.deleted.equals(false),
+          )
+          ..orderBy([(a) => OrderingTerm.desc(a.importedAt)]))
+        .watch();
+  }
+
+  Future<void> upsertAttachment(AttachmentsCompanion attachment) =>
+      into(attachments).insertOnConflictUpdate(attachment);
+
+  Future<void> softDeleteAttachment(String id, DateTime now) {
+    return (update(attachments)..where((a) => a.id.equals(id))).write(
+      AttachmentsCompanion(deleted: const Value(true), updatedAt: Value(now)),
+    );
   }
 }
