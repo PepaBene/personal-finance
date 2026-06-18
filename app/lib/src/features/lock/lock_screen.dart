@@ -39,10 +39,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       final key = initialized
           ? await lock.unlock(_passphrase.text)
           : await lock.initialize(_passphrase.text);
+      // Publishing the key opens the encrypted store; the SyncCoordinator
+      // observes this and brings PowerSync online now that we have both a
+      // session and an unlocked store.
       ref.read(databaseKeyProvider.notifier).state = key;
-      // Best-effort: bring sync online now that we have a session + key.
-      final sync = await ref.read(syncServiceProvider.future);
-      await sync?.connect();
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {

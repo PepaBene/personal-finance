@@ -10,14 +10,17 @@ import '../../application/auth_service.dart';
 class SupabaseAuthService implements AuthService {
   SupabaseAuthService(this._client) {
     _current = _stateFrom(_client.auth.currentSession);
-    _sub = _client.auth.onAuthStateChange.listen((event) {
-      _current = _stateFrom(event.session);
+    _sub = _client.auth.onAuthStateChange.listen((data) {
+      _current = _stateFrom(data.session);
       _controller.add(_current);
+      final event = _eventFrom(data.event);
+      if (event != null) _events.add(event);
     });
   }
 
   final sb.SupabaseClient _client;
   final _controller = StreamController<AuthState>.broadcast();
+  final _events = StreamController<AuthEvent>.broadcast();
   late StreamSubscription<sb.AuthState> _sub;
   AuthState _current = const AuthState.unknown();
 
@@ -29,6 +32,9 @@ class SupabaseAuthService implements AuthService {
     yield _current;
     yield* _controller.stream;
   }
+
+  @override
+  Stream<AuthEvent> authEvents() => _events.stream;
 
   @override
   Future<void> signUp({required String email, required String password}) async {
@@ -46,6 +52,21 @@ class SupabaseAuthService implements AuthService {
   Future<void> dispose() async {
     await _sub.cancel();
     await _controller.close();
+    await _events.close();
+  }
+
+  /// Maps Supabase's [sb.AuthChangeEvent] to our coarser [AuthEvent]; events we
+  /// don't act on (password recovery, MFA challenge) return null.
+  AuthEvent? _eventFrom(sb.AuthChangeEvent event) {
+    return switch (event) {
+      sb.AuthChangeEvent.signedIn ||
+      sb.AuthChangeEvent.initialSession =>
+        _current.isSignedIn ? AuthEvent.signedIn : null,
+      sb.AuthChangeEvent.signedOut => AuthEvent.signedOut,
+      sb.AuthChangeEvent.tokenRefreshed => AuthEvent.tokenRefreshed,
+      sb.AuthChangeEvent.userUpdated => AuthEvent.userUpdated,
+      _ => null,
+    };
   }
 
   AuthState _stateFrom(sb.Session? session) {

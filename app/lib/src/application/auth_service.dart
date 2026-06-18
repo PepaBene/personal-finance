@@ -10,6 +10,12 @@ class AuthSession {
 /// Coarse auth state the router guard switches on.
 enum AuthStatus { unknown, signedOut, signedIn }
 
+/// Discrete auth lifecycle events the sync coordinator reacts to. Distinct from
+/// [AuthState] (which the router watches) because sync cares specifically about
+/// `tokenRefreshed` — when the JWT rotates, PowerSync must pick up the new token
+/// or it will eventually sync with a stale one (FR-SYNC-07).
+enum AuthEvent { signedIn, signedOut, tokenRefreshed, userUpdated }
+
 class AuthState {
   const AuthState(this.status, [this.session]);
   const AuthState.unknown() : this(AuthStatus.unknown, null);
@@ -24,6 +30,9 @@ class AuthState {
 abstract interface class AuthService {
   /// Emits the current session and every change (sign-in/out, token refresh).
   Stream<AuthState> watch();
+
+  /// Discrete lifecycle events for the sync coordinator (see [AuthEvent]).
+  Stream<AuthEvent> authEvents();
 
   AuthState get current;
 

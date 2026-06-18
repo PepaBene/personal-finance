@@ -84,10 +84,8 @@ class AppShell extends ConsumerWidget {
   }
 
   Future<void> _signOut(WidgetRef ref) async {
-    final sync = await ref.read(syncServiceProvider.future);
-    await sync?.disconnect();
-    ref.read(appLockServiceProvider).lock();
-    ref.read(databaseKeyProvider.notifier).state = null;
+    // Just sign out; the SyncCoordinator reacts to the signed-out event by
+    // disconnecting PowerSync, locking, and clearing the in-memory key.
     await ref.read(authServiceProvider).signOut();
   }
 }

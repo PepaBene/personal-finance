@@ -24,6 +24,9 @@ class _FakeAuth implements AuthService {
   Stream<AuthState> watch() => Stream.value(current);
 
   @override
+  Stream<AuthEvent> authEvents() => const Stream.empty();
+
+  @override
   Future<void> signIn({required String email, required String password}) async {}
   @override
   Future<void> signUp({required String email, required String password}) async {}

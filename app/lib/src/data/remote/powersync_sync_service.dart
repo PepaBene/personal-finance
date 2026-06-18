@@ -33,6 +33,13 @@ class PowerSyncSyncService implements SyncService {
   }
 
   @override
+  Future<void> refreshCredentials() async {
+    // Re-fetch the (rotated) Supabase token into PowerSync without waiting for a
+    // request to fail with the stale one (FR-SYNC-07).
+    await _connector.prefetchCredentials();
+  }
+
+  @override
   Stream<SyncStatus> watchStatus() => _db.statusStream.map(_map);
 
   SyncStatus _map(ps.SyncStatus s) {

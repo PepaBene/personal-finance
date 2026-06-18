@@ -32,4 +32,9 @@ abstract interface class SyncService {
 
   /// Opportunistic manual sync / force-refresh (FR-SYNC-09).
   Future<void> trigger();
+
+  /// Proactively refresh the backend credentials after the auth token rotates,
+  /// so sync keeps using a valid token without waiting for a failed request
+  /// (FR-SYNC-07).
+  Future<void> refreshCredentials();
 }
