@@ -51,8 +51,10 @@ class SettingsScreen extends ConsumerWidget {
         const Divider(height: 1),
         ListTile(
           leading: Icon(Icons.logout, color: context.semantic.danger),
-          title: Text(l10n.commonSignOut,
-              style: TextStyle(color: context.semantic.danger)),
+          title: Text(
+            l10n.commonSignOut,
+            style: TextStyle(color: context.semantic.danger),
+          ),
           onTap: () => ref.read(authServiceProvider).signOut(),
         ),
       ],
@@ -69,9 +71,13 @@ class SettingsScreen extends ConsumerWidget {
         fileName: 'ledgerly-export.csv',
         bytes: Uint8List.fromList(utf8.encode(csv)),
       );
-      messenger.showSnackBar(SnackBar(
-        content: Text(path == null ? 'Export cancelled' : 'Exported to $path'),
-      ));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            path == null ? 'Export cancelled' : 'Exported to $path',
+          ),
+        ),
+      );
     } on Exception catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
@@ -91,12 +97,14 @@ class SettingsScreen extends ConsumerWidget {
       if (bytes == null) return;
       final service = await ref.read(importExportServiceProvider.future);
       final report = await service.importCsv(utf8.decode(bytes));
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          'Imported ${report.imported}'
-          '${report.skipped > 0 ? ', skipped ${report.skipped}' : ''}',
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Imported ${report.imported}'
+            '${report.skipped > 0 ? ', skipped ${report.skipped}' : ''}',
+          ),
         ),
-      ));
+      );
     } on Exception catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
     }

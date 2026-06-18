@@ -16,9 +16,9 @@ class _FakeAuth implements AuthService {
 
   @override
   AuthState get current => AuthState(
-        AuthStatus.signedIn,
-        AuthSession(userId: userId, email: 'test@example.com'),
-      );
+    AuthStatus.signedIn,
+    AuthSession(userId: userId, email: 'test@example.com'),
+  );
 
   @override
   Stream<AuthState> watch() => Stream.value(current);
@@ -27,9 +27,15 @@ class _FakeAuth implements AuthService {
   Stream<AuthEvent> authEvents() => const Stream.empty();
 
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
   @override
-  Future<void> signUp({required String email, required String password}) async {}
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {}
   @override
   Future<void> signOut() async {}
 }
@@ -78,16 +84,18 @@ void main() {
     expect(list.single.total.amount, Decimal.parse('12.34'));
   });
 
-  test('softDelete tombstones the row so it leaves the active stream',
-      () async {
-    await service.upsert(sample('tx-1'));
-    await service.softDelete('tx-1');
-    final list = await service.watchAll().first;
-    expect(list, isEmpty);
+  test(
+    'softDelete tombstones the row so it leaves the active stream',
+    () async {
+      await service.upsert(sample('tx-1'));
+      await service.softDelete('tx-1');
+      final list = await service.watchAll().first;
+      expect(list, isEmpty);
 
-    // The row still exists physically (tombstone), so deletion can propagate.
-    final raw = await db.select(db.transactions).get();
-    expect(raw.single.deleted, isTrue);
-    expect(raw.single.status, TxStatus.deleted);
-  });
+      // The row still exists physically (tombstone), so deletion can propagate.
+      final raw = await db.select(db.transactions).get();
+      expect(raw.single.deleted, isTrue);
+      expect(raw.single.status, TxStatus.deleted);
+    },
+  );
 }

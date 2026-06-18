@@ -8,7 +8,8 @@ import 'sync_columns.dart';
 class Merchants extends Table with SyncColumns {
   TextColumn get name => text()();
   TextColumn get defaultCategoryId => text().nullable()();
-  TextColumn get aliases =>
-      text().map(const StringListConverter()).withDefault(const Constant('[]'))();
+  TextColumn get aliases => text()
+      .map(const StringListConverter())
+      .withDefault(const Constant('[]'))();
   TextColumn get notes => text().nullable()();
 }

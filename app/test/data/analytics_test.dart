@@ -14,15 +14,23 @@ import 'package:ledgerly_app/src/domain/money.dart';
 class _FakeAuth implements AuthService {
   @override
   AuthState get current => const AuthState(
-      AuthStatus.signedIn, AuthSession(userId: 'user-1', email: 'e'));
+    AuthStatus.signedIn,
+    AuthSession(userId: 'user-1', email: 'e'),
+  );
   @override
   Stream<AuthState> watch() => Stream.value(current);
   @override
   Stream<AuthEvent> authEvents() => const Stream.empty();
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
   @override
-  Future<void> signUp({required String email, required String password}) async {}
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {}
   @override
   Future<void> signOut() async {}
 }
@@ -33,8 +41,7 @@ void main() {
   late DriftTransactionService txService;
   late DriftAnalyticsService analytics;
 
-  final marchRange =
-      DateRange(DateTime.utc(2026, 3), DateTime.utc(2026, 4));
+  final marchRange = DateRange(DateTime.utc(2026, 3), DateTime.utc(2026, 4));
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
@@ -65,29 +72,34 @@ void main() {
     );
   }
 
-  LineItemEntity line(String id, String tx, String amount, String cat,
-          String currency) =>
-      LineItemEntity(
-        id: id,
-        userId: 'user-1',
-        transactionId: tx,
-        description: cat,
-        quantity: Decimal.one,
-        lineAmount: Money(Decimal.parse(amount), currency),
-        categoryId: cat,
-        updatedAt: DateTime.utc(2026),
-      );
+  LineItemEntity line(
+    String id,
+    String tx,
+    String amount,
+    String cat,
+    String currency,
+  ) => LineItemEntity(
+    id: id,
+    userId: 'user-1',
+    transactionId: tx,
+    description: cat,
+    quantity: Decimal.one,
+    lineAmount: Money(Decimal.parse(amount), currency),
+    categoryId: cat,
+    updatedAt: DateTime.utc(2026),
+  );
 
   Future<void> seedData() async {
     // EUR split expense: groceries 30 + household 20 = 50 (base = total).
     await txService.upsertWithLines(
       header(
-          id: 'eur',
-          type: TxType.expense,
-          currency: 'EUR',
-          total: '50.00',
-          base: '50.00',
-          date: DateTime.utc(2026, 3, 10)),
+        id: 'eur',
+        type: TxType.expense,
+        currency: 'EUR',
+        total: '50.00',
+        base: '50.00',
+        date: DateTime.utc(2026, 3, 10),
+      ),
       [
         line('l1', 'eur', '30.00', 'groceries', 'EUR'),
         line('l2', 'eur', '20.00', 'household', 'EUR'),
@@ -96,38 +108,44 @@ void main() {
     // USD expense 10, base 9 (rate 0.9): one line in 'fuel'.
     await txService.upsertWithLines(
       header(
-          id: 'usd',
-          type: TxType.expense,
-          currency: 'USD',
-          total: '10.00',
-          base: '9.00',
-          date: DateTime.utc(2026, 3, 12)),
+        id: 'usd',
+        type: TxType.expense,
+        currency: 'USD',
+        total: '10.00',
+        base: '9.00',
+        date: DateTime.utc(2026, 3, 12),
+      ),
       [line('l3', 'usd', '10.00', 'fuel', 'USD')],
     );
     // EUR income (header-only).
-    await txService.upsert(header(
+    await txService.upsert(
+      header(
         id: 'inc',
         type: TxType.income,
         currency: 'EUR',
         total: '100.00',
         base: '100.00',
-        date: DateTime.utc(2026, 3, 15)));
+        date: DateTime.utc(2026, 3, 15),
+      ),
+    );
   }
 
-  test('spendByCategory attributes splits and converts foreign lines to base',
-      () async {
-    await seedData();
-    final totals = await analytics.watchSpendByCategory(marchRange).first;
-    final byId = {for (final t in totals) t.categoryId: t.total.amount};
+  test(
+    'spendByCategory attributes splits and converts foreign lines to base',
+    () async {
+      await seedData();
+      final totals = await analytics.watchSpendByCategory(marchRange).first;
+      final byId = {for (final t in totals) t.categoryId: t.total.amount};
 
-    expect(byId['groceries'], Decimal.parse('30.00'));
-    expect(byId['household'], Decimal.parse('20.00'));
-    expect(byId['fuel'], Decimal.parse('9.00')); // 10 * 9 / 10
-    // sorted largest-first
-    expect(totals.first.categoryId, 'groceries');
-    // income is not counted as spend
-    expect(byId.containsKey('salary'), isFalse);
-  });
+      expect(byId['groceries'], Decimal.parse('30.00'));
+      expect(byId['household'], Decimal.parse('20.00'));
+      expect(byId['fuel'], Decimal.parse('9.00')); // 10 * 9 / 10
+      // sorted largest-first
+      expect(totals.first.categoryId, 'groceries');
+      // income is not counted as spend
+      expect(byId.containsKey('salary'), isFalse);
+    },
+  );
 
   test('summary computes income, expense and net in base currency', () async {
     await seedData();

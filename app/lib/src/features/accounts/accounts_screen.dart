@@ -38,7 +38,9 @@ class AccountsScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final b = balances[i];
                   return ListTile(
-                    leading: CircleAvatar(child: Icon(_iconFor(b.account.kind))),
+                    leading: CircleAvatar(
+                      child: Icon(_iconFor(b.account.kind)),
+                    ),
                     title: Text(b.account.name),
                     subtitle: Text(b.account.kind.name),
                     trailing: MoneyText(
@@ -57,19 +59,22 @@ class AccountsScreen extends ConsumerWidget {
   }
 
   IconData _iconFor(AccountKind kind) => switch (kind) {
-        AccountKind.cash => Icons.payments_outlined,
-        AccountKind.bank => Icons.account_balance_outlined,
-        AccountKind.card => Icons.credit_card_outlined,
-        AccountKind.other => Icons.account_balance_wallet_outlined,
-      };
+    AccountKind.cash => Icons.payments_outlined,
+    AccountKind.bank => Icons.account_balance_outlined,
+    AccountKind.card => Icons.credit_card_outlined,
+    AccountKind.other => Icons.account_balance_wallet_outlined,
+  };
 }
 
 class _AccountSheet extends ConsumerStatefulWidget {
   const _AccountSheet({this.account});
   final AccountEntity? account;
 
-  static Future<void> show(BuildContext context, WidgetRef ref,
-      {AccountEntity? account}) {
+  static Future<void> show(
+    BuildContext context,
+    WidgetRef ref, {
+    AccountEntity? account,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -121,22 +126,24 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
       if (currency == null) throw Exception('Choose a currency');
       final opening =
           Decimal.tryParse(_openingCtrl.text.trim().replaceAll(',', '.')) ??
-              Decimal.zero;
+          Decimal.zero;
       final session = ref.read(authServiceProvider).current.session!;
       final service = await ref.read(accountServiceProvider.future);
 
       final existing = widget.account;
-      await service.upsert(AccountEntity(
-        id: existing?.id ?? const Uuid().v4(),
-        userId: session.userId,
-        name: name,
-        kind: _kind,
-        currencyCode: currency,
-        openingBalance: Money(opening, currency),
-        isArchived: existing?.isArchived ?? false,
-        updatedAt: DateTime.now().toUtc(),
-        version: existing?.version ?? 0,
-      ));
+      await service.upsert(
+        AccountEntity(
+          id: existing?.id ?? const Uuid().v4(),
+          userId: session.userId,
+          name: name,
+          kind: _kind,
+          currencyCode: currency,
+          openingBalance: Money(opening, currency),
+          isArchived: existing?.isArchived ?? false,
+          updatedAt: DateTime.now().toUtc(),
+          version: existing?.version ?? 0,
+        ),
+      );
       if (mounted) Navigator.of(context).pop();
     } on Exception catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -147,7 +154,8 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final currencies = ref.watch(currenciesProvider).valueOrNull ?? const <CurrencyEntity>[];
+    final currencies =
+        ref.watch(currenciesProvider).valueOrNull ?? const <CurrencyEntity>[];
     final insets = MediaQuery.viewInsetsOf(context);
     return Padding(
       padding: EdgeInsets.only(
@@ -160,8 +168,10 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(widget.account == null ? 'New account' : 'Edit account',
-              style: context.texts.titleLarge),
+          Text(
+            widget.account == null ? 'New account' : 'Edit account',
+            style: context.texts.titleLarge,
+          ),
           SizedBox(height: context.space.md),
           TextField(
             controller: _nameCtrl,
@@ -179,7 +189,9 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           ),
           SizedBox(height: context.space.sm),
           DropdownButtonFormField<String>(
-            value: currencies.any((c) => c.code == _currency) ? _currency : null,
+            value: currencies.any((c) => c.code == _currency)
+                ? _currency
+                : null,
             decoration: const InputDecoration(labelText: 'Currency'),
             items: [
               for (final c in currencies)
@@ -195,9 +207,12 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           ),
           if (_error != null) ...[
             SizedBox(height: context.space.sm),
-            Text(_error!,
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.semantic.danger)),
+            Text(
+              _error!,
+              style: context.texts.bodySmall?.copyWith(
+                color: context.semantic.danger,
+              ),
+            ),
           ],
           SizedBox(height: context.space.lg),
           FilledButton(

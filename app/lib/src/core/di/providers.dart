@@ -83,7 +83,9 @@ final databaseKeyProvider = StateProvider<Uint8List?>((ref) => null);
 ///
 /// Throws while locked; the router guard keeps DB-backed screens unreachable
 /// until unlocked.
-final powerSyncDatabaseProvider = FutureProvider<PowerSyncDatabase>((ref) async {
+final powerSyncDatabaseProvider = FutureProvider<PowerSyncDatabase>((
+  ref,
+) async {
   final key = ref.watch(databaseKeyProvider);
   if (key == null) {
     throw StateError('Database is locked: no encryption key available.');
@@ -103,8 +105,9 @@ final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
   return db;
 });
 
-final transactionServiceProvider =
-    FutureProvider<TransactionService>((ref) async {
+final transactionServiceProvider = FutureProvider<TransactionService>((
+  ref,
+) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftTransactionService(db, ref.watch(authServiceProvider));
 });
@@ -137,13 +140,18 @@ final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
   );
 });
 
-final importExportServiceProvider =
-    FutureProvider<ImportExportService>((ref) async {
+final importExportServiceProvider = FutureProvider<ImportExportService>((
+  ref,
+) async {
   final db = await ref.watch(appDatabaseProvider.future);
   final tx = await ref.watch(transactionServiceProvider.future);
   final currency = await ref.watch(currencyServiceProvider.future);
   return DriftImportExportService(
-      db, ref.watch(authServiceProvider), tx, currency);
+    db,
+    ref.watch(authServiceProvider),
+    tx,
+    currency,
+  );
 });
 
 /// Seeds reference + per-user default data once the store is open and the user

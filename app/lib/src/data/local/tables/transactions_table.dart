@@ -16,7 +16,8 @@ class Transactions extends Table with SyncColumns {
   TextColumn get currencyCode => text()();
   TextColumn get totalAmount => text().map(const DecimalConverter())();
   TextColumn get baseAmount => text().map(const DecimalConverter())();
-  TextColumn get exchangeRate => text().map(const DecimalConverter()).nullable()();
+  TextColumn get exchangeRate =>
+      text().map(const DecimalConverter()).nullable()();
   TextColumn get taxAmount => text().map(const DecimalConverter()).nullable()();
   TextColumn get note => text().nullable()();
   TextColumn get source => text().map(txSourceConverter)();

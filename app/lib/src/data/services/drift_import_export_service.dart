@@ -51,10 +51,11 @@ class DriftImportExportService implements ImportExportService {
 
   @override
   Future<String> exportCsv() async {
-    final txs = await (_db.select(_db.transactions)
-          ..where((t) => t.userId.equals(_userId) & t.deleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
-        .get();
+    final txs =
+        await (_db.select(_db.transactions)
+              ..where((t) => t.userId.equals(_userId) & t.deleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+            .get();
     final accountNames = {
       for (final a in await _db.watchAccounts(_userId).first) a.id: a.name,
     };
@@ -165,18 +166,26 @@ class DriftImportExportService implements ImportExportService {
   }) async {
     final head = rows.first;
     final type = enumByName(
-        TxType.values, _cell(head, idx, 'type').toLowerCase(), TxType.expense);
+      TxType.values,
+      _cell(head, idx, 'type').toLowerCase(),
+      TxType.expense,
+    );
     final date = _parseDate(_cell(head, idx, 'date'));
     final currency = _cell(head, idx, 'currency').toUpperCase();
     if (currency.isEmpty) throw const FormatException('Missing currency');
     final note = _cell(head, idx, 'note');
 
-    final kind = type == TxType.income ? CategoryKind.income : CategoryKind.expense;
+    final kind = type == TxType.income
+        ? CategoryKind.income
+        : CategoryKind.expense;
     final now = DateTime.now().toUtc();
     final txId = key.startsWith('new:') ? _uuid.v4() : key;
 
     final accountId = await _accountId(
-        _cell(head, idx, 'account'), currency, accountsByName);
+      _cell(head, idx, 'account'),
+      currency,
+      accountsByName,
+    );
     final counterName = _cell(head, idx, 'counter_account');
     final counterId = type == TxType.transfer && counterName.isNotEmpty
         ? await _accountId(counterName, currency, accountsByName)
@@ -186,36 +195,50 @@ class DriftImportExportService implements ImportExportService {
     final lines = <LineItemEntity>[];
     var i = 0;
     for (final row in rows) {
-      final amountStr = _firstNonEmpty(
-          [_cell(row, idx, 'line_amount'), _cell(row, idx, 'total')]);
+      final amountStr = _firstNonEmpty([
+        _cell(row, idx, 'line_amount'),
+        _cell(row, idx, 'total'),
+      ]);
       final amount = Decimal.tryParse(amountStr.replaceAll(',', '.'));
       if (amount == null || amount <= Decimal.zero) {
         throw FormatException('Invalid amount "$amountStr"');
       }
       if (type == TxType.transfer) continue; // transfers carry no line items
       final categoryId = await _categoryId(
-          _cell(row, idx, 'category'), kind, categoriesByName);
-      lines.add(LineItemEntity(
-        id: _uuid.v4(),
-        userId: _userId,
-        transactionId: txId,
-        description: _firstNonEmpty(
-            [_cell(row, idx, 'line_description'), note, 'Imported']),
-        quantity: Decimal.one,
-        lineAmount: Money(amount, currency),
-        categoryId: categoryId,
-        sortOrder: i++,
-        updatedAt: now,
-      ));
+        _cell(row, idx, 'category'),
+        kind,
+        categoriesByName,
+      );
+      lines.add(
+        LineItemEntity(
+          id: _uuid.v4(),
+          userId: _userId,
+          transactionId: txId,
+          description: _firstNonEmpty([
+            _cell(row, idx, 'line_description'),
+            note,
+            'Imported',
+          ]),
+          quantity: Decimal.one,
+          lineAmount: Money(amount, currency),
+          categoryId: categoryId,
+          sortOrder: i++,
+          updatedAt: now,
+        ),
+      );
     }
 
     final totalDec = type == TxType.transfer
         ? (Decimal.tryParse(_cell(head, idx, 'total').replaceAll(',', '.')) ??
-            (throw const FormatException('Transfer needs a total')))
+              (throw const FormatException('Transfer needs a total')))
         : lines.fold(Decimal.zero, (s, l) => s + l.lineAmount.amount);
     final total = Money(totalDec, currency);
-    final base = await _resolveBase(total, _cell(head, idx, 'base'), date,
-        baseCurrency);
+    final base = await _resolveBase(
+      total,
+      _cell(head, idx, 'base'),
+      date,
+      baseCurrency,
+    );
 
     final header = TransactionEntity(
       id: txId,
@@ -240,24 +263,34 @@ class DriftImportExportService implements ImportExportService {
   }
 
   Future<Money> _resolveBase(
-      Money total, String baseCell, DateTime date, String baseCurrency) async {
+    Money total,
+    String baseCell,
+    DateTime date,
+    String baseCurrency,
+  ) async {
     if (baseCell.trim().isNotEmpty) {
       final d = Decimal.tryParse(baseCell.replaceAll(',', '.'));
       if (d != null) return Money(d, baseCurrency);
     }
-    if (total.currencyCode == baseCurrency) return Money(total.amount, baseCurrency);
+    if (total.currencyCode == baseCurrency)
+      return Money(total.amount, baseCurrency);
     final conv = await _currency.toBase(total, date);
     return conv.needsRate ? Money(total.amount, baseCurrency) : conv.base!;
   }
 
   Future<String> _categoryId(
-      String name, CategoryKind kind, Map<String, db.Category> cache) async {
+    String name,
+    CategoryKind kind,
+    Map<String, db.Category> cache,
+  ) async {
     final trimmed = name.trim().isEmpty ? 'Imported' : name.trim();
     final existing = cache[trimmed.toLowerCase()];
     if (existing != null) return existing.id;
     final id = _uuid.v4();
     final now = DateTime.now().toUtc();
-    await _db.into(_db.categories).insertOnConflictUpdate(
+    await _db
+        .into(_db.categories)
+        .insertOnConflictUpdate(
           db.CategoriesCompanion.insert(
             id: id,
             userId: _userId,
@@ -266,21 +299,26 @@ class DriftImportExportService implements ImportExportService {
             kind: kind,
           ),
         );
-    final row = (await (_db.select(_db.categories)
-              ..where((c) => c.id.equals(id)))
-            .getSingle());
+    final row = (await (_db.select(
+      _db.categories,
+    )..where((c) => c.id.equals(id))).getSingle());
     cache[trimmed.toLowerCase()] = row;
     return id;
   }
 
   Future<String> _accountId(
-      String name, String currency, Map<String, db.Account> cache) async {
+    String name,
+    String currency,
+    Map<String, db.Account> cache,
+  ) async {
     final trimmed = name.trim().isEmpty ? 'Imported' : name.trim();
     final existing = cache[trimmed.toLowerCase()];
     if (existing != null) return existing.id;
     final id = _uuid.v4();
     final now = DateTime.now().toUtc();
-    await _db.into(_db.accounts).insertOnConflictUpdate(
+    await _db
+        .into(_db.accounts)
+        .insertOnConflictUpdate(
           db.AccountsCompanion.insert(
             id: id,
             userId: _userId,
@@ -291,8 +329,9 @@ class DriftImportExportService implements ImportExportService {
             openingBalance: Decimal.zero,
           ),
         );
-    final row = (await (_db.select(_db.accounts)..where((a) => a.id.equals(id)))
-        .getSingle());
+    final row = (await (_db.select(
+      _db.accounts,
+    )..where((a) => a.id.equals(id))).getSingle());
     cache[trimmed.toLowerCase()] = row;
     return id;
   }

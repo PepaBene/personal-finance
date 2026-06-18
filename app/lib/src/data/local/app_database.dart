@@ -45,10 +45,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        // Synced tables are owned by PowerSync; Drift must not (re)create them.
-        onCreate: (m) async {},
-        onUpgrade: (m, from, to) async {},
-      );
+    // Synced tables are owned by PowerSync; Drift must not (re)create them.
+    onCreate: (m) async {},
+    onUpgrade: (m, from, to) async {},
+  );
 
   // --- Transactions + line items ----------------------------------------
 
@@ -62,16 +62,19 @@ class AppDatabase extends _$AppDatabase {
 
   Stream<List<LineItem>> watchLineItems(String transactionId) {
     return (select(lineItems)
-          ..where((l) =>
-              l.transactionId.equals(transactionId) & l.deleted.equals(false))
+          ..where(
+            (l) =>
+                l.transactionId.equals(transactionId) & l.deleted.equals(false),
+          )
           ..orderBy([(l) => OrderingTerm.asc(l.sortOrder)]))
         .watch();
   }
 
   Future<List<LineItem>> getLineItems(String transactionId) {
-    return (select(lineItems)
-          ..where((l) =>
-              l.transactionId.equals(transactionId) & l.deleted.equals(false)))
+    return (select(lineItems)..where(
+          (l) =>
+              l.transactionId.equals(transactionId) & l.deleted.equals(false),
+        ))
         .get();
   }
 
@@ -135,10 +138,11 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> countCategories(String userId) async {
     final count = countAll();
-    final row = await (selectOnly(categories)
-          ..addColumns([count])
-          ..where(categories.userId.equals(userId)))
-        .getSingle();
+    final row =
+        await (selectOnly(categories)
+              ..addColumns([count])
+              ..where(categories.userId.equals(userId)))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 
@@ -150,12 +154,14 @@ class AppDatabase extends _$AppDatabase {
     DateTime onOrBefore,
   ) {
     return (select(exchangeRates)
-          ..where((r) =>
-              r.userId.equals(userId) &
-              r.fromCode.equals(fromCode) &
-              r.toCode.equals(toCode) &
-              r.deleted.equals(false) &
-              r.date.isSmallerOrEqualValue(onOrBefore))
+          ..where(
+            (r) =>
+                r.userId.equals(userId) &
+                r.fromCode.equals(fromCode) &
+                r.toCode.equals(toCode) &
+                r.deleted.equals(false) &
+                r.date.isSmallerOrEqualValue(onOrBefore),
+          )
           ..orderBy([(r) => OrderingTerm.desc(r.date)])
           ..limit(1))
         .getSingleOrNull();

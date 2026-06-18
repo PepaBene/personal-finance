@@ -73,14 +73,12 @@ class _TransactionTile extends StatelessWidget {
       ),
       onDismissed: (_) {
         ref.read(transactionsControllerProvider).delete(tx.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
       },
       child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(_iconFor(tx), size: 20),
-        ),
+        leading: CircleAvatar(child: Icon(_iconFor(tx), size: 20)),
         title: Text(tx.note?.isNotEmpty == true ? tx.note! : dateText),
         subtitle: Text(dateText),
         trailing: MoneyText(
@@ -97,10 +95,10 @@ class _TransactionTile extends StatelessWidget {
   }
 
   IconData _iconFor(TransactionEntity tx) => switch (tx.direction) {
-        MoneyDirection.inflow => Icons.south_west,
-        MoneyDirection.outflow => Icons.north_east,
-        MoneyDirection.neutral => Icons.swap_horiz,
-      };
+    MoneyDirection.inflow => Icons.south_west,
+    MoneyDirection.outflow => Icons.north_east,
+    MoneyDirection.neutral => Icons.swap_horiz,
+  };
 }
 
 class _Empty extends StatelessWidget {
@@ -115,16 +113,20 @@ class _Empty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 56, color: context.colors.onSurfaceVariant),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 56,
+              color: context.colors.onSurfaceVariant,
+            ),
             SizedBox(height: context.space.md),
             Text(l10n.transactionsEmptyTitle, style: context.texts.titleLarge),
             SizedBox(height: context.space.xs),
             Text(
               l10n.transactionsEmptyBody,
               textAlign: TextAlign.center,
-              style: context.texts.bodyMedium
-                  ?.copyWith(color: context.colors.onSurfaceVariant),
+              style: context.texts.bodyMedium?.copyWith(
+                color: context.colors.onSurfaceVariant,
+              ),
             ),
           ],
         ),

@@ -113,10 +113,12 @@ class _TransactionEditorScreenState
         if (_type != TxType.transfer && lines.length > 1) {
           _split = true;
           for (final l in lines) {
-            _lines.add(_LineDraft(id: l.id, existing: true)
-              ..descCtrl.text = l.description
-              ..amountCtrl.text = l.lineAmount.amount.toString()
-              ..categoryId = l.categoryId);
+            _lines.add(
+              _LineDraft(id: l.id, existing: true)
+                ..descCtrl.text = l.description
+                ..amountCtrl.text = l.lineAmount.amount.toString()
+                ..categoryId = l.categoryId,
+            );
           }
         } else {
           _amountCtrl.text = header.total.amount.toString();
@@ -135,7 +137,8 @@ class _TransactionEditorScreenState
     final accounts = ref.watch(accountsProvider).valueOrNull ?? const [];
     final currencies = ref.watch(currenciesProvider).valueOrNull ?? const [];
     final categories =
-        ref.watch(categoriesFlatProvider).valueOrNull ?? const <CategoryEntity>[];
+        ref.watch(categoriesFlatProvider).valueOrNull ??
+        const <CategoryEntity>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -173,9 +176,12 @@ class _TransactionEditorScreenState
           ),
           if (_error != null) ...[
             SizedBox(height: context.space.sm),
-            Text(_error!,
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.semantic.danger)),
+            Text(
+              _error!,
+              style: context.texts.bodySmall?.copyWith(
+                color: context.semantic.danger,
+              ),
+            ),
           ],
         ],
       ),
@@ -219,25 +225,33 @@ class _TransactionEditorScreenState
   }
 
   List<Widget> _accountFields(
-      BuildContext context, List<AccountEntity> accounts) {
+    BuildContext context,
+    List<AccountEntity> accounts,
+  ) {
     if (_type == TxType.transfer) {
       return [
-        _accountDropdown(accounts,
-            label: 'From account',
-            value: _accountId,
-            onChanged: (v) => setState(() => _accountId = v)),
+        _accountDropdown(
+          accounts,
+          label: 'From account',
+          value: _accountId,
+          onChanged: (v) => setState(() => _accountId = v),
+        ),
         SizedBox(height: context.space.sm),
-        _accountDropdown(accounts,
-            label: 'To account',
-            value: _counterAccountId,
-            onChanged: (v) => setState(() => _counterAccountId = v)),
+        _accountDropdown(
+          accounts,
+          label: 'To account',
+          value: _counterAccountId,
+          onChanged: (v) => setState(() => _counterAccountId = v),
+        ),
       ];
     }
     return [
-      _accountDropdown(accounts,
-          label: 'Account',
-          value: _accountId,
-          onChanged: (v) => setState(() => _accountId = v)),
+      _accountDropdown(
+        accounts,
+        label: 'Account',
+        value: _accountId,
+        onChanged: (v) => setState(() => _accountId = v),
+      ),
     ];
   }
 
@@ -254,7 +268,9 @@ class _TransactionEditorScreenState
       items: [
         for (final a in accounts)
           DropdownMenuItem(
-              value: a.id, child: Text('${a.name} (${a.currencyCode})')),
+            value: a.id,
+            child: Text('${a.name} (${a.currencyCode})'),
+          ),
       ],
       onChanged: onChanged,
     );
@@ -370,8 +386,9 @@ class _TransactionEditorScreenState
           children: [
             Text('Total', style: context.texts.titleSmall),
             MoneyText(
-              formattedAmount:
-                  MoneyFormatter(locale).format(Money(sum, _currency)),
+              formattedAmount: MoneyFormatter(
+                locale,
+              ).format(Money(sum, _currency)),
             ),
           ],
         ),
@@ -380,7 +397,10 @@ class _TransactionEditorScreenState
   }
 
   Widget _lineRow(
-      BuildContext context, _LineDraft line, List<CategoryEntity> categories) {
+    BuildContext context,
+    _LineDraft line,
+    List<CategoryEntity> categories,
+  ) {
     final selected = categoryById(categories, line.categoryId);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: context.space.xxs),
@@ -401,8 +421,9 @@ class _TransactionEditorScreenState
                 flex: 2,
                 child: TextField(
                   controller: line.amountCtrl,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'Amount'),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -421,12 +442,17 @@ class _TransactionEditorScreenState
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: () async {
-                final id = await showCategoryPicker(context, kind: _categoryKind);
+                final id = await showCategoryPicker(
+                  context,
+                  kind: _categoryKind,
+                );
                 if (id != null) setState(() => line.categoryId = id);
               },
-              icon: Icon(selected == null
-                  ? Icons.label_outline
-                  : categoryIcon(selected.icon)),
+              icon: Icon(
+                selected == null
+                    ? Icons.label_outline
+                    : categoryIcon(selected.icon),
+              ),
               label: Text(selected?.name ?? 'Category'),
             ),
           ),
@@ -497,7 +523,8 @@ class _TransactionEditorScreenState
     final List<LineItemEntity> lines;
 
     if (_type == TxType.transfer) {
-      totalDec = _parse(_amountCtrl.text) ??
+      totalDec =
+          _parse(_amountCtrl.text) ??
           (throw const _ValidationError('Enter an amount.'));
       lines = const [];
     } else if (_split) {
@@ -514,34 +541,41 @@ class _TransactionEditorScreenState
         if (l.categoryId == null) {
           throw const _ValidationError('Each item needs a category.');
         }
-        built.add(LineItemEntity(
-          id: l.id,
-          userId: session.userId,
-          transactionId: txId,
-          description:
-              l.descCtrl.text.trim().isEmpty ? 'Item' : l.descCtrl.text.trim(),
-          quantity: Decimal.one,
-          lineAmount: Money(amt, _currency),
-          categoryId: l.categoryId!,
-          sortOrder: i++,
-          updatedAt: now,
-        ));
+        built.add(
+          LineItemEntity(
+            id: l.id,
+            userId: session.userId,
+            transactionId: txId,
+            description: l.descCtrl.text.trim().isEmpty
+                ? 'Item'
+                : l.descCtrl.text.trim(),
+            quantity: Decimal.one,
+            lineAmount: Money(amt, _currency),
+            categoryId: l.categoryId!,
+            sortOrder: i++,
+            updatedAt: now,
+          ),
+        );
       }
       lines = built;
       totalDec = built.fold(Decimal.zero, (s, l) => s + l.lineAmount.amount);
     } else {
-      totalDec = _parse(_amountCtrl.text) ??
+      totalDec =
+          _parse(_amountCtrl.text) ??
           (throw const _ValidationError('Enter an amount.'));
       if (_quickCategoryId == null) {
         throw const _ValidationError('Choose a category.');
       }
       lines = [
         LineItemEntity(
-          id: _originalLineIds.length == 1 ? _originalLineIds.first : _uuid.v4(),
+          id: _originalLineIds.length == 1
+              ? _originalLineIds.first
+              : _uuid.v4(),
           userId: session.userId,
           transactionId: txId,
-          description:
-              _noteCtrl.text.trim().isEmpty ? 'Item' : _noteCtrl.text.trim(),
+          description: _noteCtrl.text.trim().isEmpty
+              ? 'Item'
+              : _noteCtrl.text.trim(),
           quantity: Decimal.one,
           lineAmount: Money(totalDec, _currency),
           categoryId: _quickCategoryId!,
@@ -554,8 +588,9 @@ class _TransactionEditorScreenState
     final base = await _resolveBase(total, currencySvc);
 
     final finalLineIds = lines.map((l) => l.id).toSet();
-    final removed =
-        _originalLineIds.where((id) => !finalLineIds.contains(id)).toList();
+    final removed = _originalLineIds
+        .where((id) => !finalLineIds.contains(id))
+        .toList();
 
     final header = TransactionEntity(
       id: txId,
@@ -582,7 +617,8 @@ class _TransactionEditorScreenState
       final rate = _parse(_rateCtrl.text);
       if (rate == null) {
         throw _ValidationError(
-            'Enter an exchange rate for $_currency → $_baseCurrency.');
+          'Enter an exchange rate for $_currency → $_baseCurrency.',
+        );
       }
       await currencySvc.upsertRate(
         fromCode: _currency,

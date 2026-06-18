@@ -29,7 +29,8 @@ class _CategoryPickerSheet extends ConsumerStatefulWidget {
   final CategoryKind kind;
 
   @override
-  ConsumerState<_CategoryPickerSheet> createState() => _CategoryPickerSheetState();
+  ConsumerState<_CategoryPickerSheet> createState() =>
+      _CategoryPickerSheetState();
 }
 
 class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
@@ -97,8 +98,11 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
       contentPadding: EdgeInsets.only(left: context.space.md * indent),
       leading: CircleAvatar(
         backgroundColor: categoryColor(c.colorHex).withValues(alpha: 0.2),
-        child: Icon(categoryIcon(c.icon),
-            size: 20, color: categoryColor(c.colorHex)),
+        child: Icon(
+          categoryIcon(c.icon),
+          size: 20,
+          color: categoryColor(c.colorHex),
+        ),
       ),
       title: Text(c.name),
       onTap: () => Navigator.of(context).pop(c.id),

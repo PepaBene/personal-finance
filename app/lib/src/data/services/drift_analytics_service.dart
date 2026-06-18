@@ -30,9 +30,9 @@ class DriftAnalyticsService implements AnalyticsService {
   }
 
   Future<String> _baseCurrency() async {
-    final row = await (_db.select(_db.settings)
-          ..where((s) => s.id.equals('$_userId::base_currency')))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.settings,
+    )..where((s) => s.id.equals('$_userId::base_currency'))).getSingleOrNull();
     return row?.value ?? _defaultBaseCurrency;
   }
 
@@ -41,17 +41,19 @@ class DriftAnalyticsService implements AnalyticsService {
   @override
   Stream<List<CategoryTotal>> watchSpendByCategory(DateRange range) async* {
     final base = await _baseCurrency();
-    final query = _db.select(_db.lineItems).join([
-      innerJoin(
-        _db.transactions,
-        _db.transactions.id.equalsExp(_db.lineItems.transactionId),
-      ),
-    ])
-      ..where(_db.lineItems.deleted.equals(false) &
-          _db.transactions.deleted.equals(false) &
-          _db.transactions.status.equalsValue(TxStatus.active) &
-          _db.transactions.type.equalsValue(TxType.expense) &
-          _inRange(_db.transactions.date, range));
+    final query =
+        _db.select(_db.lineItems).join([
+          innerJoin(
+            _db.transactions,
+            _db.transactions.id.equalsExp(_db.lineItems.transactionId),
+          ),
+        ])..where(
+          _db.lineItems.deleted.equals(false) &
+              _db.transactions.deleted.equals(false) &
+              _db.transactions.status.equalsValue(TxStatus.active) &
+              _db.transactions.type.equalsValue(TxType.expense) &
+              _inRange(_db.transactions.date, range),
+        );
 
     yield* query.watch().map((rows) {
       final acc = <String, Rational>{};
@@ -63,13 +65,19 @@ class DriftAnalyticsService implements AnalyticsService {
         final share = (line.lineAmount * tx.baseAmount) / tx.totalAmount;
         acc[line.categoryId] = (acc[line.categoryId] ?? Rational.zero) + share;
       }
-      final totals = acc.entries
-          .map((e) => CategoryTotal(
-                categoryId: e.key,
-                total: Money(e.value.toDecimal(scaleOnInfinitePrecision: 2), base),
-              ))
-          .toList()
-        ..sort((a, b) => b.total.amount.compareTo(a.total.amount));
+      final totals =
+          acc.entries
+              .map(
+                (e) => CategoryTotal(
+                  categoryId: e.key,
+                  total: Money(
+                    e.value.toDecimal(scaleOnInfinitePrecision: 2),
+                    base,
+                  ),
+                ),
+              )
+              .toList()
+            ..sort((a, b) => b.total.amount.compareTo(a.total.amount));
       return totals;
     });
   }
@@ -92,11 +100,13 @@ class DriftAnalyticsService implements AnalyticsService {
       }
       final buckets = {...inflow.keys, ...outflow.keys}.toList()..sort();
       return buckets
-          .map((b) => PeriodPoint(
-                periodStart: b,
-                inflow: Money(inflow[b] ?? Decimal.zero, base),
-                outflow: Money(outflow[b] ?? Decimal.zero, base),
-              ))
+          .map(
+            (b) => PeriodPoint(
+              periodStart: b,
+              inflow: Money(inflow[b] ?? Decimal.zero, base),
+              outflow: Money(outflow[b] ?? Decimal.zero, base),
+            ),
+          )
           .toList();
     });
   }
@@ -130,32 +140,39 @@ class DriftAnalyticsService implements AnalyticsService {
     String categoryId,
     DateRange range,
   ) async {
-    final ids = await (_db.selectOnly(_db.lineItems, distinct: true)
-          ..addColumns([_db.lineItems.transactionId])
-          ..where(_db.lineItems.categoryId.equals(categoryId) &
-              _db.lineItems.deleted.equals(false)))
-        .map((r) => r.read(_db.lineItems.transactionId)!)
-        .get();
+    final ids =
+        await (_db.selectOnly(_db.lineItems, distinct: true)
+              ..addColumns([_db.lineItems.transactionId])
+              ..where(
+                _db.lineItems.categoryId.equals(categoryId) &
+                    _db.lineItems.deleted.equals(false),
+              ))
+            .map((r) => r.read(_db.lineItems.transactionId)!)
+            .get();
     if (ids.isEmpty) return const [];
 
-    final rows = await (_db.select(_db.transactions)
-          ..where((t) =>
-              t.id.isIn(ids) &
-              t.deleted.equals(false) &
-              _inRange(t.date, range))
-          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
-        .get();
+    final rows =
+        await (_db.select(_db.transactions)
+              ..where(
+                (t) =>
+                    t.id.isIn(ids) &
+                    t.deleted.equals(false) &
+                    _inRange(t.date, range),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+            .get();
     return rows.map(_toEntity).toList();
   }
 
   // --- helpers -----------------------------------------------------------
 
   Selectable<db.Transaction> _headerQuery(DateRange range) {
-    return _db.select(_db.transactions)
-      ..where((t) =>
+    return _db.select(_db.transactions)..where(
+      (t) =>
           t.deleted.equals(false) &
           t.status.equalsValue(TxStatus.active) &
-          _inRange(t.date, range));
+          _inRange(t.date, range),
+    );
   }
 
   Expression<bool> _inRange(Expression<DateTime> col, DateRange range) {
@@ -164,23 +181,23 @@ class DriftAnalyticsService implements AnalyticsService {
   }
 
   TransactionEntity _toEntity(db.Transaction r) => TransactionEntity(
-        id: r.id,
-        userId: r.userId,
-        type: r.type,
-        date: r.date,
-        accountId: r.accountId,
-        merchantId: r.merchantId,
-        counterAccountId: r.counterAccountId,
-        total: Money(r.totalAmount, r.currencyCode),
-        base: Money(r.baseAmount, r.currencyCode),
-        note: r.note,
-        source: r.source,
-        status: r.status,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        deleted: r.deleted,
-        version: r.version,
-      );
+    id: r.id,
+    userId: r.userId,
+    type: r.type,
+    date: r.date,
+    accountId: r.accountId,
+    merchantId: r.merchantId,
+    counterAccountId: r.counterAccountId,
+    total: Money(r.totalAmount, r.currencyCode),
+    base: Money(r.baseAmount, r.currencyCode),
+    note: r.note,
+    source: r.source,
+    status: r.status,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    deleted: r.deleted,
+    version: r.version,
+  );
 }
 
 /// Start of the period bucket containing [d] (UTC), Monday-based weeks.
@@ -188,7 +205,9 @@ DateTime periodStart(DateTime d, Grain grain) {
   final day = DateTime.utc(d.year, d.month, d.day);
   return switch (grain) {
     Grain.day => day,
-    Grain.week => day.subtract(Duration(days: (day.weekday - DateTime.monday) % 7)),
+    Grain.week => day.subtract(
+      Duration(days: (day.weekday - DateTime.monday) % 7),
+    ),
     Grain.month => DateTime.utc(d.year, d.month),
     Grain.year => DateTime.utc(d.year),
   };

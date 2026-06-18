@@ -77,15 +77,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   controller: _password,
                   obscureText: true,
                   autofillHints: const [AutofillHints.password],
-                  decoration: InputDecoration(labelText: l10n.authPasswordLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.authPasswordLabel,
+                  ),
                   onSubmitted: (_) => _busy ? null : _submit(),
                 ),
                 if (_error != null) ...[
                   SizedBox(height: context.space.sm),
                   Text(
                     _error!,
-                    style: context.texts.bodySmall
-                        ?.copyWith(color: context.semantic.danger),
+                    style: context.texts.bodySmall?.copyWith(
+                      color: context.semantic.danger,
+                    ),
                   ),
                 ],
                 SizedBox(height: context.space.lg),
@@ -97,15 +100,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           width: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(_signUp
-                          ? l10n.authSignUpAction
-                          : l10n.authSignInAction),
+                      : Text(
+                          _signUp
+                              ? l10n.authSignUpAction
+                              : l10n.authSignInAction,
+                        ),
                 ),
                 TextButton(
-                  onPressed: _busy ? null : () => setState(() => _signUp = !_signUp),
-                  child: Text(_signUp
-                      ? l10n.authToggleToSignIn
-                      : l10n.authToggleToSignUp),
+                  onPressed: _busy
+                      ? null
+                      : () => setState(() => _signUp = !_signUp),
+                  child: Text(
+                    _signUp ? l10n.authToggleToSignIn : l10n.authToggleToSignUp,
+                  ),
                 ),
               ],
             ),

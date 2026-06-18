@@ -22,8 +22,16 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final destinations = <_Dest>[
-      _Dest(Routes.transactions, Icons.receipt_long_outlined, l10n.navTransactions),
-      _Dest(Routes.accounts, Icons.account_balance_wallet_outlined, l10n.navAccounts),
+      _Dest(
+        Routes.transactions,
+        Icons.receipt_long_outlined,
+        l10n.navTransactions,
+      ),
+      _Dest(
+        Routes.accounts,
+        Icons.account_balance_wallet_outlined,
+        l10n.navAccounts,
+      ),
       _Dest(Routes.dashboard, Icons.dashboard_outlined, l10n.navDashboard),
       _Dest(Routes.settings, Icons.settings_outlined, l10n.navSettings),
     ];
@@ -107,10 +115,22 @@ class _SyncStatus extends ConsumerWidget {
     final status = ref.watch(syncStatusProvider).valueOrNull;
     final connectivity = status?.connectivity ?? SyncConnectivity.offline;
     final (state, label) = switch (connectivity) {
-      SyncConnectivity.connected => (SyncIndicatorState.synced, l10n.syncStatusSynced),
-      SyncConnectivity.syncing => (SyncIndicatorState.syncing, l10n.syncStatusSyncing),
-      SyncConnectivity.offline => (SyncIndicatorState.offline, l10n.syncStatusOffline),
-      SyncConnectivity.error => (SyncIndicatorState.error, l10n.syncStatusError),
+      SyncConnectivity.connected => (
+        SyncIndicatorState.synced,
+        l10n.syncStatusSynced,
+      ),
+      SyncConnectivity.syncing => (
+        SyncIndicatorState.syncing,
+        l10n.syncStatusSyncing,
+      ),
+      SyncConnectivity.offline => (
+        SyncIndicatorState.offline,
+        l10n.syncStatusOffline,
+      ),
+      SyncConnectivity.error => (
+        SyncIndicatorState.error,
+        l10n.syncStatusError,
+      ),
     };
     return SyncStatusIndicator(state: state, label: label);
   }

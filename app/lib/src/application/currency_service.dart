@@ -35,9 +35,9 @@ class ConversionResult {
   /// No rate exists for the date and the caller must prompt for one
   /// (offline-safe manual entry — docs/04 §3.3 step 3).
   const ConversionResult.rateMissing()
-      : base = null,
-        rate = null,
-        needsRate = true;
+    : base = null,
+      rate = null,
+      needsRate = true;
 
   /// Converted amount in the base currency (null when [needsRate]).
   final Money? base;

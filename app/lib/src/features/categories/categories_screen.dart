@@ -10,14 +10,36 @@ import '../transactions/capture_providers.dart';
 import 'category_visuals.dart';
 
 const _colorOptions = [
-  '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948',
-  '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC', '#2E91E5', '#1CA71C',
+  '#4E79A7',
+  '#F28E2B',
+  '#E15759',
+  '#76B7B2',
+  '#59A14F',
+  '#EDC948',
+  '#B07AA1',
+  '#FF9DA7',
+  '#9C755F',
+  '#BAB0AC',
+  '#2E91E5',
+  '#1CA71C',
 ];
 const _iconOptions = [
-  'category', 'restaurant', 'home', 'directions_car', 'health_and_safety',
-  'sports_esports', 'shopping_bag', 'bolt', 'account_balance', 'payments',
-  'local_grocery_store', 'lunch_dining', 'apartment', 'local_gas_station',
-  'subscriptions', 'wallet',
+  'category',
+  'restaurant',
+  'home',
+  'directions_car',
+  'health_and_safety',
+  'sports_esports',
+  'shopping_bag',
+  'bolt',
+  'account_balance',
+  'payments',
+  'local_grocery_store',
+  'lunch_dining',
+  'apartment',
+  'local_gas_station',
+  'subscriptions',
+  'wallet',
 ];
 
 /// Manage categories (FR-CAT-02/03): create, rename, recolor, re-icon, nest one
@@ -52,16 +74,24 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _row(BuildContext context, WidgetRef ref, CategoryEntity c,
-      {required int indent}) {
+  Widget _row(
+    BuildContext context,
+    WidgetRef ref,
+    CategoryEntity c, {
+    required int indent,
+  }) {
     return ListTile(
       contentPadding: EdgeInsets.only(
-          left: context.space.md + context.space.lg * indent,
-          right: context.space.md),
+        left: context.space.md + context.space.lg * indent,
+        right: context.space.md,
+      ),
       leading: CircleAvatar(
         backgroundColor: categoryColor(c.colorHex).withValues(alpha: 0.2),
-        child: Icon(categoryIcon(c.icon),
-            size: 20, color: categoryColor(c.colorHex)),
+        child: Icon(
+          categoryIcon(c.icon),
+          size: 20,
+          color: categoryColor(c.colorHex),
+        ),
       ),
       title: Text(c.name),
       subtitle: Text(c.kind.name + (c.isArchived ? ' · archived' : '')),
@@ -74,8 +104,11 @@ class _CategorySheet extends ConsumerStatefulWidget {
   const _CategorySheet({this.category});
   final CategoryEntity? category;
 
-  static Future<void> show(BuildContext context, WidgetRef ref,
-      {CategoryEntity? category}) {
+  static Future<void> show(
+    BuildContext context,
+    WidgetRef ref, {
+    CategoryEntity? category,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -129,19 +162,21 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
       final session = ref.read(authServiceProvider).current.session!;
       final service = await ref.read(categoryServiceProvider.future);
       final existing = widget.category;
-      await service.upsert(CategoryEntity(
-        id: existing?.id ?? const Uuid().v4(),
-        userId: session.userId,
-        name: name,
-        kind: _kind,
-        parentId: _parentId,
-        icon: _icon,
-        colorHex: _color,
-        isArchived: _archived,
-        sortOrder: existing?.sortOrder ?? 0,
-        updatedAt: DateTime.now().toUtc(),
-        version: existing?.version ?? 0,
-      ));
+      await service.upsert(
+        CategoryEntity(
+          id: existing?.id ?? const Uuid().v4(),
+          userId: session.userId,
+          name: name,
+          kind: _kind,
+          parentId: _parentId,
+          icon: _icon,
+          colorHex: _color,
+          isArchived: _archived,
+          sortOrder: existing?.sortOrder ?? 0,
+          updatedAt: DateTime.now().toUtc(),
+          version: existing?.version ?? 0,
+        ),
+      );
       if (mounted) Navigator.of(context).pop();
     } on Exception catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -154,11 +189,13 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
   Widget build(BuildContext context) {
     final all = ref.watch(categoriesFlatProvider).valueOrNull ?? const [];
     final parents = all
-        .where((c) =>
-            c.kind == _kind &&
-            c.isRoot &&
-            !c.isArchived &&
-            c.id != widget.category?.id)
+        .where(
+          (c) =>
+              c.kind == _kind &&
+              c.isRoot &&
+              !c.isArchived &&
+              c.id != widget.category?.id,
+        )
         .toList();
     final insets = MediaQuery.viewInsetsOf(context);
 
@@ -174,8 +211,10 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.category == null ? 'New category' : 'Edit category',
-                style: context.texts.titleLarge),
+            Text(
+              widget.category == null ? 'New category' : 'Edit category',
+              style: context.texts.titleLarge,
+            ),
             SizedBox(height: context.space.md),
             TextField(
               controller: _nameCtrl,
@@ -184,8 +223,14 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             SizedBox(height: context.space.sm),
             SegmentedButton<CategoryKind>(
               segments: const [
-                ButtonSegment(value: CategoryKind.expense, label: Text('Expense')),
-                ButtonSegment(value: CategoryKind.income, label: Text('Income')),
+                ButtonSegment(
+                  value: CategoryKind.expense,
+                  label: Text('Expense'),
+                ),
+                ButtonSegment(
+                  value: CategoryKind.income,
+                  label: Text('Income'),
+                ),
               ],
               selected: {_kind},
               onSelectionChanged: (s) => setState(() {
@@ -199,7 +244,9 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               decoration: const InputDecoration(labelText: 'Parent (optional)'),
               items: [
                 const DropdownMenuItem<String?>(
-                    value: null, child: Text('None (top level)')),
+                  value: null,
+                  child: Text('None (top level)'),
+                ),
                 for (final p in parents)
                   DropdownMenuItem<String?>(value: p.id, child: Text(p.name)),
               ],
@@ -218,7 +265,11 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
                       backgroundColor: categoryColor(hex),
                       radius: 16,
                       child: _color == hex
-                          ? const Icon(Icons.check, size: 16, color: Colors.white)
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                   ),
@@ -249,9 +300,12 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             ],
             if (_error != null) ...[
               SizedBox(height: context.space.sm),
-              Text(_error!,
-                  style: context.texts.bodySmall
-                      ?.copyWith(color: context.semantic.danger)),
+              Text(
+                _error!,
+                style: context.texts.bodySmall?.copyWith(
+                  color: context.semantic.danger,
+                ),
+              ),
             ],
             SizedBox(height: context.space.lg),
             FilledButton(

@@ -15,22 +15,34 @@ import 'package:ledgerly_app/src/domain/money.dart';
 class _FakeAuth implements AuthService {
   @override
   AuthState get current => const AuthState(
-      AuthStatus.signedIn, AuthSession(userId: 'user-1', email: 'e'));
+    AuthStatus.signedIn,
+    AuthSession(userId: 'user-1', email: 'e'),
+  );
   @override
   Stream<AuthState> watch() => Stream.value(current);
   @override
   Stream<AuthEvent> authEvents() => const Stream.empty();
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
   @override
-  Future<void> signUp({required String email, required String password}) async {}
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {}
   @override
   Future<void> signOut() async {}
 }
 
 DriftImportExportService _ie(AppDatabase db, AuthService auth) =>
-    DriftImportExportService(db, auth, DriftTransactionService(db, auth),
-        DriftCurrencyService(db, auth, 'EUR'));
+    DriftImportExportService(
+      db,
+      auth,
+      DriftTransactionService(db, auth),
+      DriftCurrencyService(db, auth, 'EUR'),
+    );
 
 void main() {
   final auth = _FakeAuth();
@@ -102,8 +114,10 @@ void main() {
 
     final lines = await dst.getLineItems('tx-1');
     expect(lines, hasLength(2));
-    expect(lines.map((l) => l.lineAmount).toSet(),
-        {Decimal.parse('30.00'), Decimal.parse('20.00')});
+    expect(lines.map((l) => l.lineAmount).toSet(), {
+      Decimal.parse('30.00'),
+      Decimal.parse('20.00'),
+    });
 
     // Categories were re-created by name.
     final dstCats = await dst.watchCategories('user-1').first;
@@ -116,7 +130,8 @@ void main() {
     addTearDown(db.close);
     await DatabaseSeeder(db).seed(userId: 'user-1', baseCurrency: 'EUR');
 
-    const csv = 'transaction_id,date,type,account,counter_account,currency,'
+    const csv =
+        'transaction_id,date,type,account,counter_account,currency,'
         'total,base,note,line_description,line_amount,category\r\n'
         'tx-9,2026-03-10,expense,Cash,,EUR,40.00,40.00,,Stuff,40.00,Groceries';
 

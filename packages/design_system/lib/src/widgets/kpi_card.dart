@@ -37,8 +37,9 @@ class KpiCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     label,
-                    style: context.texts.labelMedium
-                        ?.copyWith(color: context.colors.onSurfaceVariant),
+                    style: context.texts.labelMedium?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

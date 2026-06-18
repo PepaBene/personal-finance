@@ -22,9 +22,15 @@ class SyncStatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = context.semantic;
     final (icon, color) = switch (state) {
-      SyncIndicatorState.synced => (Icons.cloud_done_outlined, semantic.success),
+      SyncIndicatorState.synced => (
+        Icons.cloud_done_outlined,
+        semantic.success,
+      ),
       SyncIndicatorState.syncing => (Icons.sync, semantic.info),
-      SyncIndicatorState.offline => (Icons.cloud_off_outlined, context.colors.onSurfaceVariant),
+      SyncIndicatorState.offline => (
+        Icons.cloud_off_outlined,
+        context.colors.onSurfaceVariant,
+      ),
       SyncIndicatorState.error => (Icons.error_outline, semantic.danger),
     };
 
@@ -44,7 +50,10 @@ class SyncStatusIndicator extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: color),
               SizedBox(width: context.space.xs),
-              Text(label, style: context.texts.labelMedium?.copyWith(color: color)),
+              Text(
+                label,
+                style: context.texts.labelMedium?.copyWith(color: color),
+              ),
             ],
           ),
         ),

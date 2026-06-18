@@ -24,7 +24,8 @@ class DashboardScreen extends ConsumerWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final fmt = MoneyFormatter(locale);
     final categories =
-        ref.watch(categoriesFlatProvider).valueOrNull ?? const <CategoryEntity>[];
+        ref.watch(categoriesFlatProvider).valueOrNull ??
+        const <CategoryEntity>[];
 
     return ListView(
       padding: EdgeInsets.all(context.space.md),
@@ -131,29 +132,32 @@ class DashboardScreen extends ConsumerWidget {
         for (var i = 0; i < totals.length; i++) {
           final t = totals[i];
           final cat = categoryById(categories, t.categoryId);
-          sections.add(PieChartSectionData(
-            value: t.total.amount.toDouble(),
-            color: cat == null
-                ? context.categoryColors.forIndex(i)
-                : categoryColor(cat.colorHex),
-            radius: 56,
-            showTitle: false,
-          ));
+          sections.add(
+            PieChartSectionData(
+              value: t.total.amount.toDouble(),
+              color: cat == null
+                  ? context.categoryColors.forIndex(i)
+                  : categoryColor(cat.colorHex),
+              radius: 56,
+              showTitle: false,
+            ),
+          );
         }
         final top = totals.take(6).toList();
         return Column(
           children: [
             SizedBox(
               height: 180,
-              child: PieChart(PieChartData(
-                sections: sections,
-                sectionsSpace: 2,
-                centerSpaceRadius: 36,
-              )),
+              child: PieChart(
+                PieChartData(
+                  sections: sections,
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 36,
+                ),
+              ),
             ),
             SizedBox(height: context.space.sm),
-            for (final t in top)
-              _legendRow(context, ref, fmt, categories, t),
+            for (final t in top) _legendRow(context, ref, fmt, categories, t),
           ],
         );
       },
@@ -169,8 +173,9 @@ class DashboardScreen extends ConsumerWidget {
   ) {
     final cat = categoryById(categories, t.categoryId);
     final name = cat?.name ?? 'Uncategorized';
-    final color =
-        cat == null ? context.colors.outline : categoryColor(cat.colorHex);
+    final color = cat == null
+        ? context.colors.outline
+        : categoryColor(cat.colorHex);
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
@@ -194,24 +199,26 @@ class DashboardScreen extends ConsumerWidget {
         ];
         return SizedBox(
           height: 180,
-          child: LineChart(LineChartData(
-            titlesData: const FlTitlesData(show: false),
-            gridData: const FlGridData(show: false),
-            borderData: FlBorderData(show: false),
-            minY: 0,
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: true,
-                color: context.semantic.expense,
-                dotData: const FlDotData(show: false),
-                belowBarData: BarAreaData(
-                  show: true,
-                  color: context.semantic.expense.withValues(alpha: 0.12),
+          child: LineChart(
+            LineChartData(
+              titlesData: const FlTitlesData(show: false),
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              minY: 0,
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  color: context.semantic.expense,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: context.semantic.expense.withValues(alpha: 0.12),
+                  ),
                 ),
-              ),
-            ],
-          )),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -226,27 +233,32 @@ class DashboardScreen extends ConsumerWidget {
         if (points.isEmpty) return const _EmptyChart('No data in this period');
         final groups = <BarChartGroupData>[
           for (var i = 0; i < points.length; i++)
-            BarChartGroupData(x: i, barRods: [
-              BarChartRodData(
-                toY: points[i].inflow.amount.toDouble(),
-                color: context.semantic.income,
-                width: 6,
-              ),
-              BarChartRodData(
-                toY: points[i].outflow.amount.toDouble(),
-                color: context.semantic.expense,
-                width: 6,
-              ),
-            ]),
+            BarChartGroupData(
+              x: i,
+              barRods: [
+                BarChartRodData(
+                  toY: points[i].inflow.amount.toDouble(),
+                  color: context.semantic.income,
+                  width: 6,
+                ),
+                BarChartRodData(
+                  toY: points[i].outflow.amount.toDouble(),
+                  color: context.semantic.expense,
+                  width: 6,
+                ),
+              ],
+            ),
         ];
         return SizedBox(
           height: 180,
-          child: BarChart(BarChartData(
-            titlesData: const FlTitlesData(show: false),
-            gridData: const FlGridData(show: false),
-            borderData: FlBorderData(show: false),
-            barGroups: groups,
-          )),
+          child: BarChart(
+            BarChartData(
+              titlesData: const FlTitlesData(show: false),
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              barGroups: groups,
+            ),
+          ),
         );
       },
     );
@@ -284,11 +296,14 @@ class DashboardScreen extends ConsumerWidget {
                       itemBuilder: (_, i) {
                         final tx = txs[i];
                         return ListTile(
-                          title: Text(tx.note?.isNotEmpty == true
-                              ? tx.note!
-                              : tx.date.toLocal().toString().split(' ').first),
+                          title: Text(
+                            tx.note?.isNotEmpty == true
+                                ? tx.note!
+                                : tx.date.toLocal().toString().split(' ').first,
+                          ),
                           trailing: MoneyText(
-                              formattedAmount: fmt.format(tx.total)),
+                            formattedAmount: fmt.format(tx.total),
+                          ),
                           onTap: () {
                             Navigator.of(sheetContext).pop();
                             context.push(Routes.transactionEdit(tx.id));
@@ -330,8 +345,10 @@ class _Section extends StatelessWidget {
 class _ChartPlaceholder extends StatelessWidget {
   const _ChartPlaceholder();
   @override
-  Widget build(BuildContext context) =>
-      const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => const SizedBox(
+    height: 180,
+    child: Center(child: CircularProgressIndicator()),
+  );
 }
 
 class _EmptyChart extends StatelessWidget {
@@ -339,10 +356,12 @@ class _EmptyChart extends StatelessWidget {
   final String message;
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: 120,
-        child: Center(
-          child: Text(message,
-              style: TextStyle(color: context.colors.onSurfaceVariant)),
-        ),
-      );
+    height: 120,
+    child: Center(
+      child: Text(
+        message,
+        style: TextStyle(color: context.colors.onSurfaceVariant),
+      ),
+    ),
+  );
 }

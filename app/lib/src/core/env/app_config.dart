@@ -18,12 +18,14 @@ class AppConfig {
   });
 
   factory AppConfig.fromEnvironment() => const AppConfig(
-        supabaseUrl: String.fromEnvironment('SUPABASE_URL'),
-        supabaseAnonKey: String.fromEnvironment('SUPABASE_ANON_KEY'),
-        powersyncUrl: String.fromEnvironment('POWERSYNC_URL'),
-        baseCurrencyCode:
-            String.fromEnvironment('BASE_CURRENCY', defaultValue: 'EUR'),
-      );
+    supabaseUrl: String.fromEnvironment('SUPABASE_URL'),
+    supabaseAnonKey: String.fromEnvironment('SUPABASE_ANON_KEY'),
+    powersyncUrl: String.fromEnvironment('POWERSYNC_URL'),
+    baseCurrencyCode: String.fromEnvironment(
+      'BASE_CURRENCY',
+      defaultValue: 'EUR',
+    ),
+  );
 
   final String supabaseUrl;
   final String supabaseAnonKey;

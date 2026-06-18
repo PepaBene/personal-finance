@@ -5,12 +5,12 @@ import 'package:ledgerly_app/src/domain/enums.dart';
 import 'package:ledgerly_app/src/features/categories/category_visuals.dart';
 
 CategoryEntity _cat(String id, String name) => CategoryEntity(
-      id: id,
-      userId: 'u',
-      name: name,
-      kind: CategoryKind.expense,
-      updatedAt: DateTime.utc(2026),
-    );
+  id: id,
+  userId: 'u',
+  name: name,
+  kind: CategoryKind.expense,
+  updatedAt: DateTime.utc(2026),
+);
 
 void main() {
   test('categoryColor parses #RRGGBB and bare hex to opaque colors', () {

@@ -49,9 +49,15 @@ class StringListConverter extends TypeConverter<List<String>, String> {
 const txTypeConverter = EnumNameConverter(TxType.values, TxType.expense);
 const txSourceConverter = EnumNameConverter(TxSource.values, TxSource.manual);
 const txStatusConverter = EnumNameConverter(TxStatus.values, TxStatus.active);
-const categoryKindConverter =
-    EnumNameConverter(CategoryKind.values, CategoryKind.expense);
-const accountKindConverter =
-    EnumNameConverter(AccountKind.values, AccountKind.cash);
-const rateSourceConverter =
-    EnumNameConverter(RateSource.values, RateSource.manual);
+const categoryKindConverter = EnumNameConverter(
+  CategoryKind.values,
+  CategoryKind.expense,
+);
+const accountKindConverter = EnumNameConverter(
+  AccountKind.values,
+  AccountKind.cash,
+);
+const rateSourceConverter = EnumNameConverter(
+  RateSource.values,
+  RateSource.manual,
+);

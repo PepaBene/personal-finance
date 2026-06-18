@@ -66,9 +66,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/transactions/:id/edit',
-        builder: (_, state) => TransactionEditorScreen(
-          transactionId: state.pathParameters['id'],
-        ),
+        builder: (_, state) =>
+            TransactionEditorScreen(transactionId: state.pathParameters['id']),
       ),
       GoRoute(
         path: Routes.categories,
