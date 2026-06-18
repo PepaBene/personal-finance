@@ -43,6 +43,14 @@ class DriftTransactionService implements TransactionService {
   }
 
   @override
+  Future<TransactionEntity?> getById(String id) async {
+    final row = await (_db.select(_db.transactions)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    return row == null ? null : _toEntity(row);
+  }
+
+  @override
   Future<TransactionEntity> upsert(TransactionEntity tx) =>
       upsertWithLines(tx, const []);
 

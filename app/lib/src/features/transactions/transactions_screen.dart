@@ -1,17 +1,17 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/router/app_router.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/transaction.dart';
-import 'add_transaction_sheet.dart';
 import 'transactions_view_model.dart';
 
-/// The Phase 0 vertical slice: create & list transactions through every layer,
-/// persisted to the encrypted local DB and (when cloud-configured) converging
-/// across devices via PowerSync.
+/// Transaction list. Tapping the FAB opens the editor (quick or split capture);
+/// tapping a row edits it. Swiping a row soft-deletes (undoable).
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
 
@@ -22,7 +22,7 @@ class TransactionsScreen extends ConsumerWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddTransactionSheet.show(context, ref),
+        onPressed: () => context.push(Routes.transactionNew),
         icon: const Icon(Icons.add),
         label: Text(l10n.transactionsAddAction),
       ),
@@ -91,6 +91,7 @@ class _TransactionTile extends StatelessWidget {
             MoneyDirection.neutral => MoneySign.neutral,
           },
         ),
+        onTap: () => context.push(Routes.transactionEdit(tx.id)),
       ),
     );
   }

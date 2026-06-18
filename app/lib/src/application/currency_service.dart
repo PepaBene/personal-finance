@@ -1,3 +1,5 @@
+import 'package:decimal/decimal.dart';
+
 import '../domain/entities/currency.dart';
 import '../domain/money.dart';
 
@@ -16,6 +18,15 @@ abstract interface class CurrencyService {
   /// (most recent on or before that date — docs/04 §3.3). Returns the converted
   /// [Money] and the [rate] used; `rate` is null when amount is already base.
   Future<ConversionResult> toBase(Money amount, DateTime onDate);
+
+  /// Record a manual historical rate (FR-CUR-04). Used when capturing a foreign
+  /// transaction for which no rate exists yet.
+  Future<void> upsertRate({
+    required String fromCode,
+    required String toCode,
+    required Decimal rate,
+    required DateTime date,
+  });
 }
 
 class ConversionResult {

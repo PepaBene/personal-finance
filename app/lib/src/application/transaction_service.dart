@@ -11,6 +11,9 @@ abstract interface class TransactionService {
   /// Reactive line items for a transaction, in display order.
   Stream<List<LineItemEntity>> watchLineItems(String transactionId);
 
+  /// Fetch a single transaction header by id (for editing), or null.
+  Future<TransactionEntity?> getById(String id);
+
   /// Insert/update a header with no explicit line items (FR-CAP-04: treated as
   /// a single implicit line). Stamps `updatedAt`, bumps version.
   Future<TransactionEntity> upsert(TransactionEntity tx);

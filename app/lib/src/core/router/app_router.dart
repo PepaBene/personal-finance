@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/auth_service.dart';
+import '../../features/accounts/accounts_screen.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/lock/lock_screen.dart';
 import '../../features/shell/app_shell.dart';
+import '../../features/transactions/transaction_editor_screen.dart';
 import '../../features/transactions/transactions_screen.dart';
 import '../di/providers.dart';
 import 'router_refresh.dart';
@@ -16,7 +18,11 @@ abstract final class Routes {
   static const lock = '/lock';
   static const dashboard = '/dashboard';
   static const transactions = '/transactions';
+  static const transactionNew = '/transactions/new';
+  static const accounts = '/accounts';
   static const settings = '/settings';
+
+  static String transactionEdit(String id) => '/transactions/$id/edit';
 }
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -50,12 +56,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.auth, builder: (_, __) => const AuthScreen()),
       GoRoute(path: Routes.lock, builder: (_, __) => const LockScreen()),
+      // Full-screen editor (its own AppBar) — outside the shell chrome.
+      GoRoute(
+        path: Routes.transactionNew,
+        builder: (_, __) => const TransactionEditorScreen(),
+      ),
+      GoRoute(
+        path: '/transactions/:id/edit',
+        builder: (_, state) => TransactionEditorScreen(
+          transactionId: state.pathParameters['id'],
+        ),
+      ),
       ShellRoute(
         builder: (_, __, child) => AppShell(child: child),
         routes: [
           GoRoute(
             path: Routes.transactions,
             builder: (_, __) => const TransactionsScreen(),
+          ),
+          GoRoute(
+            path: Routes.accounts,
+            builder: (_, __) => const AccountsScreen(),
           ),
           GoRoute(
             path: Routes.dashboard,

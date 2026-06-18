@@ -23,12 +23,13 @@ class AppShell extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final destinations = <_Dest>[
       _Dest(Routes.transactions, Icons.receipt_long_outlined, l10n.navTransactions),
+      _Dest(Routes.accounts, Icons.account_balance_wallet_outlined, l10n.navAccounts),
       _Dest(Routes.dashboard, Icons.dashboard_outlined, l10n.navDashboard),
       _Dest(Routes.settings, Icons.settings_outlined, l10n.navSettings),
     ];
-    final currentIndex = destinations
-        .indexWhere((d) => GoRouterState.of(context).matchedLocation == d.path)
-        .clamp(0, destinations.length - 1);
+    final location = GoRouterState.of(context).matchedLocation;
+    final matched = destinations.indexWhere((d) => location.startsWith(d.path));
+    final currentIndex = matched < 0 ? 0 : matched;
 
     void onSelect(int i) => context.go(destinations[i].path);
 

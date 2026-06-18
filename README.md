@@ -107,7 +107,11 @@ coordinator). **Phase 1 in progress** — the MVP data foundation has landed:
   conversion) services; idempotent, deterministic-id seeding of default
   categories, currencies, a starter account, and the base currency.
 
-Next in Phase 1: the capture UI (multi-category **line-item editor**, accounts &
-transfers, currency picker) and **core analytics** (dashboard + spend-by-
-category / over-time / income-vs-expense with global filters and drill-down),
-then CSV import/export (docs/08 Phase 1 workstreams 2–8).
+Capture UI has landed: a transaction **editor** with quick (amount + category)
+and **split** (multi-category line-item) modes, **transfers**, account & currency
+pickers, manual exchange-rate entry, a hierarchical **category picker**, and an
+**Accounts** screen with live balances.
+
+Next in Phase 1: **core analytics** (dashboard + spend-by-category / over-time /
+income-vs-expense with global filters and drill-down, via `fl_chart`), then CSV
+import/export and categories management (docs/08 workstreams 6–7).
