@@ -12,6 +12,7 @@ import '../../application/app_lock_service.dart';
 import '../../application/auth_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
+import '../../application/import_export_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
@@ -24,6 +25,7 @@ import '../../data/services/drift_account_service.dart';
 import '../../data/services/drift_analytics_service.dart';
 import '../../data/services/drift_category_service.dart';
 import '../../data/services/drift_currency_service.dart';
+import '../../data/services/drift_import_export_service.dart';
 import '../../data/services/drift_transaction_service.dart';
 import '../../data/services/supabase_auth_service.dart';
 import '../env/app_config.dart';
@@ -133,6 +135,15 @@ final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,
   );
+});
+
+final importExportServiceProvider =
+    FutureProvider<ImportExportService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  final tx = await ref.watch(transactionServiceProvider.future);
+  final currency = await ref.watch(currencyServiceProvider.future);
+  return DriftImportExportService(
+      db, ref.watch(authServiceProvider), tx, currency);
 });
 
 /// Seeds reference + per-user default data once the store is open and the user

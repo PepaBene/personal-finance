@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/auth/auth_screen.dart';
+import '../../features/categories/categories_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/lock/lock_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/transactions/transaction_editor_screen.dart';
 import '../../features/transactions/transactions_screen.dart';
@@ -22,6 +23,7 @@ abstract final class Routes {
   static const transactionNew = '/transactions/new';
   static const accounts = '/accounts';
   static const settings = '/settings';
+  static const categories = '/categories';
 
   static String transactionEdit(String id) => '/transactions/$id/edit';
 }
@@ -68,6 +70,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           transactionId: state.pathParameters['id'],
         ),
       ),
+      GoRoute(
+        path: Routes.categories,
+        builder: (_, __) => const CategoriesScreen(),
+      ),
       ShellRoute(
         builder: (_, __, child) => AppShell(child: child),
         routes: [
@@ -85,19 +91,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: Routes.settings,
-            builder: (_, __) => const _Placeholder('Settings'),
+            builder: (_, __) => const SettingsScreen(),
           ),
         ],
       ),
     ],
   );
 });
-
-/// Phase 0 placeholders for routes whose screens land in Phase 1.
-class _Placeholder extends StatelessWidget {
-  const _Placeholder(this.label);
-  final String label;
-  @override
-  Widget build(BuildContext context) =>
-      Center(child: Text('$label — coming in Phase 1'));
-}

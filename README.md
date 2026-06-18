@@ -117,5 +117,7 @@ a spend-by-category donut, spending-over-time and income-vs-expense charts
 (`fl_chart`), a date-range filter, and category drill-down — all in base
 currency, computed offline, with multi-currency splits attributed per line.
 
-Next in Phase 1: CSV import/export and a categories-management screen
-(docs/08 workstream 7).
+**CSV import/export** (`csv` + `file_picker`) and a **categories-management**
+screen (create/rename/recolor/re-icon/nest/archive) round out the MVP, reached
+from a new **Settings** screen. Phase 1's manual-entry MVP is now feature
+complete; Phase 2 (scanning/OCR) is next per docs/08.
