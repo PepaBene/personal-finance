@@ -77,9 +77,8 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
     final tiles = <Widget>[];
     for (final node in visible) {
       final root = node.category;
-      final kids = node.children
-          .where((c) => !c.isArchived && matches(c))
-          .toList();
+      final kids =
+          node.children.where((c) => !c.isArchived && matches(c)).toList();
       if (!matches(root) && kids.isEmpty) continue;
 
       tiles.add(_tile(context, root, indent: 0));

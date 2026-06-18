@@ -8,15 +8,15 @@ void main() {
   Money czk(String v) => Money.parse(v, 'CZK');
 
   LineItemEntity line(String amount, String category) => LineItemEntity(
-    id: 'l-$category',
-    userId: 'u',
-    transactionId: 't',
-    description: category,
-    quantity: Decimal.one,
-    lineAmount: czk(amount),
-    categoryId: category,
-    updatedAt: DateTime.utc(2026),
-  );
+        id: 'l-$category',
+        userId: 'u',
+        transactionId: 't',
+        description: category,
+        quantity: Decimal.one,
+        lineAmount: czk(amount),
+        categoryId: category,
+        updatedAt: DateTime.utc(2026),
+      );
 
   test('balances a multi-category split that sums to the total', () {
     // docs/04 §9 example: 49.80 + 89.90 + 149.40 + 34.90 = 324.00

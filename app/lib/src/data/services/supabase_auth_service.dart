@@ -59,7 +59,8 @@ class SupabaseAuthService implements AuthService {
   /// don't act on (password recovery, MFA challenge) return null.
   AuthEvent? _eventFrom(sb.AuthChangeEvent event) {
     return switch (event) {
-      sb.AuthChangeEvent.signedIn || sb.AuthChangeEvent.initialSession =>
+      sb.AuthChangeEvent.signedIn ||
+      sb.AuthChangeEvent.initialSession =>
         _current.isSignedIn ? AuthEvent.signedIn : null,
       sb.AuthChangeEvent.signedOut => AuthEvent.signedOut,
       sb.AuthChangeEvent.tokenRefreshed => AuthEvent.tokenRefreshed,

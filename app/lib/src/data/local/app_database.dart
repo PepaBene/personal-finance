@@ -1,6 +1,8 @@
+import 'package:decimal/decimal.dart'; // referenced by generated companions
 import 'package:drift/drift.dart';
 
 import '../../domain/enums.dart';
+import 'converters.dart'; // converters referenced by generated companions
 import 'tables/accounts_table.dart';
 import 'tables/categories_table.dart';
 import 'tables/currencies_table.dart';
@@ -45,10 +47,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    // Synced tables are owned by PowerSync; Drift must not (re)create them.
-    onCreate: (m) async {},
-    onUpgrade: (m, from, to) async {},
-  );
+        // Synced tables are owned by PowerSync; Drift must not (re)create them.
+        onCreate: (m) async {},
+        onUpgrade: (m, from, to) async {},
+      );
 
   // --- Transactions + line items ----------------------------------------
 
@@ -71,10 +73,11 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<LineItem>> getLineItems(String transactionId) {
-    return (select(lineItems)..where(
-          (l) =>
-              l.transactionId.equals(transactionId) & l.deleted.equals(false),
-        ))
+    return (select(lineItems)
+          ..where(
+            (l) =>
+                l.transactionId.equals(transactionId) & l.deleted.equals(false),
+          ))
         .get();
   }
 
@@ -138,11 +141,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> countCategories(String userId) async {
     final count = countAll();
-    final row =
-        await (selectOnly(categories)
-              ..addColumns([count])
-              ..where(categories.userId.equals(userId)))
-            .getSingle();
+    final row = await (selectOnly(categories)
+          ..addColumns([count])
+          ..where(categories.userId.equals(userId)))
+        .getSingle();
     return row.read(count) ?? 0;
   }
 

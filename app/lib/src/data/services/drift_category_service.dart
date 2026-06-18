@@ -62,19 +62,19 @@ class DriftCategoryService implements CategoryService {
   }
 
   CategoryEntity _toEntity(db.Category r) => CategoryEntity(
-    id: r.id,
-    userId: r.userId,
-    name: r.name,
-    kind: r.kind,
-    parentId: r.parentId,
-    icon: r.icon,
-    colorHex: r.colorHex,
-    isArchived: r.isArchived,
-    sortOrder: r.sortOrder,
-    updatedAt: r.updatedAt,
-    deleted: r.deleted,
-    version: r.version,
-  );
+        id: r.id,
+        userId: r.userId,
+        name: r.name,
+        kind: r.kind,
+        parentId: r.parentId,
+        icon: r.icon,
+        colorHex: r.colorHex,
+        isArchived: r.isArchived,
+        sortOrder: r.sortOrder,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
 
   db.CategoriesCompanion _toCompanion(CategoryEntity e) =>
       db.CategoriesCompanion.insert(

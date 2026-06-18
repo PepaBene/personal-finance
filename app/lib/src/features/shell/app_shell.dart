@@ -116,21 +116,21 @@ class _SyncStatus extends ConsumerWidget {
     final connectivity = status?.connectivity ?? SyncConnectivity.offline;
     final (state, label) = switch (connectivity) {
       SyncConnectivity.connected => (
-        SyncIndicatorState.synced,
-        l10n.syncStatusSynced,
-      ),
+          SyncIndicatorState.synced,
+          l10n.syncStatusSynced,
+        ),
       SyncConnectivity.syncing => (
-        SyncIndicatorState.syncing,
-        l10n.syncStatusSyncing,
-      ),
+          SyncIndicatorState.syncing,
+          l10n.syncStatusSyncing,
+        ),
       SyncConnectivity.offline => (
-        SyncIndicatorState.offline,
-        l10n.syncStatusOffline,
-      ),
+          SyncIndicatorState.offline,
+          l10n.syncStatusOffline,
+        ),
       SyncConnectivity.error => (
-        SyncIndicatorState.error,
-        l10n.syncStatusError,
-      ),
+          SyncIndicatorState.error,
+          l10n.syncStatusError,
+        ),
     };
     return SyncStatusIndicator(state: state, label: label);
   }

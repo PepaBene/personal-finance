@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Widget host(Widget child) => MaterialApp(
-    theme: AppTheme.light(),
-    home: Scaffold(body: Center(child: child)),
-  );
+        theme: AppTheme.light(),
+        home: Scaffold(body: Center(child: child)),
+      );
 
   testWidgets('MoneyText renders the formatted amount', (tester) async {
     await tester.pumpWidget(

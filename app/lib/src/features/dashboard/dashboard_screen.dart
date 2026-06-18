@@ -23,8 +23,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final fmt = MoneyFormatter(locale);
-    final categories =
-        ref.watch(categoriesFlatProvider).valueOrNull ??
+    final categories = ref.watch(categoriesFlatProvider).valueOrNull ??
         const <CategoryEntity>[];
 
     return ListView(
@@ -173,9 +172,8 @@ class DashboardScreen extends ConsumerWidget {
   ) {
     final cat = categoryById(categories, t.categoryId);
     final name = cat?.name ?? 'Uncategorized';
-    final color = cat == null
-        ? context.colors.outline
-        : categoryColor(cat.colorHex);
+    final color =
+        cat == null ? context.colors.outline : categoryColor(cat.colorHex);
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
@@ -346,9 +344,9 @@ class _ChartPlaceholder extends StatelessWidget {
   const _ChartPlaceholder();
   @override
   Widget build(BuildContext context) => const SizedBox(
-    height: 180,
-    child: Center(child: CircularProgressIndicator()),
-  );
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
+      );
 }
 
 class _EmptyChart extends StatelessWidget {
@@ -356,12 +354,12 @@ class _EmptyChart extends StatelessWidget {
   final String message;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 120,
-    child: Center(
-      child: Text(
-        message,
-        style: TextStyle(color: context.colors.onSurfaceVariant),
-      ),
-    ),
-  );
+        height: 120,
+        child: Center(
+          child: Text(
+            message,
+            style: TextStyle(color: context.colors.onSurfaceVariant),
+          ),
+        ),
+      );
 }

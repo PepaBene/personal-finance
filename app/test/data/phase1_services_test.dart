@@ -1,9 +1,7 @@
 import 'package:decimal/decimal.dart';
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledgerly_app/src/application/auth_service.dart';
-import 'package:ledgerly_app/src/application/currency_service.dart';
 import 'package:ledgerly_app/src/data/local/app_database.dart';
 import 'package:ledgerly_app/src/data/seed/database_seeder.dart';
 import 'package:ledgerly_app/src/data/services/drift_currency_service.dart';
@@ -16,9 +14,9 @@ import 'package:ledgerly_app/src/domain/money.dart';
 class _FakeAuth implements AuthService {
   @override
   AuthState get current => const AuthState(
-    AuthStatus.signedIn,
-    AuthSession(userId: 'user-1', email: 'e'),
-  );
+        AuthStatus.signedIn,
+        AuthSession(userId: 'user-1', email: 'e'),
+      );
   @override
   Stream<AuthState> watch() => Stream.value(current);
   @override
@@ -131,9 +129,7 @@ void main() {
       'toBase converts using the most recent rate on/before the date',
       () async {
         await DatabaseSeeder(db).seed(userId: 'user-1', baseCurrency: 'EUR');
-        await db
-            .into(db.exchangeRates)
-            .insert(
+        await db.into(db.exchangeRates).insert(
               ExchangeRatesCompanion.insert(
                 id: 'fx1',
                 userId: 'user-1',

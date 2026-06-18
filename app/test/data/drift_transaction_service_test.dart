@@ -1,5 +1,4 @@
 import 'package:decimal/decimal.dart';
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledgerly_app/src/application/auth_service.dart';
@@ -16,9 +15,9 @@ class _FakeAuth implements AuthService {
 
   @override
   AuthState get current => AuthState(
-    AuthStatus.signedIn,
-    AuthSession(userId: userId, email: 'test@example.com'),
-  );
+        AuthStatus.signedIn,
+        AuthSession(userId: userId, email: 'test@example.com'),
+      );
 
   @override
   Stream<AuthState> watch() => Stream.value(current);

@@ -51,11 +51,10 @@ class DriftImportExportService implements ImportExportService {
 
   @override
   Future<String> exportCsv() async {
-    final txs =
-        await (_db.select(_db.transactions)
-              ..where((t) => t.userId.equals(_userId) & t.deleted.equals(false))
-              ..orderBy([(t) => OrderingTerm.desc(t.date)]))
-            .get();
+    final txs = await (_db.select(_db.transactions)
+          ..where((t) => t.userId.equals(_userId) & t.deleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+        .get();
     final accountNames = {
       for (final a in await _db.watchAccounts(_userId).first) a.id: a.name,
     };
@@ -175,9 +174,8 @@ class DriftImportExportService implements ImportExportService {
     if (currency.isEmpty) throw const FormatException('Missing currency');
     final note = _cell(head, idx, 'note');
 
-    final kind = type == TxType.income
-        ? CategoryKind.income
-        : CategoryKind.expense;
+    final kind =
+        type == TxType.income ? CategoryKind.income : CategoryKind.expense;
     final now = DateTime.now().toUtc();
     final txId = key.startsWith('new:') ? _uuid.v4() : key;
 
@@ -230,7 +228,7 @@ class DriftImportExportService implements ImportExportService {
 
     final totalDec = type == TxType.transfer
         ? (Decimal.tryParse(_cell(head, idx, 'total').replaceAll(',', '.')) ??
-              (throw const FormatException('Transfer needs a total')))
+            (throw const FormatException('Transfer needs a total')))
         : lines.fold(Decimal.zero, (s, l) => s + l.lineAmount.amount);
     final total = Money(totalDec, currency);
     final base = await _resolveBase(
@@ -288,9 +286,7 @@ class DriftImportExportService implements ImportExportService {
     if (existing != null) return existing.id;
     final id = _uuid.v4();
     final now = DateTime.now().toUtc();
-    await _db
-        .into(_db.categories)
-        .insertOnConflictUpdate(
+    await _db.into(_db.categories).insertOnConflictUpdate(
           db.CategoriesCompanion.insert(
             id: id,
             userId: _userId,
@@ -301,7 +297,8 @@ class DriftImportExportService implements ImportExportService {
         );
     final row = (await (_db.select(
       _db.categories,
-    )..where((c) => c.id.equals(id))).getSingle());
+    )..where((c) => c.id.equals(id)))
+        .getSingle());
     cache[trimmed.toLowerCase()] = row;
     return id;
   }
@@ -316,9 +313,7 @@ class DriftImportExportService implements ImportExportService {
     if (existing != null) return existing.id;
     final id = _uuid.v4();
     final now = DateTime.now().toUtc();
-    await _db
-        .into(_db.accounts)
-        .insertOnConflictUpdate(
+    await _db.into(_db.accounts).insertOnConflictUpdate(
           db.AccountsCompanion.insert(
             id: id,
             userId: _userId,
@@ -331,7 +326,8 @@ class DriftImportExportService implements ImportExportService {
         );
     final row = (await (_db.select(
       _db.accounts,
-    )..where((a) => a.id.equals(id))).getSingle());
+    )..where((a) => a.id.equals(id)))
+        .getSingle());
     cache[trimmed.toLowerCase()] = row;
     return id;
   }

@@ -3,8 +3,12 @@ import 'dart:typed_data';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:powersync/powersync.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// `show` avoids name clashes: powersync also exports `SyncStatus` and
+// supabase_flutter (gotrue) also exports `AuthState`, which collide with our
+// application-layer types of the same name.
+import 'package:powersync/powersync.dart' show PowerSyncDatabase;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show Supabase, SupabaseClient;
 
 import '../../application/account_service.dart';
 import '../../application/analytics_service.dart';

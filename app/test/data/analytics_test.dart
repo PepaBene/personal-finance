@@ -14,9 +14,9 @@ import 'package:ledgerly_app/src/domain/money.dart';
 class _FakeAuth implements AuthService {
   @override
   AuthState get current => const AuthState(
-    AuthStatus.signedIn,
-    AuthSession(userId: 'user-1', email: 'e'),
-  );
+        AuthStatus.signedIn,
+        AuthSession(userId: 'user-1', email: 'e'),
+      );
   @override
   Stream<AuthState> watch() => Stream.value(current);
   @override
@@ -78,16 +78,17 @@ void main() {
     String amount,
     String cat,
     String currency,
-  ) => LineItemEntity(
-    id: id,
-    userId: 'user-1',
-    transactionId: tx,
-    description: cat,
-    quantity: Decimal.one,
-    lineAmount: Money(Decimal.parse(amount), currency),
-    categoryId: cat,
-    updatedAt: DateTime.utc(2026),
-  );
+  ) =>
+      LineItemEntity(
+        id: id,
+        userId: 'user-1',
+        transactionId: tx,
+        description: cat,
+        quantity: Decimal.one,
+        lineAmount: Money(Decimal.parse(amount), currency),
+        categoryId: cat,
+        updatedAt: DateTime.utc(2026),
+      );
 
   Future<void> seedData() async {
     // EUR split expense: groceries 30 + household 20 = 50 (base = total).

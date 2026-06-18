@@ -8,9 +8,9 @@ import '../../domain/entities/transaction.dart';
 /// which shares the PowerSync store).
 final transactionsProvider =
     StreamProvider.autoDispose<List<TransactionEntity>>((ref) async* {
-      final service = await ref.watch(transactionServiceProvider.future);
-      yield* service.watchAll();
-    });
+  final service = await ref.watch(transactionServiceProvider.future);
+  yield* service.watchAll();
+});
 
 /// Intents for the transactions list (creation/edit happen in the editor screen).
 final transactionsControllerProvider = Provider.autoDispose(

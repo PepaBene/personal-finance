@@ -107,9 +107,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         ),
                 ),
                 TextButton(
-                  onPressed: _busy
-                      ? null
-                      : () => setState(() => _signUp = !_signUp),
+                  onPressed:
+                      _busy ? null : () => setState(() => _signUp = !_signUp),
                   child: Text(
                     _signUp ? l10n.authToggleToSignIn : l10n.authToggleToSignUp,
                   ),

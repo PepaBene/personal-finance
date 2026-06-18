@@ -15,9 +15,9 @@ import 'package:ledgerly_app/src/domain/money.dart';
 class _FakeAuth implements AuthService {
   @override
   AuthState get current => const AuthState(
-    AuthStatus.signedIn,
-    AuthSession(userId: 'user-1', email: 'e'),
-  );
+        AuthStatus.signedIn,
+        AuthSession(userId: 'user-1', email: 'e'),
+      );
   @override
   Stream<AuthState> watch() => Stream.value(current);
   @override
@@ -124,14 +124,14 @@ void main() {
     expect(dstCats.map((c) => c.name), containsAll(['Groceries', 'Dining']));
   });
 
-  test('re-importing the same CSV is idempotent (no duplicate lines)', () async {
+  test('re-importing the same CSV is idempotent (no duplicate lines)',
+      () async {
     final db = AppDatabase(NativeDatabase.memory());
     await db.createMigrator().createAll();
     addTearDown(db.close);
     await DatabaseSeeder(db).seed(userId: 'user-1', baseCurrency: 'EUR');
 
-    const csv =
-        'transaction_id,date,type,account,counter_account,currency,'
+    const csv = 'transaction_id,date,type,account,counter_account,currency,'
         'total,base,note,line_description,line_amount,category\r\n'
         'tx-9,2026-03-10,expense,Cash,,EUR,40.00,40.00,,Stuff,40.00,Groceries';
 

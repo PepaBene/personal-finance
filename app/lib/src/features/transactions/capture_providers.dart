@@ -31,9 +31,9 @@ final accountsProvider = StreamProvider.autoDispose<List<AccountEntity>>((
 
 final accountBalancesProvider =
     StreamProvider.autoDispose<List<AccountBalance>>((ref) async* {
-      final service = await ref.watch(accountServiceProvider.future);
-      yield* service.watchBalances();
-    });
+  final service = await ref.watch(accountServiceProvider.future);
+  yield* service.watchBalances();
+});
 
 final currenciesProvider = StreamProvider.autoDispose<List<CurrencyEntity>>((
   ref,

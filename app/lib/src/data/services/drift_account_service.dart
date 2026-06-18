@@ -37,11 +37,11 @@ class DriftAccountService implements AccountService {
     // React to transaction changes (the frequent input); re-read accounts each
     // emission so newly added accounts also appear.
     return _db.watchActive(_userId).asyncMap((txs) async {
-      final accounts =
-          await (_db.select(_db.accounts)..where(
-                (a) => a.userId.equals(_userId) & a.deleted.equals(false),
-              ))
-              .get();
+      final accounts = await (_db.select(_db.accounts)
+            ..where(
+              (a) => a.userId.equals(_userId) & a.deleted.equals(false),
+            ))
+          .get();
       return accounts.map((a) => _balanceFor(a, txs)).toList(growable: false);
     });
   }
@@ -88,17 +88,17 @@ class DriftAccountService implements AccountService {
   }
 
   AccountEntity _toEntity(db.Account r) => AccountEntity(
-    id: r.id,
-    userId: r.userId,
-    name: r.name,
-    kind: r.kind,
-    currencyCode: r.currencyCode,
-    openingBalance: Money(r.openingBalance, r.currencyCode),
-    isArchived: r.isArchived,
-    updatedAt: r.updatedAt,
-    deleted: r.deleted,
-    version: r.version,
-  );
+        id: r.id,
+        userId: r.userId,
+        name: r.name,
+        kind: r.kind,
+        currencyCode: r.currencyCode,
+        openingBalance: Money(r.openingBalance, r.currencyCode),
+        isArchived: r.isArchived,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
 
   db.AccountsCompanion _toCompanion(AccountEntity e) =>
       db.AccountsCompanion.insert(

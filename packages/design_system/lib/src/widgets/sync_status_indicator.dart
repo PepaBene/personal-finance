@@ -23,14 +23,14 @@ class SyncStatusIndicator extends StatelessWidget {
     final semantic = context.semantic;
     final (icon, color) = switch (state) {
       SyncIndicatorState.synced => (
-        Icons.cloud_done_outlined,
-        semantic.success,
-      ),
+          Icons.cloud_done_outlined,
+          semantic.success,
+        ),
       SyncIndicatorState.syncing => (Icons.sync, semantic.info),
       SyncIndicatorState.offline => (
-        Icons.cloud_off_outlined,
-        context.colors.onSurfaceVariant,
-      ),
+          Icons.cloud_off_outlined,
+          context.colors.onSurfaceVariant,
+        ),
       SyncIndicatorState.error => (Icons.error_outline, semantic.danger),
     };
 

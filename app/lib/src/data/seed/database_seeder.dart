@@ -43,9 +43,7 @@ class DatabaseSeeder {
       ('GBP', '£', 'Pound sterling', 2),
     ];
     for (final (code, symbol, name, digits) in seed) {
-      await _db
-          .into(_db.currencies)
-          .insertOnConflictUpdate(
+      await _db.into(_db.currencies).insertOnConflictUpdate(
             CurrenciesCompanion.insert(
               id: code,
               symbol: symbol,
@@ -136,9 +134,7 @@ class DatabaseSeeder {
       }
 
       // Starter account in the base currency (FR-ACC-01).
-      await _db
-          .into(_db.accounts)
-          .insertOnConflictUpdate(
+      await _db.into(_db.accounts).insertOnConflictUpdate(
             AccountsCompanion.insert(
               id: _seedId(userId, 'account', 'cash'),
               userId: userId,
@@ -151,9 +147,7 @@ class DatabaseSeeder {
           );
 
       // Persist the chosen base currency (FR-CUR-01).
-      await _db
-          .into(_db.settings)
-          .insertOnConflictUpdate(
+      await _db.into(_db.settings).insertOnConflictUpdate(
             SettingsCompanion.insert(
               id: '$userId::base_currency',
               userId: userId,
@@ -175,9 +169,7 @@ class DatabaseSeeder {
     int sortOrder,
     DateTime now,
   ) {
-    return _db
-        .into(_db.categories)
-        .insertOnConflictUpdate(
+    return _db.into(_db.categories).insertOnConflictUpdate(
           CategoriesCompanion.insert(
             id: id,
             userId: userId,

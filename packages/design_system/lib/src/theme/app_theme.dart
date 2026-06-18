@@ -43,7 +43,7 @@ abstract final class AppTheme {
         CategoryColors.palette,
         semantic,
       ],
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: radii.lgRadius),
       ),

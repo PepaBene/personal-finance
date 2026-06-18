@@ -17,4 +17,5 @@ import 'ledgerly_powersync_stub.dart'
 /// [encryptionKey] is the Argon2id-derived key from the app-lock flow.
 Future<PowerSyncDatabase> openLedgerlyPowerSyncDatabase({
   required Uint8List encryptionKey,
-}) => openLedgerlyPowerSyncDatabaseImpl(encryptionKey: encryptionKey);
+}) =>
+    openLedgerlyPowerSyncDatabaseImpl(encryptionKey: encryptionKey);

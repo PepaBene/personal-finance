@@ -95,10 +95,10 @@ class _TransactionTile extends StatelessWidget {
   }
 
   IconData _iconFor(TransactionEntity tx) => switch (tx.direction) {
-    MoneyDirection.inflow => Icons.south_west,
-    MoneyDirection.outflow => Icons.north_east,
-    MoneyDirection.neutral => Icons.swap_horiz,
-  };
+        MoneyDirection.inflow => Icons.south_west,
+        MoneyDirection.outflow => Icons.north_east,
+        MoneyDirection.neutral => Icons.swap_horiz,
+      };
 }
 
 class _Empty extends StatelessWidget {

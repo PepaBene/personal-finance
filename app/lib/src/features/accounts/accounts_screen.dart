@@ -59,11 +59,11 @@ class AccountsScreen extends ConsumerWidget {
   }
 
   IconData _iconFor(AccountKind kind) => switch (kind) {
-    AccountKind.cash => Icons.payments_outlined,
-    AccountKind.bank => Icons.account_balance_outlined,
-    AccountKind.card => Icons.credit_card_outlined,
-    AccountKind.other => Icons.account_balance_wallet_outlined,
-  };
+        AccountKind.cash => Icons.payments_outlined,
+        AccountKind.bank => Icons.account_balance_outlined,
+        AccountKind.card => Icons.credit_card_outlined,
+        AccountKind.other => Icons.account_balance_wallet_outlined,
+      };
 }
 
 class _AccountSheet extends ConsumerStatefulWidget {
@@ -126,7 +126,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
       if (currency == null) throw Exception('Choose a currency');
       final opening =
           Decimal.tryParse(_openingCtrl.text.trim().replaceAll(',', '.')) ??
-          Decimal.zero;
+              Decimal.zero;
       final session = ref.read(authServiceProvider).current.session!;
       final service = await ref.read(accountServiceProvider.future);
 
@@ -189,9 +189,8 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           ),
           SizedBox(height: context.space.sm),
           DropdownButtonFormField<String>(
-            value: currencies.any((c) => c.code == _currency)
-                ? _currency
-                : null,
+            value:
+                currencies.any((c) => c.code == _currency) ? _currency : null,
             decoration: const InputDecoration(labelText: 'Currency'),
             items: [
               for (final c in currencies)

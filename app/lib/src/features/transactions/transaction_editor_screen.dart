@@ -136,8 +136,7 @@ class _TransactionEditorScreenState
     }
     final accounts = ref.watch(accountsProvider).valueOrNull ?? const [];
     final currencies = ref.watch(currenciesProvider).valueOrNull ?? const [];
-    final categories =
-        ref.watch(categoriesFlatProvider).valueOrNull ??
+    final categories = ref.watch(categoriesFlatProvider).valueOrNull ??
         const <CategoryEntity>[];
 
     return Scaffold(
@@ -523,8 +522,7 @@ class _TransactionEditorScreenState
     final List<LineItemEntity> lines;
 
     if (_type == TxType.transfer) {
-      totalDec =
-          _parse(_amountCtrl.text) ??
+      totalDec = _parse(_amountCtrl.text) ??
           (throw const _ValidationError('Enter an amount.'));
       lines = const [];
     } else if (_split) {
@@ -560,8 +558,7 @@ class _TransactionEditorScreenState
       lines = built;
       totalDec = built.fold(Decimal.zero, (s, l) => s + l.lineAmount.amount);
     } else {
-      totalDec =
-          _parse(_amountCtrl.text) ??
+      totalDec = _parse(_amountCtrl.text) ??
           (throw const _ValidationError('Enter an amount.'));
       if (_quickCategoryId == null) {
         throw const _ValidationError('Choose a category.');
@@ -573,9 +570,8 @@ class _TransactionEditorScreenState
               : _uuid.v4(),
           userId: session.userId,
           transactionId: txId,
-          description: _noteCtrl.text.trim().isEmpty
-              ? 'Item'
-              : _noteCtrl.text.trim(),
+          description:
+              _noteCtrl.text.trim().isEmpty ? 'Item' : _noteCtrl.text.trim(),
           quantity: Decimal.one,
           lineAmount: Money(totalDec, _currency),
           categoryId: _quickCategoryId!,
@@ -588,9 +584,8 @@ class _TransactionEditorScreenState
     final base = await _resolveBase(total, currencySvc);
 
     final finalLineIds = lines.map((l) => l.id).toSet();
-    final removed = _originalLineIds
-        .where((id) => !finalLineIds.contains(id))
-        .toList();
+    final removed =
+        _originalLineIds.where((id) => !finalLineIds.contains(id)).toList();
 
     final header = TransactionEntity(
       id: txId,

@@ -35,7 +35,8 @@ class DriftTransactionService implements TransactionService {
   Stream<List<LineItemEntity>> watchLineItems(String transactionId) async* {
     final tx = await (_db.select(
       _db.transactions,
-    )..where((t) => t.id.equals(transactionId))).getSingleOrNull();
+    )..where((t) => t.id.equals(transactionId)))
+        .getSingleOrNull();
     final currency = tx?.currencyCode ?? '';
     yield* _db
         .watchLineItems(transactionId)
@@ -46,7 +47,8 @@ class DriftTransactionService implements TransactionService {
   Future<TransactionEntity?> getById(String id) async {
     final row = await (_db.select(
       _db.transactions,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    )..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
     return row == null ? null : _toEntity(row);
   }
 
@@ -84,40 +86,41 @@ class DriftTransactionService implements TransactionService {
   // --- mapping ----------------------------------------------------------
 
   TransactionEntity _toEntity(db.Transaction r) => TransactionEntity(
-    id: r.id,
-    userId: r.userId,
-    type: r.type,
-    date: r.date,
-    accountId: r.accountId,
-    merchantId: r.merchantId,
-    counterAccountId: r.counterAccountId,
-    total: Money(r.totalAmount, r.currencyCode),
-    base: Money(r.baseAmount, r.currencyCode),
-    note: r.note,
-    source: r.source,
-    status: r.status,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-    deleted: r.deleted,
-    version: r.version,
-  );
+        id: r.id,
+        userId: r.userId,
+        type: r.type,
+        date: r.date,
+        accountId: r.accountId,
+        merchantId: r.merchantId,
+        counterAccountId: r.counterAccountId,
+        total: Money(r.totalAmount, r.currencyCode),
+        base: Money(r.baseAmount, r.currencyCode),
+        note: r.note,
+        source: r.source,
+        status: r.status,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
 
   LineItemEntity _toLine(db.LineItem r, String currencyCode) => LineItemEntity(
-    id: r.id,
-    userId: r.userId,
-    transactionId: r.transactionId,
-    description: r.description,
-    quantity: r.quantity,
-    lineAmount: Money(r.lineAmount, currencyCode),
-    categoryId: r.categoryId,
-    unitPrice: r.unitPrice == null ? null : Money(r.unitPrice!, currencyCode),
-    taxRate: r.taxRate,
-    ocrConfidence: r.ocrConfidence,
-    sortOrder: r.sortOrder,
-    updatedAt: r.updatedAt,
-    deleted: r.deleted,
-    version: r.version,
-  );
+        id: r.id,
+        userId: r.userId,
+        transactionId: r.transactionId,
+        description: r.description,
+        quantity: r.quantity,
+        lineAmount: Money(r.lineAmount, currencyCode),
+        categoryId: r.categoryId,
+        unitPrice:
+            r.unitPrice == null ? null : Money(r.unitPrice!, currencyCode),
+        taxRate: r.taxRate,
+        ocrConfidence: r.ocrConfidence,
+        sortOrder: r.sortOrder,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
 
   db.TransactionsCompanion _toCompanion(TransactionEntity e) =>
       db.TransactionsCompanion.insert(

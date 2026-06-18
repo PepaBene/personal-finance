@@ -1,5 +1,4 @@
 import 'package:decimal/decimal.dart';
-import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../application/auth_service.dart';
@@ -34,33 +33,30 @@ class DriftCurrencyService implements CurrencyService {
   @override
   Stream<List<CurrencyEntity>> watchCurrencies() {
     return _db.watchCurrencies().map(
-      (rows) => rows
-          .map(
-            (r) => CurrencyEntity(
-              code: r.id,
-              symbol: r.symbol,
-              name: r.name,
-              decimalDigits: r.decimalDigits,
-            ),
-          )
-          .toList(growable: false),
-    );
+          (rows) => rows
+              .map(
+                (r) => CurrencyEntity(
+                  code: r.id,
+                  symbol: r.symbol,
+                  name: r.name,
+                  decimalDigits: r.decimalDigits,
+                ),
+              )
+              .toList(growable: false),
+        );
   }
 
   @override
   Future<String> baseCurrencyCode() async {
-    final row =
-        await (_db.select(_db.settings)
-              ..where((s) => s.id.equals(_settingId(_baseCurrencyKey))))
-            .getSingleOrNull();
+    final row = await (_db.select(_db.settings)
+          ..where((s) => s.id.equals(_settingId(_baseCurrencyKey))))
+        .getSingleOrNull();
     return row?.value ?? _defaultBaseCurrency;
   }
 
   @override
   Future<void> setBaseCurrencyCode(String code) async {
-    await _db
-        .into(_db.settings)
-        .insertOnConflictUpdate(
+    await _db.into(_db.settings).insertOnConflictUpdate(
           db.SettingsCompanion.insert(
             id: _settingId(_baseCurrencyKey),
             userId: _userId,
@@ -107,9 +103,7 @@ class DriftCurrencyService implements CurrencyService {
       _fxNamespace,
       '$_userId:fx:$fromCode:$toCode:${day.toIso8601String()}',
     );
-    await _db
-        .into(_db.exchangeRates)
-        .insertOnConflictUpdate(
+    await _db.into(_db.exchangeRates).insertOnConflictUpdate(
           db.ExchangeRatesCompanion.insert(
             id: id,
             userId: _userId,
@@ -126,7 +120,8 @@ class DriftCurrencyService implements CurrencyService {
   Future<int> _baseDigits(String code) async {
     final row = await (_db.select(
       _db.currencies,
-    )..where((c) => c.id.equals(code))).getSingleOrNull();
+    )..where((c) => c.id.equals(code)))
+        .getSingleOrNull();
     return row?.decimalDigits ?? 2;
   }
 }

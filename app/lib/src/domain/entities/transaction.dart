@@ -39,10 +39,10 @@ abstract class TransactionEntity with _$TransactionEntity {
   /// Sign convention for aggregation/display: expenses negative, income
   /// positive, transfers neutral (excluded from income/expense aggregates).
   MoneyDirection get direction => switch (type) {
-    TxType.expense => MoneyDirection.outflow,
-    TxType.income => MoneyDirection.inflow,
-    TxType.transfer => MoneyDirection.neutral,
-  };
+        TxType.expense => MoneyDirection.outflow,
+        TxType.income => MoneyDirection.inflow,
+        TxType.transfer => MoneyDirection.neutral,
+      };
 }
 
 enum MoneyDirection { inflow, outflow, neutral }
