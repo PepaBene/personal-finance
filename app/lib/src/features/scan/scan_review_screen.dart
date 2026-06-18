@@ -517,6 +517,24 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       ),
     );
     await txSvc.upsertWithLines(mapping.header, mapping.lines);
+    await _saveAttachment(mapping.header.id);
+  }
+
+  /// When the scan carried an image, store it client-side encrypted and link the
+  /// metadata to the new transaction (docs/05 §8, FR-SCAN-08).
+  Future<void> _saveAttachment(String transactionId) async {
+    final bytes = widget.imageBytes;
+    if (bytes == null) return;
+    final store = await ref.read(attachmentStoreProvider.future);
+    final attachments = await ref.read(attachmentServiceProvider.future);
+    final attachment = await store.save(
+      bytes: bytes,
+      fileName: '$transactionId.jpg',
+      docType: _c.docType,
+      transactionId: transactionId,
+      ocrText: widget.draft.ocr?.fullText,
+    );
+    await attachments.upsert(attachment);
   }
 
   Future<Money> _resolveBase(
