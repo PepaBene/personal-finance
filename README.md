@@ -95,5 +95,19 @@ melos run test      # unit + widget tests
 
 ## Status
 
-Phase 0 foundation scaffold. Next: Phase 1 MVP — full schema, multi-category
-line-item capture, multi-currency, accounts, and core analytics (docs/08).
+**Phase 0 complete** (foundation, encrypted Drift⇄PowerSync, auth + sync
+coordinator). **Phase 1 in progress** — the MVP data foundation has landed:
+
+- Full Drift schema (transactions, line items, categories, accounts, merchants,
+  tags, currencies, exchange rates, settings) with sync columns, mirrored in
+  PowerSync + Postgres (RLS) + sync rules (docs/04).
+- Domain entities + the Σ-lines reconciliation rule (FR-CAP-05); line-item-aware
+  transactional persistence with tombstone-cascade.
+- Category, Account (with balances), and Currency (base + historical-rate
+  conversion) services; idempotent, deterministic-id seeding of default
+  categories, currencies, a starter account, and the base currency.
+
+Next in Phase 1: the capture UI (multi-category **line-item editor**, accounts &
+transfers, currency picker) and **core analytics** (dashboard + spend-by-
+category / over-time / income-vs-expense with global filters and drill-down),
+then CSV import/export (docs/08 Phase 1 workstreams 2–8).

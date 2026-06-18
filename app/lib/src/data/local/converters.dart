@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:decimal/decimal.dart';
 import 'package:drift/drift.dart';
 
@@ -29,6 +31,27 @@ class EnumNameConverter<T extends Enum> extends TypeConverter<T, String> {
   String toSql(T value) => value.name;
 }
 
+/// Stores a `List<String>` (e.g. merchant aliases) as a JSON TEXT array.
+class StringListConverter extends TypeConverter<List<String>, String> {
+  const StringListConverter();
+
+  @override
+  List<String> fromSql(String fromDb) {
+    if (fromDb.isEmpty) return const [];
+    final decoded = jsonDecode(fromDb);
+    return (decoded as List).cast<String>();
+  }
+
+  @override
+  String toSql(List<String> value) => jsonEncode(value);
+}
+
 const txTypeConverter = EnumNameConverter(TxType.values, TxType.expense);
 const txSourceConverter = EnumNameConverter(TxSource.values, TxSource.manual);
 const txStatusConverter = EnumNameConverter(TxStatus.values, TxStatus.active);
+const categoryKindConverter =
+    EnumNameConverter(CategoryKind.values, CategoryKind.expense);
+const accountKindConverter =
+    EnumNameConverter(AccountKind.values, AccountKind.cash);
+const rateSourceConverter =
+    EnumNameConverter(RateSource.values, RateSource.manual);

@@ -1,9 +1,9 @@
 import 'package:powersync/powersync.dart';
 
-/// PowerSync client schema — the local synced tables mirrored from Postgres
-/// (docs/04 §5, docs/13 §5.4). `id` is implicit (text PK). Every column maps to
-/// the Drift table; the sync columns (`user_id`, `updated_at`, `deleted`,
-/// `version`) make rows converge per FR-SYNC-03.
+/// PowerSync client schema — local synced tables mirrored from Postgres (docs/04
+/// §5, docs/13 §5.4). `id` is implicit (text PK). Booleans are stored as
+/// integers; money/dates as text (docs/04 §3.4). Column names are snake_case to
+/// match Drift's generated columns and the Postgres mirror.
 const powersyncSchema = Schema([
   Table('transactions', [
     Column.text('user_id'),
@@ -15,6 +15,8 @@ const powersyncSchema = Schema([
     Column.text('currency_code'),
     Column.text('total_amount'),
     Column.text('base_amount'),
+    Column.text('exchange_rate'),
+    Column.text('tax_amount'),
     Column.text('note'),
     Column.text('source'),
     Column.text('status'),
@@ -27,5 +29,98 @@ const powersyncSchema = Schema([
       IndexedColumn.ascending('user_id'),
       IndexedColumn.ascending('updated_at'),
     ]),
+    Index('tx_account', [IndexedColumn.ascending('account_id')]),
+  ]),
+  Table('line_items', [
+    Column.text('user_id'),
+    Column.text('transaction_id'),
+    Column.text('description'),
+    Column.text('quantity'),
+    Column.text('unit_price'),
+    Column.text('line_amount'),
+    Column.text('category_id'),
+    Column.text('tax_rate'),
+    Column.real('ocr_confidence'),
+    Column.integer('sort_order'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ], indexes: [
+    Index('li_transaction', [IndexedColumn.ascending('transaction_id')]),
+    Index('li_category', [IndexedColumn.ascending('category_id')]),
+  ]),
+  Table('categories', [
+    Column.text('user_id'),
+    Column.text('parent_id'),
+    Column.text('name'),
+    Column.text('kind'),
+    Column.text('icon'),
+    Column.text('color_hex'),
+    Column.integer('is_archived'),
+    Column.integer('sort_order'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('accounts', [
+    Column.text('user_id'),
+    Column.text('name'),
+    Column.text('kind'),
+    Column.text('currency_code'),
+    Column.text('opening_balance'),
+    Column.integer('is_archived'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('merchants', [
+    Column.text('user_id'),
+    Column.text('name'),
+    Column.text('default_category_id'),
+    Column.text('aliases'),
+    Column.text('notes'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('tags', [
+    Column.text('user_id'),
+    Column.text('name'),
+    Column.text('color_hex'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('line_item_tags', [
+    Column.text('user_id'),
+    Column.text('line_item_id'),
+    Column.text('tag_id'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('exchange_rates', [
+    Column.text('user_id'),
+    Column.text('from_code'),
+    Column.text('to_code'),
+    Column.text('rate'),
+    Column.text('date'),
+    Column.text('source'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  Table('settings', [
+    Column.text('user_id'),
+    Column.text('value'),
+    Column.text('updated_at'),
+    Column.integer('deleted'),
+    Column.integer('version'),
+  ]),
+  // Shared reference data, not per-user: local-only, seeded on each device.
+  Table.localOnly('currencies', [
+    Column.text('symbol'),
+    Column.integer('decimal_digits'),
+    Column.text('name'),
   ]),
 ]);

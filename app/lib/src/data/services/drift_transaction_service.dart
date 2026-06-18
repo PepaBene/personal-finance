@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../application/auth_service.dart';
 import '../../application/transaction_service.dart';
+import '../../domain/entities/line_item.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/money.dart';
 import '../local/app_database.dart' as db;
@@ -31,15 +32,46 @@ class DriftTransactionService implements TransactionService {
   }
 
   @override
-  Future<TransactionEntity> upsert(TransactionEntity tx) async {
+  Stream<List<LineItemEntity>> watchLineItems(String transactionId) async* {
+    final tx = await (_db.select(_db.transactions)
+          ..where((t) => t.id.equals(transactionId)))
+        .getSingleOrNull();
+    final currency = tx?.currencyCode ?? '';
+    yield* _db
+        .watchLineItems(transactionId)
+        .map((rows) => rows.map((r) => _toLine(r, currency)).toList());
+  }
+
+  @override
+  Future<TransactionEntity> upsert(TransactionEntity tx) =>
+      upsertWithLines(tx, const []);
+
+  @override
+  Future<TransactionEntity> upsertWithLines(
+    TransactionEntity header,
+    List<LineItemEntity> lines, {
+    List<String> removedLineItemIds = const [],
+  }) async {
     final now = DateTime.now().toUtc();
-    final next = tx.copyWith(updatedAt: now, version: tx.version + 1);
-    await _db.upsertTransaction(_toCompanion(next));
+    final next = header.copyWith(updatedAt: now, version: header.version + 1);
+    await _db.upsertTransactionWithLines(
+      header: _toCompanion(next),
+      lines: lines
+          .map((l) => _toLineCompanion(
+                l.copyWith(updatedAt: now, version: l.version + 1),
+              ))
+          .toList(),
+      removedLineItemIds: removedLineItemIds,
+      now: now,
+    );
     return next;
   }
 
   @override
-  Future<void> softDelete(String id) => _db.tombstone(id, DateTime.now().toUtc());
+  Future<void> softDelete(String id) =>
+      _db.softDeleteTransaction(id, DateTime.now().toUtc());
+
+  // --- mapping ----------------------------------------------------------
 
   TransactionEntity _toEntity(db.Transaction r) => TransactionEntity(
         id: r.id,
@@ -50,12 +82,29 @@ class DriftTransactionService implements TransactionService {
         merchantId: r.merchantId,
         counterAccountId: r.counterAccountId,
         total: Money(r.totalAmount, r.currencyCode),
-        // Phase 0 has no FX yet: base shares the original currency (docs/04 §3).
         base: Money(r.baseAmount, r.currencyCode),
         note: r.note,
         source: r.source,
         status: r.status,
         createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
+
+  LineItemEntity _toLine(db.LineItem r, String currencyCode) => LineItemEntity(
+        id: r.id,
+        userId: r.userId,
+        transactionId: r.transactionId,
+        description: r.description,
+        quantity: r.quantity,
+        lineAmount: Money(r.lineAmount, currencyCode),
+        categoryId: r.categoryId,
+        unitPrice:
+            r.unitPrice == null ? null : Money(r.unitPrice!, currencyCode),
+        taxRate: r.taxRate,
+        ocrConfidence: r.ocrConfidence,
+        sortOrder: r.sortOrder,
         updatedAt: r.updatedAt,
         deleted: r.deleted,
         version: r.version,
@@ -71,7 +120,7 @@ class DriftTransactionService implements TransactionService {
         accountId: e.accountId,
         merchantId: Value(e.merchantId),
         counterAccountId: Value(e.counterAccountId),
-        currencyCode: e.currencyCode,
+        currencyCode: e.total.currencyCode,
         totalAmount: e.total.amount,
         baseAmount: e.base.amount,
         note: Value(e.note),
@@ -81,9 +130,22 @@ class DriftTransactionService implements TransactionService {
         deleted: Value(e.deleted),
         version: Value(e.version),
       );
-}
 
-extension on TransactionEntity {
-  // currencyCode is duplicated on the entity for the row; keep it explicit.
-  String get currencyCode => total.currencyCode;
+  db.LineItemsCompanion _toLineCompanion(LineItemEntity e) =>
+      db.LineItemsCompanion.insert(
+        id: e.id,
+        userId: e.userId,
+        updatedAt: e.updatedAt,
+        transactionId: e.transactionId,
+        description: e.description,
+        quantity: e.quantity,
+        lineAmount: e.lineAmount.amount,
+        categoryId: e.categoryId,
+        unitPrice: Value(e.unitPrice?.amount),
+        taxRate: Value(e.taxRate),
+        ocrConfidence: Value(e.ocrConfidence),
+        sortOrder: Value(e.sortOrder),
+        deleted: Value(e.deleted),
+        version: Value(e.version),
+      );
 }

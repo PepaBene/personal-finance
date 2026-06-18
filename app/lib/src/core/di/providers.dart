@@ -6,8 +6,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../application/account_service.dart';
 import '../../application/app_lock_service.dart';
 import '../../application/auth_service.dart';
+import '../../application/category_service.dart';
+import '../../application/currency_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
@@ -15,6 +18,10 @@ import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
+import '../../data/seed/database_seeder.dart';
+import '../../data/services/drift_account_service.dart';
+import '../../data/services/drift_category_service.dart';
+import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_transaction_service.dart';
 import '../../data/services/supabase_auth_service.dart';
 import '../env/app_config.dart';
@@ -96,6 +103,37 @@ final transactionServiceProvider =
     FutureProvider<TransactionService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftTransactionService(db, ref.watch(authServiceProvider));
+});
+
+final categoryServiceProvider = FutureProvider<CategoryService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCategoryService(db, ref.watch(authServiceProvider));
+});
+
+final accountServiceProvider = FutureProvider<AccountService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAccountService(db, ref.watch(authServiceProvider));
+});
+
+final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCurrencyService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
+
+/// Seeds reference + per-user default data once the store is open and the user
+/// is known (FR-CAT-01, FR-CUR-01). Awaited by the unlock flow.
+final bootstrapProvider = FutureProvider<void>((ref) async {
+  final auth = ref.watch(authServiceProvider).current;
+  if (!auth.isSignedIn) return;
+  final db = await ref.watch(appDatabaseProvider.future);
+  await DatabaseSeeder(db).seed(
+    userId: auth.session!.userId,
+    baseCurrency: ref.watch(appConfigProvider).baseCurrencyCode,
+  );
 });
 
 // --- Sync (PowerSync) ---------------------------------------------------

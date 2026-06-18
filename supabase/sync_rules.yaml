@@ -1,16 +1,18 @@
 # PowerSync sync rules (docs/04 §5, docs/13 §5.4).
 # Stream ONLY the authenticated user's rows to that user's devices. RLS is the
 # server-side backstop; these rules are the per-user bucket partition.
+# `currencies` is NOT synced — it is local-only reference data seeded on device.
 bucket_definitions:
   user_data:
     # The bucket is parameterized by the JWT's user id.
     parameters: select request.user_id() as user_id
     data:
-      - select * from transactions where user_id = bucket.user_id
-      # Phase 1 adds the rest of the synced tables here:
-      # - select * from line_items   where user_id = bucket.user_id
-      # - select * from categories   where user_id = bucket.user_id
-      # - select * from accounts     where user_id = bucket.user_id
-      # - select * from merchants    where user_id = bucket.user_id
-      # - select * from tags         where user_id = bucket.user_id
-      # - select * from line_item_tags where user_id = bucket.user_id
+      - select * from transactions   where user_id = bucket.user_id
+      - select * from line_items     where user_id = bucket.user_id
+      - select * from categories     where user_id = bucket.user_id
+      - select * from accounts       where user_id = bucket.user_id
+      - select * from merchants      where user_id = bucket.user_id
+      - select * from tags           where user_id = bucket.user_id
+      - select * from line_item_tags where user_id = bucket.user_id
+      - select * from exchange_rates where user_id = bucket.user_id
+      - select * from settings       where user_id = bucket.user_id

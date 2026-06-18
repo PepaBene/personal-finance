@@ -43,6 +43,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       // observes this and brings PowerSync online now that we have both a
       // session and an unlocked store.
       ref.read(databaseKeyProvider.notifier).state = key;
+      // Seed reference + default data on first unlock (idempotent).
+      await ref.read(bootstrapProvider.future);
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {
