@@ -33,8 +33,28 @@ class Money {
   bool get isZero => amount == Decimal.zero;
 
   /// Banker's rounding applied ONLY at persistence/display boundaries.
-  Decimal roundedTo(int digits) =>
-      amount.round(scale: digits); // decimal package rounds half-to-even
+  /// Banker's rounding (round-half-to-even) to [digits] decimal places, applied
+  /// ONLY at persistence/display boundaries (ADR-005). The `decimal` package's
+  /// own `round()` is half-away-from-zero, so we implement half-to-even here.
+  Decimal roundedTo(int digits) {
+    final factor = Decimal.fromBigInt(BigInt.from(10).pow(digits));
+    final scaled = amount * factor;
+    final floorVal = scaled.floor(); // integer Decimal, toward -infinity
+    final frac = scaled - floorVal; // in [0, 1)
+    final half = Decimal.parse('0.5');
+
+    final Decimal unit;
+    if (frac < half) {
+      unit = floorVal;
+    } else if (frac > half) {
+      unit = floorVal + Decimal.one;
+    } else {
+      // Exactly halfway → pick the even neighbour.
+      final isEven = floorVal.toBigInt() % BigInt.two == BigInt.zero;
+      unit = isEven ? floorVal : floorVal + Decimal.one;
+    }
+    return (unit / factor).toDecimal(scaleOnInfinitePrecision: digits);
+  }
 
   /// Canonical full-precision string for storage (no float, no locale).
   String toStorageString() => amount.toString();

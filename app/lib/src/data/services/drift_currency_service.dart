@@ -80,9 +80,10 @@ class DriftCurrencyService implements CurrencyService {
     if (rateRow == null) return const ConversionResult.rateMissing();
 
     final digits = await _baseDigits(base);
-    final converted = (amount.amount * rateRow.rate).round(scale: digits);
+    // Banker's rounding at the conversion boundary (ADR-005) via Money.
+    final rounded = Money(amount.amount * rateRow.rate, base).roundedTo(digits);
     return ConversionResult.converted(
-      Money(converted, base),
+      Money(rounded, base),
       rate: rateRow.rate.toString(),
     );
   }
