@@ -1,0 +1,8 @@
+# Melos workspace root. This package is never published — it only hosts the
+# melos tooling that orchestrates `app/` and `packages/*`.
+name: ledgerly_workspace
+publish_to: none
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+dev_dependencies:
+  melos: ^3.4.0

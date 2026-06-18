@@ -1,0 +1,133 @@
+import 'package:design_system/design_system.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/utils/money_formatter.dart';
+import '../../domain/entities/transaction.dart';
+import 'add_transaction_sheet.dart';
+import 'transactions_view_model.dart';
+
+/// The Phase 0 vertical slice: create & list transactions through every layer,
+/// persisted to the encrypted local DB and (when cloud-configured) converging
+/// across devices via PowerSync.
+class TransactionsScreen extends ConsumerWidget {
+  const TransactionsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final async = ref.watch(transactionsProvider);
+
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => AddTransactionSheet.show(context, ref),
+        icon: const Icon(Icons.add),
+        label: Text(l10n.transactionsAddAction),
+      ),
+      body: async.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: EdgeInsets.all(context.space.lg),
+            child: Text('${l10n.syncStatusError}: $e'),
+          ),
+        ),
+        data: (items) => items.isEmpty
+            ? _Empty(l10n: l10n)
+            : ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, i) =>
+                    _TransactionTile(tx: items[i], ref: ref),
+              ),
+      ),
+    );
+  }
+}
+
+class _TransactionTile extends StatelessWidget {
+  const _TransactionTile({required this.tx, required this.ref});
+
+  final TransactionEntity tx;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final formatter = MoneyFormatter(locale);
+    final dateText = DateFormat.yMMMd(locale).format(tx.date.toLocal());
+
+    return Dismissible(
+      key: ValueKey(tx.id),
+      direction: DismissDirection.endToStart,
+      background: ColoredBox(
+        color: context.semantic.danger,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.space.lg),
+            child: Icon(Icons.delete_outline, color: context.colors.onError),
+          ),
+        ),
+      ),
+      onDismissed: (_) {
+        ref.read(transactionsControllerProvider).delete(tx.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transaction deleted')),
+        );
+      },
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(_iconFor(tx), size: 20),
+        ),
+        title: Text(tx.note?.isNotEmpty == true ? tx.note! : dateText),
+        subtitle: Text(dateText),
+        trailing: MoneyText(
+          formattedAmount: formatter.format(tx.total),
+          sign: switch (tx.direction) {
+            MoneyDirection.inflow => MoneySign.positive,
+            MoneyDirection.outflow => MoneySign.negative,
+            MoneyDirection.neutral => MoneySign.neutral,
+          },
+        ),
+      ),
+    );
+  }
+
+  IconData _iconFor(TransactionEntity tx) => switch (tx.direction) {
+        MoneyDirection.inflow => Icons.south_west,
+        MoneyDirection.outflow => Icons.north_east,
+        MoneyDirection.neutral => Icons.swap_horiz,
+      };
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(context.space.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.receipt_long_outlined,
+                size: 56, color: context.colors.onSurfaceVariant),
+            SizedBox(height: context.space.md),
+            Text(l10n.transactionsEmptyTitle, style: context.texts.titleLarge),
+            SizedBox(height: context.space.xs),
+            Text(
+              l10n.transactionsEmptyBody,
+              textAlign: TextAlign.center,
+              style: context.texts.bodyMedium
+                  ?.copyWith(color: context.colors.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

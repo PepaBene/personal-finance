@@ -1,0 +1,42 @@
+{
+  "@@locale": "en",
+  "appTitle": "Ledgerly",
+  "@appTitle": { "description": "Application name shown in the app bar and OS task switcher." },
+
+  "navDashboard": "Dashboard",
+  "navTransactions": "Transactions",
+  "navAnalytics": "Analytics",
+  "navSettings": "Settings",
+
+  "authSignInTitle": "Welcome back",
+  "authSignUpTitle": "Create your account",
+  "authEmailLabel": "Email",
+  "authPasswordLabel": "Password",
+  "authSignInAction": "Sign in",
+  "authSignUpAction": "Sign up",
+  "authToggleToSignUp": "New here? Create an account",
+  "authToggleToSignIn": "Already have an account? Sign in",
+
+  "lockTitle": "Unlock Ledgerly",
+  "lockPassphraseLabel": "Passphrase",
+  "lockUnlockAction": "Unlock",
+  "lockHint": "Your data is encrypted on this device. Enter your passphrase to continue.",
+
+  "transactionsEmptyTitle": "No transactions yet",
+  "transactionsEmptyBody": "Add your first transaction to get started.",
+  "transactionsAddAction": "Add transaction",
+
+  "addTxTitle": "New transaction",
+  "addTxAmountLabel": "Amount",
+  "addTxNoteLabel": "Note (optional)",
+  "addTxSaveAction": "Save",
+  "addTxCancelAction": "Cancel",
+
+  "syncStatusSynced": "Synced",
+  "syncStatusSyncing": "Syncing…",
+  "syncStatusOffline": "Offline",
+  "syncStatusError": "Sync error",
+
+  "commonRetry": "Retry",
+  "commonSignOut": "Sign out"
+}
