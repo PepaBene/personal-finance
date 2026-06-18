@@ -19,6 +19,7 @@ abstract class LineItemDraft with _$LineItemDraft {
     Decimal? quantity,
     Decimal? unitPrice,
     String? categoryId,
+    double? categoryConfidence,
     @Default(1.0) double confidence,
   }) = _LineItemDraft;
 }

@@ -13,6 +13,9 @@ enum AccountKind { cash, bank, card, other }
 
 enum DocType { receipt, invoice, bill, paycheck, other }
 
+/// How a [CategorizationRule] matches a transaction/line item (docs/04 §4.1).
+enum CategoryMatchType { merchantEquals, descriptionContains, regex }
+
 enum ScanStatus { pending, parsed, reviewed, failed }
 
 /// Provenance of an exchange rate (docs/04 §3.2).
