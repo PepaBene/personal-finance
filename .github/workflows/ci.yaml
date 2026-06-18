@@ -75,6 +75,8 @@ jobs:
       - name: Generate platform runners
         working-directory: app
         run: flutter create --platforms=android --org com.ledgerly --project-name ledgerly_app .
+      - name: Enable native assets (sqlite3mc encryption build hook)
+        run: flutter config --enable-native-assets
       - name: Build appbundle (debug signing — release signing in Phase 4)
         working-directory: app
         run: flutter build appbundle --debug
@@ -96,6 +98,13 @@ jobs:
       - name: Generate platform runners
         working-directory: app
         run: flutter create --platforms=macos --org com.ledgerly --project-name ledgerly_app .
+      - name: Enable native assets (sqlite3mc encryption build hook)
+        run: flutter config --enable-native-assets
+      - name: Bump macOS deployment target (passkeys via supabase_flutter needs 13.5)
+        working-directory: app/macos
+        run: |
+          sed -i '' -E "s/platform :osx, '[0-9.]+'/platform :osx, '13.5'/" Podfile
+          sed -i '' -E "s/MACOSX_DEPLOYMENT_TARGET = [0-9.]+;/MACOSX_DEPLOYMENT_TARGET = 13.5;/g" Runner.xcodeproj/project.pbxproj
       - name: Build macOS
         working-directory: app
         run: flutter build macos --debug
