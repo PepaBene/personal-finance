@@ -45,7 +45,7 @@ dependencies:
   uuid: ^4.5.0
   # Charts (pure-Dart, all platforms) — styled from design tokens (FR-ANL-10).
   fl_chart: ^0.69.0
-  intl: ^0.19.0
+  intl: ^0.20.2 # must match flutter_localizations' pin (Flutter stable)
   logger: ^2.4.0
   csv: ^6.0.0          # CSV import/export (FR-DAT-04/05)
   file_picker: ^8.1.2  # pick/save files for import/export
