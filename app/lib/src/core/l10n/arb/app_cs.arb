@@ -391,5 +391,14 @@
   "settingsChangePassphraseNew": "Nové heslo",
   "settingsChangePassphraseAction": "Změnit",
   "settingsChangePassphraseDone": "Heslo bylo změněno",
-  "settingsChangePassphraseWrong": "Současné heslo je nesprávné"
+  "settingsChangePassphraseWrong": "Současné heslo je nesprávné",
+
+  "settingsRebuildCache": "Přebudovat mezipaměť analýz",
+  "settingsRebuildCacheSubtitle": "Zrychlí přehledy u rozsáhlé historie",
+  "settingsRebuildCacheDone": "Mezipaměť analýz přebudována ({count} řádků)",
+  "@settingsRebuildCacheDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

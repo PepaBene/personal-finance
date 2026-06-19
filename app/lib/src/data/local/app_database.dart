@@ -13,6 +13,7 @@ import 'tables/exchange_rates_table.dart';
 import 'tables/line_items_table.dart';
 import 'tables/merchant_templates_table.dart';
 import 'tables/merchants_table.dart';
+import 'tables/monthly_rollups_table.dart';
 import 'tables/recurring_templates_table.dart';
 import 'tables/settings_table.dart';
 import 'tables/tags_table.dart';
@@ -45,6 +46,7 @@ part 'app_database.g.dart';
     Budgets,
     RecurringTemplates,
     MerchantTemplates,
+    MonthlyRollups,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -53,9 +55,9 @@ class AppDatabase extends _$AppDatabase {
   /// Schema moves in lockstep with PowerSync's schema and the Postgres
   /// migration (docs/04 §8). v3 adds the Phase 2 scan tables; v4 adds the
   /// Phase 3 budgets + recurring-template tables; v5 adds per-merchant OCR
-  /// templates (FR-SCAN-10).
+  /// templates (FR-SCAN-10); v6 adds the local-only monthly rollup cache.
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -361,4 +363,32 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> upsertMerchantTemplate(MerchantTemplatesCompanion tpl) =>
       into(merchantTemplates).insertOnConflictUpdate(tpl);
+
+  // --- Monthly rollup cache (docs/11 §11, NFR-01/02) --------------------
+
+  /// Atomically replace [userId]'s rollup rows with a freshly-computed set.
+  Future<void> replaceMonthlyRollups(
+    String userId,
+    List<MonthlyRollupsCompanion> rows,
+  ) {
+    return transaction(() async {
+      await (delete(monthlyRollups)..where((r) => r.userId.equals(userId)))
+          .go();
+      await batch((b) => b.insertAll(monthlyRollups, rows));
+    });
+  }
+
+  Future<List<MonthlyRollup>> getMonthlyRollups(String userId) {
+    return (select(monthlyRollups)
+          ..where((r) => r.userId.equals(userId))
+          ..orderBy([(r) => OrderingTerm.asc(r.periodMonth)]))
+        .get();
+  }
+
+  Stream<List<MonthlyRollup>> watchMonthlyRollups(String userId) {
+    return (select(monthlyRollups)
+          ..where((r) => r.userId.equals(userId))
+          ..orderBy([(r) => OrderingTerm.asc(r.periodMonth)]))
+        .watch();
+  }
 }

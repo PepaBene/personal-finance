@@ -392,5 +392,14 @@
   "settingsChangePassphraseNew": "New passphrase",
   "settingsChangePassphraseAction": "Change",
   "settingsChangePassphraseDone": "Passphrase changed",
-  "settingsChangePassphraseWrong": "Current passphrase is incorrect"
+  "settingsChangePassphraseWrong": "Current passphrase is incorrect",
+
+  "settingsRebuildCache": "Rebuild analytics cache",
+  "settingsRebuildCacheSubtitle": "Speeds up dashboards on large histories",
+  "settingsRebuildCacheDone": "Analytics cache rebuilt ({count} rows)",
+  "@settingsRebuildCacheDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

@@ -174,6 +174,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 enabled: !_busy,
                 onTap: _import,
               ),
+              ListTile(
+                leading: const Icon(Icons.speed_outlined),
+                title: Text(l10n.settingsRebuildCache),
+                subtitle: Text(l10n.settingsRebuildCacheSubtitle),
+                enabled: !_busy,
+                onTap: _rebuildCache,
+              ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.payments_outlined),
@@ -221,6 +228,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await prefsCtrl.setBiometricEnabled(false);
       }
       ref.invalidate(biometricUnlockAvailableProvider);
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(friendlyError(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Rebuild the monthly rollup cache for instant analytics (NFR-01/02).
+  Future<void> _rebuildCache() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final service = await ref.read(rollupServiceProvider.future);
+      final rows = await service.rebuild();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.settingsRebuildCacheDone(rows))),
+      );
     } on Exception catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(friendlyError(e))));
     } finally {

@@ -33,6 +33,8 @@ const powersyncSchema = Schema([
         IndexedColumn.ascending('updated_at'),
       ]),
       Index('tx_account', [IndexedColumn.ascending('account_id')]),
+      // Date drives every analytics range filter (NFR-01, docs/04 §7).
+      Index('tx_date', [IndexedColumn.ascending('date')]),
     ],
   ),
   Table(
@@ -219,6 +221,13 @@ const powersyncSchema = Schema([
       ]),
     ],
   ),
+  // Derived analytics cache, not synced: rebuilt locally (docs/11 §11).
+  Table.localOnly('monthly_rollups', [
+    Column.text('user_id'),
+    Column.text('period_month'),
+    Column.text('category_id'),
+    Column.text('base_amount'),
+  ]),
   // Shared reference data, not per-user: local-only, seeded on each device.
   Table.localOnly('currencies', [
     Column.text('symbol'),

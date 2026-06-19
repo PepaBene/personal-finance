@@ -31,6 +31,7 @@ import '../../application/merchant_template_service.dart';
 import '../../application/ocr_engine.dart';
 import '../../application/recurring_service.dart';
 import '../../application/report_service.dart';
+import '../../application/rollup_service.dart';
 import '../../application/scan_coordinator.dart';
 import '../../application/scan_ingest.dart';
 import '../../application/scan_service.dart';
@@ -62,6 +63,7 @@ import '../../data/services/drift_analytics_service.dart';
 import '../../data/reports/pdf_report_service.dart';
 import '../../data/services/drift_category_service.dart';
 import '../../data/services/drift_recurring_service.dart';
+import '../../data/services/drift_rollup_service.dart';
 import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_import_export_service.dart';
 import '../../data/services/drift_merchant_template_service.dart';
@@ -311,6 +313,16 @@ final attachmentStoreProvider = FutureProvider<AttachmentStore>((ref) async {
 final reportServiceProvider = Provider<ReportService>(
   (ref) => const PdfReportService(),
 );
+
+/// Monthly rollup cache maintainer (NFR-01/02). Local-only derived cache.
+final rollupServiceProvider = FutureProvider<RollupService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftRollupService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
 
 final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
