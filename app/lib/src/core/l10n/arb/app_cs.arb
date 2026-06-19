@@ -351,5 +351,15 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "settingsAppearance": "Vzhled a jazyk",
+  "settingsThemeMode": "Motiv",
+  "settingsThemeSystem": "Systém",
+  "settingsThemeLight": "Světlý",
+  "settingsThemeDark": "Tmavý",
+  "settingsHighContrast": "Vysoký kontrast",
+  "settingsReduceMotion": "Omezit animace",
+  "settingsLanguage": "Jazyk",
+  "settingsLanguageSystem": "Výchozí systému"
 }

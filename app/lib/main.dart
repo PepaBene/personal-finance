@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/core/di/providers.dart';
 import 'src/core/env/app_config.dart';
+import 'src/core/preferences/preferences_controller.dart';
+import 'src/data/preferences/secure_preferences_service.dart';
 
 /// Entry point. Initializes the Supabase client (configuration, not network —
 /// the app then runs fully offline, FR-SYNC-01) and starts the Riverpod tree.
@@ -31,9 +34,19 @@ Future<void> main() async {
     anonKey: config.supabaseAnonKey,
   );
 
+  // Load device-local preferences before the first frame so the chosen locale,
+  // theme, and contrast apply immediately (no flash of the wrong theme).
+  const storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+  final preferences = await const SecurePreferencesService(storage).load();
+
   runApp(
     ProviderScope(
-      overrides: [appConfigProvider.overrideWithValue(config)],
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        initialPreferencesProvider.overrideWithValue(preferences),
+      ],
       child: const LedgerlyApp(),
     ),
   );

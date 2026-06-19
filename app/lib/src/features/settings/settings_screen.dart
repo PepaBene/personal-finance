@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/preferences.dart';
 import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/preferences/preferences_controller.dart';
 import '../../core/router/app_router.dart';
 import '../../core/utils/error_text.dart';
 import '../transactions/capture_providers.dart';
@@ -28,6 +30,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final base = ref.watch(baseCurrencyProvider).valueOrNull;
+    final prefs = ref.watch(preferencesProvider);
+    final prefsCtrl = ref.read(preferencesProvider.notifier);
 
     return Column(
       children: [
@@ -62,6 +66,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: Text(l10n.settingsRecurring),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _busy ? null : () => context.push(Routes.recurring),
+              ),
+              const Divider(height: 1),
+              _SectionHeader(l10n.settingsAppearance),
+              ListTile(
+                leading: const Icon(Icons.brightness_6_outlined),
+                title: Text(l10n.settingsThemeMode),
+                trailing: DropdownButton<AppThemeMode>(
+                  value: prefs.themeMode,
+                  underline: const SizedBox.shrink(),
+                  onChanged: (m) =>
+                      m == null ? null : prefsCtrl.setThemeMode(m),
+                  items: [
+                    DropdownMenuItem(
+                      value: AppThemeMode.system,
+                      child: Text(l10n.settingsThemeSystem),
+                    ),
+                    DropdownMenuItem(
+                      value: AppThemeMode.light,
+                      child: Text(l10n.settingsThemeLight),
+                    ),
+                    DropdownMenuItem(
+                      value: AppThemeMode.dark,
+                      child: Text(l10n.settingsThemeDark),
+                    ),
+                  ],
+                ),
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.contrast),
+                title: Text(l10n.settingsHighContrast),
+                value: prefs.highContrast,
+                onChanged: prefsCtrl.setHighContrast,
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.animation_outlined),
+                title: Text(l10n.settingsReduceMotion),
+                value: prefs.reduceMotion,
+                onChanged: prefsCtrl.setReduceMotion,
+              ),
+              ListTile(
+                leading: const Icon(Icons.translate_outlined),
+                title: Text(l10n.settingsLanguage),
+                trailing: DropdownButton<String?>(
+                  value: prefs.localeTag,
+                  underline: const SizedBox.shrink(),
+                  onChanged: prefsCtrl.setLocaleTag,
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(l10n.settingsLanguageSystem),
+                    ),
+                    const DropdownMenuItem(value: 'en', child: Text('English')),
+                    const DropdownMenuItem(value: 'cs', child: Text('Čeština')),
+                  ],
+                ),
               ),
               const Divider(height: 1),
               ListTile(
@@ -190,5 +249,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+}
+
+/// Group heading inside the settings list.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.space.md,
+        context.space.md,
+        context.space.md,
+        context.space.xs,
+      ),
+      child: Text(
+        title,
+        style: context.texts.labelLarge?.copyWith(color: context.colors.primary),
+      ),
+    );
   }
 }

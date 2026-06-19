@@ -352,5 +352,15 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "settingsAppearance": "Appearance & language",
+  "settingsThemeMode": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsHighContrast": "High contrast",
+  "settingsReduceMotion": "Reduce motion",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System default"
 }
