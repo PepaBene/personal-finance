@@ -199,6 +199,26 @@ const powersyncSchema = Schema([
       Column.integer('version'),
     ],
   ),
+  Table(
+    'merchant_templates',
+    [
+      Column.text('user_id'),
+      Column.text('merchant_key'),
+      Column.text('currency_code'),
+      Column.text('doc_type'),
+      Column.text('category_hints'),
+      Column.integer('sample_count'),
+      Column.text('updated_at'),
+      Column.integer('deleted'),
+      Column.integer('version'),
+    ],
+    indexes: [
+      Index('mtpl_user_key', [
+        IndexedColumn.ascending('user_id'),
+        IndexedColumn.ascending('merchant_key'),
+      ]),
+    ],
+  ),
   // Shared reference data, not per-user: local-only, seeded on each device.
   Table.localOnly('currencies', [
     Column.text('symbol'),

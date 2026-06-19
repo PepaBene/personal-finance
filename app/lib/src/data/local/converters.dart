@@ -46,6 +46,22 @@ class StringListConverter extends TypeConverter<List<String>, String> {
   String toSql(List<String> value) => jsonEncode(value);
 }
 
+/// Stores a `Map<String, String>` (e.g. per-merchant description→category hints)
+/// as a JSON TEXT object.
+class StringMapConverter extends TypeConverter<Map<String, String>, String> {
+  const StringMapConverter();
+
+  @override
+  Map<String, String> fromSql(String fromDb) {
+    if (fromDb.isEmpty) return const {};
+    final decoded = jsonDecode(fromDb) as Map<String, dynamic>;
+    return decoded.map((k, v) => MapEntry(k, v.toString()));
+  }
+
+  @override
+  String toSql(Map<String, String> value) => jsonEncode(value);
+}
+
 const txTypeConverter = EnumNameConverter(TxType.values, TxType.expense);
 const txSourceConverter = EnumNameConverter(TxSource.values, TxSource.manual);
 const txStatusConverter = EnumNameConverter(TxStatus.values, TxStatus.active);

@@ -20,3 +20,4 @@ bucket_definitions:
       - select * from attachments          where user_id = bucket.user_id
       - select * from budgets              where user_id = bucket.user_id
       - select * from recurring_templates  where user_id = bucket.user_id
+      - select * from merchant_templates   where user_id = bucket.user_id

@@ -23,8 +23,10 @@ import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
 import '../../application/document_parser.dart';
+import '../../application/draft_template_applier.dart';
 import '../../application/exchange_rate_provider.dart';
 import '../../application/import_export_service.dart';
+import '../../application/merchant_template_service.dart';
 import '../../application/ocr_engine.dart';
 import '../../application/recurring_service.dart';
 import '../../application/report_service.dart';
@@ -60,6 +62,7 @@ import '../../data/services/drift_category_service.dart';
 import '../../data/services/drift_recurring_service.dart';
 import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_import_export_service.dart';
+import '../../data/services/drift_merchant_template_service.dart';
 import '../../data/services/drift_transaction_service.dart';
 import '../../data/services/supabase_auth_service.dart';
 import '../env/app_config.dart';
@@ -233,14 +236,24 @@ final scanIngestProvider = Provider<ScanIngest>(
 /// (manual-entry fallback — docs/05 §6).
 final ocrEngineProvider = Provider<OcrEngine?>((ref) => createOcrEngine());
 
-/// The scan pipeline, wired with the user's categorizer; null when there is no
-/// OCR engine on this platform.
+/// Learns and stores per-merchant OCR templates (FR-SCAN-10).
+final merchantTemplateServiceProvider =
+    FutureProvider<MerchantTemplateService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftMerchantTemplateService(db, ref.watch(authServiceProvider));
+});
+
+/// The scan pipeline, wired with the user's categorizer + learned per-merchant
+/// templates; null when there is no OCR engine on this platform.
 final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
   final engine = ref.watch(ocrEngineProvider);
   if (engine == null) return null;
   final ruleSvc = await ref.watch(categorizationRuleServiceProvider.future);
   final categorizer =
       CategorizingDraftCategorizer(await ruleSvc.buildCategorizer());
+  final templateSvc = await ref.watch(merchantTemplateServiceProvider.future);
+  final templateApplier =
+      MerchantTemplateDraftApplier(await templateSvc.loadByMerchantKey());
   final base = ref.watch(appConfigProvider).baseCurrencyCode;
   final service = DefaultScanService(
     engine: engine,
@@ -248,6 +261,7 @@ final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
     parsers: const {DocType.receipt: ReceiptParser()},
     contextBuilder: () => ParseContext(defaultCurrencyCode: base),
     categorizer: categorizer,
+    templateApplier: templateApplier,
   );
   ref.onDispose(service.dispose);
   return service;

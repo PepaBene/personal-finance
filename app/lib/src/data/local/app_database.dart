@@ -11,6 +11,7 @@ import 'tables/categorization_rules_table.dart';
 import 'tables/currencies_table.dart';
 import 'tables/exchange_rates_table.dart';
 import 'tables/line_items_table.dart';
+import 'tables/merchant_templates_table.dart';
 import 'tables/merchants_table.dart';
 import 'tables/recurring_templates_table.dart';
 import 'tables/settings_table.dart';
@@ -43,6 +44,7 @@ part 'app_database.g.dart';
     Attachments,
     Budgets,
     RecurringTemplates,
+    MerchantTemplates,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -50,9 +52,10 @@ class AppDatabase extends _$AppDatabase {
 
   /// Schema moves in lockstep with PowerSync's schema and the Postgres
   /// migration (docs/04 §8). v3 adds the Phase 2 scan tables; v4 adds the
-  /// Phase 3 budgets + recurring-template tables.
+  /// Phase 3 budgets + recurring-template tables; v5 adds per-merchant OCR
+  /// templates (FR-SCAN-10).
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -331,4 +334,31 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+
+  // --- Merchant templates (docs/05 §10, FR-SCAN-10) ---------------------
+
+  /// Active learned merchant templates for [userId].
+  Future<List<MerchantTemplate>> getMerchantTemplates(String userId) {
+    return (select(merchantTemplates)
+          ..where((m) => m.userId.equals(userId) & m.deleted.equals(false)))
+        .get();
+  }
+
+  /// The template for one normalized [merchantKey], or null.
+  Future<MerchantTemplate?> merchantTemplateFor(
+    String userId,
+    String merchantKey,
+  ) {
+    return (select(merchantTemplates)
+          ..where(
+            (m) =>
+                m.userId.equals(userId) &
+                m.merchantKey.equals(merchantKey) &
+                m.deleted.equals(false),
+          ))
+        .getSingleOrNull();
+  }
+
+  Future<void> upsertMerchantTemplate(MerchantTemplatesCompanion tpl) =>
+      into(merchantTemplates).insertOnConflictUpdate(tpl);
 }
