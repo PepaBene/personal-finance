@@ -51,6 +51,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _busy ? null : () => context.push(Routes.budgets),
               ),
+              ListTile(
+                leading: const Icon(Icons.insights_outlined),
+                title: Text(l10n.settingsAnalytics),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy ? null : () => context.push(Routes.analytics),
+              ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),

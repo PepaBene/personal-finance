@@ -214,6 +214,115 @@ class DriftAnalyticsService implements AnalyticsService {
         version: r.version,
       );
 
+  // --- advanced analytics (FR-ANL-07/08/09) -----------------------------
+
+  @override
+  Stream<List<MerchantTotal>> watchTopMerchants(
+    DateRange range, {
+    int limit = 10,
+  }) async* {
+    final base = await _baseCurrency();
+    final names = await _db.merchantNames(_userId);
+    yield* _headerQuery(range).watch().map((rows) {
+      final acc = <String, Decimal>{};
+      for (final r in rows) {
+        if (r.type != TxType.expense || r.merchantId == null) continue;
+        acc[r.merchantId!] = (acc[r.merchantId!] ?? Decimal.zero) + r.baseAmount;
+      }
+      final totals = acc.entries
+          .map(
+            (e) => MerchantTotal(
+              merchantId: e.key,
+              name: names[e.key] ?? e.key,
+              total: Money(e.value, base),
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.total.amount.compareTo(a.total.amount));
+      return totals.take(limit).toList();
+    });
+  }
+
+  @override
+  Stream<List<DailySpend>> watchDailySpend(DateRange range) async* {
+    final base = await _baseCurrency();
+    yield* _headerQuery(range).watch().map((rows) {
+      final acc = <DateTime, Decimal>{};
+      for (final r in rows) {
+        if (r.type != TxType.expense) continue;
+        final d = r.date.toUtc();
+        final day = DateTime.utc(d.year, d.month, d.day);
+        acc[day] = (acc[day] ?? Decimal.zero) + r.baseAmount;
+      }
+      final days = acc.keys.toList()..sort();
+      return [
+        for (final day in days)
+          DailySpend(day: day, amount: Money(acc[day]!, base)),
+      ];
+    });
+  }
+
+  @override
+  Future<List<CategoryComparison>> categoryComparison(
+    DateRange current,
+    DateRange previous,
+  ) async {
+    final base = await _baseCurrency();
+    final cur = await _spendByCategory(current).first;
+    final prev = await _spendByCategory(previous).first;
+    final ids = {...cur.keys, ...prev.keys};
+    Money money(Rational? r) =>
+        Money((r ?? Rational.zero).toDecimal(scaleOnInfinitePrecision: 2), base);
+    final out = [
+      for (final id in ids)
+        CategoryComparison(
+          categoryId: id,
+          current: money(cur[id]),
+          previous: money(prev[id]),
+        ),
+    ]..sort((a, b) {
+        final da = (a.current.amount - a.previous.amount).abs();
+        final dbv = (b.current.amount - b.previous.amount).abs();
+        return dbv.compareTo(da);
+      });
+    return out;
+  }
+
+  @override
+  Future<List<WaterfallStep>> cashflowWaterfall(
+    DateRange range, {
+    int topCategories = 5,
+  }) async {
+    final base = await _baseCurrency();
+    final summary = await watchSummary(range).first;
+    final byCat = await watchSpendByCategory(range).first;
+
+    final steps = <WaterfallStep>[
+      WaterfallStep(key: 'income', delta: summary.income),
+    ];
+    final top = byCat.take(topCategories).toList();
+    var topSum = Decimal.zero;
+    for (final c in top) {
+      topSum += c.total.amount;
+      steps.add(
+        WaterfallStep(
+          key: c.categoryId,
+          delta: Money(Decimal.zero - c.total.amount, base),
+        ),
+      );
+    }
+    final other = summary.expense.amount - topSum;
+    if (other > Decimal.zero) {
+      steps.add(
+        WaterfallStep(key: 'other', delta: Money(Decimal.zero - other, base)),
+      );
+    }
+    steps.add(
+      WaterfallStep(key: 'net', delta: summary.net, isTotal: true),
+    );
+    return steps;
+  }
+
   // --- helpers -----------------------------------------------------------
 
   Selectable<db.Transaction> _headerQuery(DateRange range) {

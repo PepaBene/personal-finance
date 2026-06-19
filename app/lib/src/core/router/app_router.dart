@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
+import '../../features/analytics/analytics_screen.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/budgets/budgets_screen.dart';
 import '../../features/categories/categories_screen.dart';
@@ -82,6 +83,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.budgets,
         builder: (_, __) => const BudgetsScreen(),
+      ),
+      GoRoute(
+        path: Routes.analytics,
+        builder: (_, __) => const AnalyticsScreen(),
       ),
       // Reached from the scan flow with the captured ScanResult (draft + image
       // bytes) as `extra`. Full-screen, outside the shell chrome.

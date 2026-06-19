@@ -266,5 +266,18 @@
   "budgetDelete": "Smazat rozpočet",
   "budgetValidationCategory": "Vyberte kategorii.",
   "budgetValidationAmount": "Zadejte limit větší než nula.",
-  "dashboardBudgetAlertsTitle": "Upozornění na rozpočet"
+  "dashboardBudgetAlertsTitle": "Upozornění na rozpočet",
+
+  "settingsAnalytics": "Pokročilé analýzy",
+  "analyticsTitle": "Analýzy",
+  "analyticsTopMerchants": "Top obchodníci",
+  "analyticsHeatmap": "Denní výdaje",
+  "analyticsComparison": "Změna kategorií oproti předchozímu období",
+  "analyticsTreemap": "Složení kategorií",
+  "analyticsWaterfall": "Vodopád peněžních toků",
+  "analyticsPrevious": "Předchozí",
+  "analyticsCurrent": "Aktuální",
+  "analyticsOther": "Ostatní",
+  "waterfallIncome": "Příjem",
+  "waterfallNet": "Čistý tok"
 }

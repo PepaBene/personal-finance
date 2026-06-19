@@ -267,5 +267,18 @@
   "budgetDelete": "Delete budget",
   "budgetValidationCategory": "Choose a category.",
   "budgetValidationAmount": "Enter a limit greater than zero.",
-  "dashboardBudgetAlertsTitle": "Budget alerts"
+  "dashboardBudgetAlertsTitle": "Budget alerts",
+
+  "settingsAnalytics": "Advanced analytics",
+  "analyticsTitle": "Analytics",
+  "analyticsTopMerchants": "Top merchants",
+  "analyticsHeatmap": "Daily spending",
+  "analyticsComparison": "Category change vs previous period",
+  "analyticsTreemap": "Category composition",
+  "analyticsWaterfall": "Cash-flow waterfall",
+  "analyticsPrevious": "Previous",
+  "analyticsCurrent": "Current",
+  "analyticsOther": "Other",
+  "waterfallIncome": "Income",
+  "waterfallNet": "Net"
 }
