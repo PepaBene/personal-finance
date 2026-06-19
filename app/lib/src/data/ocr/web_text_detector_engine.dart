@@ -40,16 +40,19 @@ class WebTextDetectorEngine implements OcrEngine {
     CancellationToken? token,
   }) async {
     final sw = Stopwatch()..start();
+    token?.throwIfCancelled();
     final blob = web.Blob(
       [image.bytes.toJS].toJS,
       web.BlobPropertyBag(type: 'image/*'),
     );
     final bitmap = await web.window.createImageBitmap(blob).toDart;
+    token?.throwIfCancelled();
     final w = bitmap.width.toDouble();
     final h = bitmap.height.toDouble();
 
     final detected =
         (await _TextDetector().detect(bitmap as JSAny).toDart).toDart;
+    token?.throwIfCancelled();
 
     final lines = <OcrLine>[];
     final full = StringBuffer();

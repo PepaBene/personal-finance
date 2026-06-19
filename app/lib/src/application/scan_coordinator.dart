@@ -51,6 +51,8 @@ class ScanCoordinator {
           token: token,
         );
         return ScanResult(draft: draft, imageBytes: doc.bytes, usedOcr: true);
+      } on ScanCancelled {
+        return null; // user aborted — do not fall through to manual entry
       } on Object {
         // OCR/parse failed — fall through to manual entry (docs/05 §6).
       }

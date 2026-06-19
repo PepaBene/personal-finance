@@ -21,6 +21,12 @@ enum ScanStatus { pending, parsed, reviewed, failed }
 /// Provenance of an exchange rate (docs/04 §3.2).
 enum RateSource { manual, fetched }
 
+/// Budget period (docs/04 §4.2). Monthly is the only period in v0.3 (FR-BUD-01).
+enum BudgetPeriod { monthly }
+
+/// Recurrence cadence for a [RecurringTemplate] (docs/04 §4.3, FR-CAP-07).
+enum RecurringFrequency { weekly, monthly, yearly }
+
 /// Resolve an enum from its stored [Enum.name], falling back to [fallback].
 T enumByName<T extends Enum>(List<T> values, String? name, T fallback) {
   for (final v in values) {

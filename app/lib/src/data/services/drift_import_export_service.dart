@@ -70,12 +70,12 @@ class DriftImportExportService implements ImportExportService {
         t.id,
         dateStr,
         t.type.name,
-        accountNames[t.accountId] ?? '',
-        accountNames[t.counterAccountId] ?? '',
+        _csvSafe(accountNames[t.accountId] ?? ''),
+        _csvSafe(accountNames[t.counterAccountId] ?? ''),
         t.currencyCode,
         t.totalAmount.toString(),
         t.baseAmount.toString(),
-        t.note ?? '',
+        _csvSafe(t.note ?? ''),
       ];
       if (lines.isEmpty) {
         rows.add([...commonHead, '', t.totalAmount.toString(), '']);
@@ -83,14 +83,23 @@ class DriftImportExportService implements ImportExportService {
         for (final l in lines) {
           rows.add([
             ...commonHead,
-            l.description,
+            _csvSafe(l.description),
             l.lineAmount.toString(),
-            categoryNames[l.categoryId] ?? '',
+            _csvSafe(categoryNames[l.categoryId] ?? ''),
           ]);
         }
       }
     }
     return ListToCsvConverter().convert(rows);
+  }
+
+  /// Neutralize spreadsheet formula injection: a cell that a spreadsheet would
+  /// evaluate as a formula (starts with = + - @, tab or CR) is prefixed with a
+  /// single quote so it is shown literally (OWASP CSV-injection guidance).
+  static String _csvSafe(String value) {
+    if (value.isEmpty) return value;
+    const triggers = {'=', '+', '-', '@', '\t', '\r'};
+    return triggers.contains(value[0]) ? "'$value" : value;
   }
 
   // --- import ------------------------------------------------------------

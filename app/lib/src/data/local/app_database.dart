@@ -5,12 +5,16 @@ import '../../domain/enums.dart';
 import 'converters.dart'; // converters referenced by generated companions
 import 'tables/accounts_table.dart';
 import 'tables/attachments_table.dart';
+import 'tables/budgets_table.dart';
 import 'tables/categories_table.dart';
 import 'tables/categorization_rules_table.dart';
 import 'tables/currencies_table.dart';
 import 'tables/exchange_rates_table.dart';
 import 'tables/line_items_table.dart';
+import 'tables/merchant_templates_table.dart';
 import 'tables/merchants_table.dart';
+import 'tables/monthly_rollups_table.dart';
+import 'tables/recurring_templates_table.dart';
 import 'tables/settings_table.dart';
 import 'tables/tags_table.dart';
 import 'tables/transactions_table.dart';
@@ -39,15 +43,21 @@ part 'app_database.g.dart';
     Settings,
     CategorizationRules,
     Attachments,
+    Budgets,
+    RecurringTemplates,
+    MerchantTemplates,
+    MonthlyRollups,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   /// Schema moves in lockstep with PowerSync's schema and the Postgres
-  /// migration (docs/04 §8). v3 adds the Phase 2 scan tables.
+  /// migration (docs/04 §8). v3 adds the Phase 2 scan tables; v4 adds the
+  /// Phase 3 budgets + recurring-template tables; v5 adds per-merchant OCR
+  /// templates (FR-SCAN-10); v6 adds the local-only monthly rollup cache.
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -169,11 +179,14 @@ class AppDatabase extends _$AppDatabase {
     return {for (final c in rows) c.name.toLowerCase(): c.id};
   }
 
+  /// Count of the user's non-tombstoned categories (the seed guard, so a user
+  /// who deleted every category gets the defaults re-seeded).
   Future<int> countCategories(String userId) async {
     final count = countAll();
     final row = await (selectOnly(categories)
           ..addColumns([count])
-          ..where(categories.userId.equals(userId)))
+          ..where(categories.userId.equals(userId) &
+              categories.deleted.equals(false)))
         .getSingle();
     return row.read(count) ?? 0;
   }
@@ -254,5 +267,131 @@ class AppDatabase extends _$AppDatabase {
     return (update(attachments)..where((a) => a.id.equals(id))).write(
       AttachmentsCompanion(deleted: const Value(true), updatedAt: Value(now)),
     );
+  }
+
+  // --- Merchants ---------------------------------------------------------
+
+  /// Active merchants for [userId], by name (for top-merchant analysis and the
+  /// merchant picker).
+  Stream<List<Merchant>> watchMerchants(String userId) {
+    return (select(merchants)
+          ..where((m) => m.userId.equals(userId) & m.deleted.equals(false))
+          ..orderBy([(m) => OrderingTerm.asc(m.name)]))
+        .watch();
+  }
+
+  /// Merchant id → display name, for resolving aggregates to readable labels.
+  Future<Map<String, String>> merchantNames(String userId) async {
+    final rows = await (select(merchants)
+          ..where((m) => m.userId.equals(userId) & m.deleted.equals(false)))
+        .get();
+    return {for (final m in rows) m.id: m.name};
+  }
+
+  // --- Budgets (docs/04 §4.2, FR-BUD) -----------------------------------
+
+  /// Active (non-tombstoned) budgets for [userId].
+  Stream<List<Budget>> watchBudgets(String userId) {
+    return (select(budgets)
+          ..where((b) => b.userId.equals(userId) & b.deleted.equals(false)))
+        .watch();
+  }
+
+  Future<List<Budget>> getBudgets(String userId) {
+    return (select(budgets)
+          ..where((b) => b.userId.equals(userId) & b.deleted.equals(false)))
+        .get();
+  }
+
+  Future<void> upsertBudget(BudgetsCompanion budget) =>
+      into(budgets).insertOnConflictUpdate(budget);
+
+  Future<void> softDeleteBudget(String id, DateTime now) {
+    return (update(budgets)..where((b) => b.id.equals(id))).write(
+      BudgetsCompanion(deleted: const Value(true), updatedAt: Value(now)),
+    );
+  }
+
+  // --- Recurring templates (docs/04 §4.3, FR-CAP-07) --------------------
+
+  /// Active (non-tombstoned) recurring templates for [userId], next-due first.
+  Stream<List<RecurringTemplate>> watchRecurringTemplates(String userId) {
+    return (select(recurringTemplates)
+          ..where((r) => r.userId.equals(userId) & r.deleted.equals(false))
+          ..orderBy([(r) => OrderingTerm.asc(r.nextDate)]))
+        .watch();
+  }
+
+  Future<List<RecurringTemplate>> getRecurringTemplates(String userId) {
+    return (select(recurringTemplates)
+          ..where((r) => r.userId.equals(userId) & r.deleted.equals(false)))
+        .get();
+  }
+
+  Future<void> upsertRecurringTemplate(RecurringTemplatesCompanion tpl) =>
+      into(recurringTemplates).insertOnConflictUpdate(tpl);
+
+  Future<void> softDeleteRecurringTemplate(String id, DateTime now) {
+    return (update(recurringTemplates)..where((r) => r.id.equals(id))).write(
+      RecurringTemplatesCompanion(
+        deleted: const Value(true),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  // --- Merchant templates (docs/05 §10, FR-SCAN-10) ---------------------
+
+  /// Active learned merchant templates for [userId].
+  Future<List<MerchantTemplate>> getMerchantTemplates(String userId) {
+    return (select(merchantTemplates)
+          ..where((m) => m.userId.equals(userId) & m.deleted.equals(false)))
+        .get();
+  }
+
+  /// The template for one normalized [merchantKey], or null.
+  Future<MerchantTemplate?> merchantTemplateFor(
+    String userId,
+    String merchantKey,
+  ) {
+    return (select(merchantTemplates)
+          ..where(
+            (m) =>
+                m.userId.equals(userId) &
+                m.merchantKey.equals(merchantKey) &
+                m.deleted.equals(false),
+          ))
+        .getSingleOrNull();
+  }
+
+  Future<void> upsertMerchantTemplate(MerchantTemplatesCompanion tpl) =>
+      into(merchantTemplates).insertOnConflictUpdate(tpl);
+
+  // --- Monthly rollup cache (docs/11 §11, NFR-01/02) --------------------
+
+  /// Atomically replace [userId]'s rollup rows with a freshly-computed set.
+  Future<void> replaceMonthlyRollups(
+    String userId,
+    List<MonthlyRollupsCompanion> rows,
+  ) {
+    return transaction(() async {
+      await (delete(monthlyRollups)..where((r) => r.userId.equals(userId)))
+          .go();
+      await batch((b) => b.insertAll(monthlyRollups, rows));
+    });
+  }
+
+  Future<List<MonthlyRollup>> getMonthlyRollups(String userId) {
+    return (select(monthlyRollups)
+          ..where((r) => r.userId.equals(userId))
+          ..orderBy([(r) => OrderingTerm.asc(r.periodMonth)]))
+        .get();
+  }
+
+  Stream<List<MonthlyRollup>> watchMonthlyRollups(String userId) {
+    return (select(monthlyRollups)
+          ..where((r) => r.userId.equals(userId))
+          ..orderBy([(r) => OrderingTerm.asc(r.periodMonth)]))
+        .watch();
   }
 }

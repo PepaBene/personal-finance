@@ -11,6 +11,7 @@ import '../../core/router/app_router.dart';
 import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/category.dart';
+import '../budgets/budget_providers.dart';
 import '../categories/category_visuals.dart';
 import '../transactions/capture_providers.dart';
 import 'dashboard_providers.dart';
@@ -35,6 +36,7 @@ class DashboardScreen extends ConsumerWidget {
         _presetBar(context, ref),
         SizedBox(height: context.space.md),
         _kpis(context, ref, fmt),
+        _budgetAlerts(context, ref, fmt, categories),
         SizedBox(height: context.space.lg),
         _Section(
           title: l10n.dashboardSpendingByCategory,
@@ -125,6 +127,91 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  /// Surfaces budgets that are nearing or over their limit for the current
+  /// month (FR-BUD-02, docs/11 §5.5). Hidden entirely when nothing needs
+  /// attention. Tapping opens the Budgets screen.
+  Widget _budgetAlerts(
+    BuildContext context,
+    WidgetRef ref,
+    MoneyFormatter fmt,
+    List<CategoryEntity> categories,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final statuses = ref.watch(budgetStatusProvider).valueOrNull ?? const [];
+    final alerts = statuses
+        .where((s) => s.level != BudgetAlertLevel.ok)
+        .toList(growable: false);
+    if (alerts.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: context.space.md),
+      child: Card(
+        child: InkWell(
+          onTap: () => context.push(Routes.budgets),
+          borderRadius: BorderRadius.circular(context.radii.md),
+          child: Padding(
+            padding: EdgeInsets.all(context.space.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.notifications_active_outlined,
+                      size: 18,
+                      color: context.semantic.warning,
+                    ),
+                    SizedBox(width: context.space.xs),
+                    Text(
+                      l10n.dashboardBudgetAlertsTitle,
+                      style: context.texts.titleSmall,
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, size: 18),
+                  ],
+                ),
+                SizedBox(height: context.space.xs),
+                for (final s in alerts.take(3))
+                  Padding(
+                    padding: EdgeInsets.only(top: context.space.xs),
+                    child: Row(
+                      children: [
+                        Icon(
+                          s.level == BudgetAlertLevel.over
+                              ? Icons.error_outline
+                              : Icons.warning_amber_outlined,
+                          size: 16,
+                          color: s.level == BudgetAlertLevel.over
+                              ? context.semantic.danger
+                              : context.semantic.warning,
+                        ),
+                        SizedBox(width: context.space.xs),
+                        Expanded(
+                          child: Text(
+                            categoryById(categories, s.budget.categoryId)
+                                    ?.name ??
+                                l10n.dashboardUncategorized,
+                          ),
+                        ),
+                        Text(
+                          l10n.budgetSpentOfLimit(
+                            fmt.format(s.actual),
+                            fmt.format(s.limit),
+                          ),
+                          style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _categorySection(
     BuildContext context,
     WidgetRef ref,
@@ -157,13 +244,17 @@ class DashboardScreen extends ConsumerWidget {
         final top = totals.take(6).toList();
         return Column(
           children: [
-            SizedBox(
-              height: 180,
-              child: PieChart(
-                PieChartData(
-                  sections: sections,
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 36,
+            // The donut is decorative for a screen reader; the legend rows
+            // below carry the same data accessibly (NFR-07).
+            ExcludeSemantics(
+              child: SizedBox(
+                height: 180,
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 36,
+                  ),
                 ),
               ),
             ),

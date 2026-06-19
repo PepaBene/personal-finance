@@ -241,5 +241,164 @@
     "placeholders": {
       "error": { "type": "String" }
     }
+  },
+
+  "settingsManageBudgets": "Rozpočty",
+  "budgetsTitle": "Rozpočty",
+  "budgetsAddAction": "Přidat rozpočet",
+  "budgetsEmptyTitle": "Zatím žádné rozpočty",
+  "budgetsEmptyBody": "Nastavte měsíční limit pro kategorii a sledujte své výdaje.",
+  "budgetOver": "Překročeno",
+  "budgetNearing": "Blíží se",
+  "budgetOnTrack": "V normě",
+  "budgetSpentOfLimit": "{actual} z {limit}",
+  "@budgetSpentOfLimit": {
+    "placeholders": {
+      "actual": { "type": "String" },
+      "limit": { "type": "String" }
+    }
+  },
+  "budgetNewTitle": "Nový rozpočet",
+  "budgetEditTitle": "Upravit rozpočet",
+  "budgetCategory": "Kategorie",
+  "budgetMonthlyLimit": "Měsíční limit",
+  "budgetSave": "Uložit rozpočet",
+  "budgetDelete": "Smazat rozpočet",
+  "budgetValidationCategory": "Vyberte kategorii.",
+  "budgetValidationAmount": "Zadejte limit větší než nula.",
+  "dashboardBudgetAlertsTitle": "Upozornění na rozpočet",
+
+  "settingsAnalytics": "Pokročilé analýzy",
+  "analyticsTitle": "Analýzy",
+  "analyticsTopMerchants": "Top obchodníci",
+  "analyticsHeatmap": "Denní výdaje",
+  "analyticsComparison": "Změna kategorií oproti předchozímu období",
+  "analyticsTreemap": "Složení kategorií",
+  "analyticsWaterfall": "Vodopád peněžních toků",
+  "analyticsPrevious": "Předchozí",
+  "analyticsCurrent": "Aktuální",
+  "analyticsOther": "Ostatní",
+  "waterfallIncome": "Příjem",
+  "waterfallNet": "Čistý tok",
+
+  "settingsRecurring": "Opakované transakce",
+  "recurringTitle": "Opakované",
+  "recurringGenerate": "Vygenerovat splatné",
+  "recurringAddAction": "Přidat opakované",
+  "recurringGenerated": "Vygenerováno {count} transakcí",
+  "@recurringGenerated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recurringEmptyTitle": "Žádné opakované transakce",
+  "recurringEmptyBody": "Přidejte šablonu pro automatické generování pravidelných položek, jako jsou předplatná nebo nájem.",
+  "recurringNext": "další {date}",
+  "@recurringNext": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "recurringDetectedTitle": "Zjištěná předplatná",
+  "recurringDetectedSubtitle": "{frequency} · {count} výskytů",
+  "@recurringDetectedSubtitle": {
+    "placeholders": {
+      "frequency": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "recurringCreateFromDetected": "Přidat",
+  "recurringWeekly": "Týdně",
+  "recurringMonthly": "Měsíčně",
+  "recurringYearly": "Ročně",
+  "recurringNewTitle": "Nové opakované",
+  "recurringEditTitle": "Upravit opakované",
+  "recurringName": "Název",
+  "recurringAccount": "Účet",
+  "recurringCategory": "Kategorie",
+  "recurringAmount": "Částka",
+  "recurringNextDate": "Datum dalšího",
+  "recurringActive": "Aktivní",
+  "recurringSave": "Uložit",
+  "recurringDelete": "Smazat opakované",
+  "recurringValidationName": "Zadejte název.",
+  "recurringValidationAccount": "Vyberte účet.",
+  "recurringValidationCategory": "Vyberte kategorii.",
+  "recurringValidationAmount": "Zadejte částku větší než nula.",
+
+  "analyticsExportPdf": "Exportovat PDF",
+  "reportSummary": "Souhrn",
+  "reportGeneratedOn": "Vygenerováno",
+  "reportExportDialogTitle": "Uložit report",
+  "reportFileName": "ledgerly-report.pdf",
+  "reportExportCancelled": "Export zrušen",
+  "reportExportedTo": "Report uložen do {path}",
+  "@reportExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "reportExportFailed": "Export se nezdařil: {error}",
+  "@reportExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "transactionFetchRate": "Načíst kurz online",
+  "transactionFetchRateFailed": "Kurz se nepodařilo načíst: {error}",
+  "@transactionFetchRateFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "settingsAppearance": "Vzhled a jazyk",
+  "settingsThemeMode": "Motiv",
+  "settingsThemeSystem": "Systém",
+  "settingsThemeLight": "Světlý",
+  "settingsThemeDark": "Tmavý",
+  "settingsHighContrast": "Vysoký kontrast",
+  "settingsReduceMotion": "Omezit animace",
+  "settingsLanguage": "Jazyk",
+  "settingsLanguageSystem": "Výchozí systému",
+
+  "settingsSecurity": "Zabezpečení",
+  "settingsBiometric": "Biometrické odemknutí",
+  "settingsBiometricSubtitle": "Odemknout pomocí Face ID, Touch ID nebo biometrie zařízení",
+  "settingsAutoLock": "Automatický zámek",
+  "settingsAutoLockNever": "Nikdy",
+  "settingsAutoLockMinutes": "{count} min",
+  "@settingsAutoLockMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "lockBiometricAction": "Odemknout biometrií",
+  "lockBiometricReason": "Odemknout Ledgerly",
+
+  "lockRecoveryTitle": "Uložte si záchranný kód",
+  "lockRecoveryBody": "Zapište si tento kód a uložte jej na bezpečné místo. Je to jediný způsob, jak obnovit zašifrovaná data, pokud zapomenete heslo. Nemůžeme jej za vás obnovit.",
+  "lockRecoverySaved": "Uložil(a) jsem si ho",
+  "lockForgotPassphrase": "Zapomněli jste heslo? Obnovit pomocí kódu",
+  "lockRecoverTitle": "Obnovit přístup",
+  "lockRecoverCodeField": "Záchranný kód",
+  "lockRecoverNewPassphrase": "Nové heslo",
+  "lockRecoverAction": "Obnovit",
+  "lockRecoverInvalid": "Neplatný záchranný kód",
+  "settingsChangePassphrase": "Změnit heslo",
+  "settingsChangePassphraseOld": "Současné heslo",
+  "settingsChangePassphraseNew": "Nové heslo",
+  "settingsChangePassphraseAction": "Změnit",
+  "settingsChangePassphraseDone": "Heslo bylo změněno",
+  "settingsChangePassphraseWrong": "Současné heslo je nesprávné",
+
+  "settingsRebuildCache": "Přebudovat mezipaměť analýz",
+  "settingsRebuildCacheSubtitle": "Zrychlí přehledy u rozsáhlé historie",
+  "settingsRebuildCacheDone": "Mezipaměť analýz přebudována ({count} řádků)",
+  "@settingsRebuildCacheDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

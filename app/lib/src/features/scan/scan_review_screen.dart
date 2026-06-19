@@ -539,6 +539,35 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     );
     await txSvc.upsertWithLines(mapping.header, mapping.lines);
     await _saveAttachment(mapping.header.id);
+    await _learnMerchantTemplate();
+  }
+
+  /// Remember this merchant's currency, document type, and per-item categories
+  /// so future scans from the same merchant extract better (FR-SCAN-10).
+  /// Best-effort: a learning failure must never fail the (already-saved) scan.
+  Future<void> _learnMerchantTemplate() async {
+    final merchant = _c.merchant.trim();
+    if (merchant.isEmpty) return;
+    try {
+      final hints = <String, String>{
+        for (final l in _c.lines)
+          if (l.categoryId != null && l.description.trim().isNotEmpty)
+            l.description: l.categoryId!,
+      };
+      final service = await ref.read(merchantTemplateServiceProvider.future);
+      await service.learnFromScan(
+        merchant: merchant,
+        currencyCode: _c.currencyCode.isEmpty ? null : _c.currencyCode,
+        docType: _c.docType,
+        descriptionToCategory: hints,
+      );
+      // Rebuild the pipeline so the next scan applies the updated template.
+      ref.invalidate(scanServiceProvider);
+      ref.invalidate(scanCoordinatorProvider);
+    } catch (_) {
+      // Swallow everything (incl. Errors like a lost session): the transaction
+      // is already saved; learning is an optimization, not part of the contract.
+    }
   }
 
   /// When the scan carried an image, store it client-side encrypted and link the

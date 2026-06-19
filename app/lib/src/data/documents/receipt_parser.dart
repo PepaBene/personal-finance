@@ -64,12 +64,14 @@ class ReceiptParser implements DocumentParser {
       if (_containsAny(lower, _subtotalKw)) {
         continue; // ignore subtotals
       }
-      if (_containsAny(lower, _taxKw)) {
-        tax = amount;
-        continue;
-      }
+      // Total before tax: a "celkem včetně DPH" (total-including-VAT) row holds
+      // both keywords and must be read as the total, not the tax (M5).
       if (_containsAny(lower, _totalKw)) {
         total = amount; // last total keyword wins
+        continue;
+      }
+      if (_containsAny(lower, _taxKw)) {
+        tax = amount;
         continue;
       }
 

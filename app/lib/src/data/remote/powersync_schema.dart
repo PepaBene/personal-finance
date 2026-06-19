@@ -33,6 +33,8 @@ const powersyncSchema = Schema([
         IndexedColumn.ascending('updated_at'),
       ]),
       Index('tx_account', [IndexedColumn.ascending('account_id')]),
+      // Date drives every analytics range filter (NFR-01, docs/04 §7).
+      Index('tx_date', [IndexedColumn.ascending('date')]),
     ],
   ),
   Table(
@@ -160,6 +162,72 @@ const powersyncSchema = Schema([
       Index('att_sha256', [IndexedColumn.ascending('sha256')]),
     ],
   ),
+  Table(
+    'budgets',
+    [
+      Column.text('user_id'),
+      Column.text('category_id'),
+      Column.text('period'),
+      Column.text('amount'),
+      Column.text('currency_code'),
+      Column.text('start_month'),
+      Column.integer('is_active'),
+      Column.text('updated_at'),
+      Column.integer('deleted'),
+      Column.integer('version'),
+    ],
+    indexes: [
+      Index('budget_category', [IndexedColumn.ascending('category_id')]),
+    ],
+  ),
+  Table(
+    'recurring_templates',
+    [
+      Column.text('user_id'),
+      Column.text('type'),
+      Column.text('name'),
+      Column.text('account_id'),
+      Column.text('merchant_id'),
+      Column.text('category_id'),
+      Column.text('currency_code'),
+      Column.text('amount'),
+      Column.text('note'),
+      Column.text('frequency'),
+      Column.text('next_date'),
+      Column.text('last_run_date'),
+      Column.integer('is_active'),
+      Column.text('updated_at'),
+      Column.integer('deleted'),
+      Column.integer('version'),
+    ],
+  ),
+  Table(
+    'merchant_templates',
+    [
+      Column.text('user_id'),
+      Column.text('merchant_key'),
+      Column.text('currency_code'),
+      Column.text('doc_type'),
+      Column.text('category_hints'),
+      Column.integer('sample_count'),
+      Column.text('updated_at'),
+      Column.integer('deleted'),
+      Column.integer('version'),
+    ],
+    indexes: [
+      Index('mtpl_user_key', [
+        IndexedColumn.ascending('user_id'),
+        IndexedColumn.ascending('merchant_key'),
+      ]),
+    ],
+  ),
+  // Derived analytics cache, not synced: rebuilt locally (docs/11 §11).
+  Table.localOnly('monthly_rollups', [
+    Column.text('user_id'),
+    Column.text('period_month'),
+    Column.text('category_id'),
+    Column.text('base_amount'),
+  ]),
   // Shared reference data, not per-user: local-only, seeded on each device.
   Table.localOnly('currencies', [
     Column.text('symbol'),

@@ -74,6 +74,7 @@ class _TransactionEditorScreenState
   int _version = 0;
   bool _loaded = false;
   bool _busy = false;
+  bool _fetchingRate = false;
   String? _error;
 
   @override
@@ -317,8 +318,44 @@ class _TransactionEditorScreenState
       decoration: InputDecoration(
         labelText: l10n.transactionExchangeRateLabel(_currency, _baseCurrency),
         helperText: l10n.transactionExchangeRateHelper,
+        suffixIcon: IconButton(
+          tooltip: l10n.transactionFetchRate,
+          icon: _fetchingRate
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.cloud_download_outlined),
+          onPressed: _fetchingRate ? null : _fetchRate,
+        ),
       ),
     );
+  }
+
+  /// Opt-in online rate fetch (FR-CUR-05): fills the rate field from a one-off
+  /// online lookup for the chosen date. Never required — manual entry remains.
+  Future<void> _fetchRate() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _fetchingRate = true);
+    try {
+      final currencySvc = await ref.read(currencyServiceProvider.future);
+      final rate = await currencySvc.fetchOnlineRate(
+        fromCode: _currency,
+        toCode: _baseCurrency,
+        date: _date,
+      );
+      if (mounted) {
+        setState(() => _rateCtrl.text = rate.toString());
+      }
+    } on Exception catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.transactionFetchRateFailed(friendlyError(e)))),
+      );
+    } finally {
+      if (mounted) setState(() => _fetchingRate = false);
+    }
   }
 
   Widget _amountOrSplit(BuildContext context, List<CategoryEntity> categories) {
@@ -509,10 +546,22 @@ class _TransactionEditorScreenState
     return sum;
   }
 
+  /// Tolerant amount parse: drops spaces/NBSP grouping and handles both
+  /// comma-decimal and dot-decimal input (the last separator is the decimal
+  /// point; the other groups thousands).
   Decimal? _parse(String text) {
-    final cleaned = text.trim().replaceAll(',', '.');
-    if (cleaned.isEmpty) return null;
-    final d = Decimal.tryParse(cleaned);
+    var s = text.trim().replaceAll(RegExp(r'[\s ]'), '');
+    if (s.isEmpty) return null;
+    final hasComma = s.contains(',');
+    final hasDot = s.contains('.');
+    if (hasComma && hasDot) {
+      s = s.lastIndexOf(',') > s.lastIndexOf('.')
+          ? s.replaceAll('.', '').replaceAll(',', '.') // comma is the decimal
+          : s.replaceAll(',', ''); // dot is the decimal, comma groups
+    } else if (hasComma) {
+      s = s.replaceAll(',', '.'); // single comma = decimal separator
+    }
+    final d = Decimal.tryParse(s);
     return (d == null || d <= Decimal.zero) ? null : d;
   }
 

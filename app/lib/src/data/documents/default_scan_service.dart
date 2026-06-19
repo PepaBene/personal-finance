@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../application/categorization_service.dart';
 import '../../application/document_parser.dart';
+import '../../application/draft_template_applier.dart';
 import '../../application/ocr_engine.dart';
 import '../../application/scan_service.dart';
 import '../../domain/enums.dart';
@@ -18,17 +19,20 @@ class DefaultScanService implements ScanService {
     required Map<DocType, DocumentParser> parsers,
     required ParseContext Function() contextBuilder,
     DraftCategorizer? categorizer,
+    DraftTemplateApplier? templateApplier,
   })  : _engine = engine,
         _classifier = classifier,
         _parsers = parsers,
         _contextBuilder = contextBuilder,
-        _categorizer = categorizer;
+        _categorizer = categorizer,
+        _templateApplier = templateApplier;
 
   final OcrEngine _engine;
   final DocumentClassifier _classifier;
   final Map<DocType, DocumentParser> _parsers;
   final ParseContext Function() _contextBuilder;
   final DraftCategorizer? _categorizer;
+  final DraftTemplateApplier? _templateApplier;
   final _progress = StreamController<ScanProgress>.broadcast();
 
   @override
@@ -40,9 +44,11 @@ class DefaultScanService implements ScanService {
     _emit('ocr', 0.3);
     final ocr = await _engine.recognize(input.image, token: token);
 
+    token?.throwIfCancelled();
     _emit('classify', 0.6);
     final classification = _classifier.classify(ocr);
 
+    token?.throwIfCancelled();
     _emit('parse', 0.8);
     final parser = _parsers[classification.type] ?? _parsers[DocType.receipt]!;
     var draft = parser.parse(ocr, _contextBuilder()).copyWith(
@@ -50,6 +56,15 @@ class DefaultScanService implements ScanService {
           typeConfidence: classification.confidence,
           source: input.source,
         );
+
+    token?.throwIfCancelled();
+    // Apply learned per-merchant template (FR-SCAN-10) before generic
+    // categorization, so merchant-specific memory wins.
+    final applier = _templateApplier;
+    if (applier != null) {
+      _emit('template', 0.88);
+      draft = applier.apply(draft);
+    }
 
     final categorizer = _categorizer;
     if (categorizer != null) {

@@ -3,8 +3,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
+import '../../features/analytics/analytics_screen.dart';
 import '../../features/auth/auth_screen.dart';
+import '../../features/budgets/budgets_screen.dart';
 import '../../features/categories/categories_screen.dart';
+import '../../features/recurring/recurring_screen.dart';
 import '../../application/scan_coordinator.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/lock/lock_screen.dart';
@@ -26,6 +29,9 @@ abstract final class Routes {
   static const accounts = '/accounts';
   static const settings = '/settings';
   static const categories = '/categories';
+  static const budgets = '/budgets';
+  static const analytics = '/analytics';
+  static const recurring = '/recurring';
   static const scanReview = '/scan/review';
 
   static String transactionEdit(String id) => '/transactions/$id/edit';
@@ -76,10 +82,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: Routes.categories,
         builder: (_, __) => const CategoriesScreen(),
       ),
+      GoRoute(
+        path: Routes.budgets,
+        builder: (_, __) => const BudgetsScreen(),
+      ),
+      GoRoute(
+        path: Routes.analytics,
+        builder: (_, __) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: Routes.recurring,
+        builder: (_, __) => const RecurringScreen(),
+      ),
       // Reached from the scan flow with the captured ScanResult (draft + image
       // bytes) as `extra`. Full-screen, outside the shell chrome.
       GoRoute(
         path: Routes.scanReview,
+        // `extra` is null on a deep link / web reload (it isn't part of the
+        // URL). Redirect home rather than crash on a bad cast.
+        redirect: (_, state) =>
+            state.extra is ScanResult ? null : Routes.transactions,
         builder: (_, state) {
           final r = state.extra! as ScanResult;
           return ScanReviewScreen(draft: r.draft, imageBytes: r.imageBytes);

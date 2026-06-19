@@ -17,13 +17,21 @@ import '../../application/app_lock_service.dart';
 import '../../application/attachment_service.dart';
 import '../../application/attachment_store.dart';
 import '../../application/auth_service.dart';
+import '../../application/biometric_service.dart';
+import '../../application/budget_service.dart';
 import '../../application/categorization_rule_service.dart';
 import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
 import '../../application/document_parser.dart';
+import '../../application/draft_template_applier.dart';
+import '../../application/exchange_rate_provider.dart';
 import '../../application/import_export_service.dart';
+import '../../application/merchant_template_service.dart';
 import '../../application/ocr_engine.dart';
+import '../../application/recurring_service.dart';
+import '../../application/report_service.dart';
+import '../../application/rollup_service.dart';
 import '../../application/scan_coordinator.dart';
 import '../../application/scan_ingest.dart';
 import '../../application/scan_service.dart';
@@ -32,6 +40,7 @@ import '../../application/transaction_service.dart';
 import '../../data/attachments/default_attachment_store.dart';
 import '../../data/attachments/memory_blob_cache.dart';
 import '../../data/attachments/null_remote_blob_store.dart';
+import '../../data/auth/local_auth_biometric_service.dart';
 import '../../data/crypto/aes_gcm_attachment_cipher.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
 import '../../data/documents/default_scan_service.dart';
@@ -40,18 +49,24 @@ import '../../data/documents/receipt_parser.dart';
 import '../../data/ingest/file_picker_scan_ingest.dart';
 import '../../data/ocr/ocr_engine_factory.dart';
 import '../../data/services/drift_attachment_service.dart';
+import '../../data/services/drift_budget_service.dart';
 import '../../data/services/drift_categorization_rule_service.dart';
 import '../../domain/enums.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
+import '../../data/remote/frankfurter_rate_provider.dart';
 import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
 import '../../data/seed/database_seeder.dart';
 import '../../data/services/drift_account_service.dart';
 import '../../data/services/drift_analytics_service.dart';
+import '../../data/reports/pdf_report_service.dart';
 import '../../data/services/drift_category_service.dart';
+import '../../data/services/drift_recurring_service.dart';
+import '../../data/services/drift_rollup_service.dart';
 import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_import_export_service.dart';
+import '../../data/services/drift_merchant_template_service.dart';
 import '../../data/services/drift_transaction_service.dart';
 import '../../data/services/supabase_auth_service.dart';
 import '../env/app_config.dart';
@@ -95,6 +110,19 @@ final appLockServiceProvider = Provider<AppLockService>(
 final lockStateProvider = StreamProvider<LockState>(
   (ref) => ref.watch(appLockServiceProvider).watch(),
 );
+
+/// Platform biometric gate (FR-SEC-03).
+final biometricServiceProvider = Provider<BiometricService>(
+  (ref) => LocalAuthBiometricService(),
+);
+
+/// Whether the lock screen should offer a biometric-unlock button: a key is
+/// enrolled *and* the device can perform a biometric check right now.
+final biometricUnlockAvailableProvider = FutureProvider<bool>((ref) async {
+  final lock = ref.watch(appLockServiceProvider);
+  if (!await lock.isBiometricEnrolled()) return false;
+  return ref.watch(biometricServiceProvider).isAvailable();
+});
 
 /// The in-memory database key produced by a successful unlock. `null` while the
 /// app is locked. Set by the lock flow (features/lock), cleared on sign-out.
@@ -148,12 +176,18 @@ final accountServiceProvider = FutureProvider<AccountService>((ref) async {
   return DriftAccountService(db, ref.watch(authServiceProvider));
 });
 
+/// Online FX provider (FR-CUR-05) — opt-in, used only on explicit user action.
+final exchangeRateProviderProvider = Provider<ExchangeRateProvider>(
+  (ref) => FrankfurterRateProvider(),
+);
+
 final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftCurrencyService(
     db,
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,
+    rateProvider: ref.watch(exchangeRateProviderProvider),
   );
 });
 
@@ -168,6 +202,23 @@ final attachmentServiceProvider = FutureProvider<AttachmentService>((
 ) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftAttachmentService(db, ref.watch(authServiceProvider));
+});
+
+final budgetServiceProvider = FutureProvider<BudgetService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftBudgetService(db, ref.watch(authServiceProvider));
+});
+
+final recurringServiceProvider = FutureProvider<RecurringService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  final tx = await ref.watch(transactionServiceProvider.future);
+  final currency = await ref.watch(currencyServiceProvider.future);
+  return DriftRecurringService(
+    db,
+    ref.watch(authServiceProvider),
+    tx,
+    currency,
+  );
 });
 
 // --- Attachment blob encryption + storage (docs/09 §2/§3) ---------------
@@ -202,14 +253,24 @@ final scanIngestProvider = Provider<ScanIngest>(
 /// (manual-entry fallback — docs/05 §6).
 final ocrEngineProvider = Provider<OcrEngine?>((ref) => createOcrEngine());
 
-/// The scan pipeline, wired with the user's categorizer; null when there is no
-/// OCR engine on this platform.
+/// Learns and stores per-merchant OCR templates (FR-SCAN-10).
+final merchantTemplateServiceProvider =
+    FutureProvider<MerchantTemplateService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftMerchantTemplateService(db, ref.watch(authServiceProvider));
+});
+
+/// The scan pipeline, wired with the user's categorizer + learned per-merchant
+/// templates; null when there is no OCR engine on this platform.
 final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
   final engine = ref.watch(ocrEngineProvider);
   if (engine == null) return null;
   final ruleSvc = await ref.watch(categorizationRuleServiceProvider.future);
   final categorizer =
       CategorizingDraftCategorizer(await ruleSvc.buildCategorizer());
+  final templateSvc = await ref.watch(merchantTemplateServiceProvider.future);
+  final templateApplier =
+      MerchantTemplateDraftApplier(await templateSvc.loadByMerchantKey());
   final base = ref.watch(appConfigProvider).baseCurrencyCode;
   final service = DefaultScanService(
     engine: engine,
@@ -217,6 +278,7 @@ final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
     parsers: const {DocType.receipt: ReceiptParser()},
     contextBuilder: () => ParseContext(defaultCurrencyCode: base),
     categorizer: categorizer,
+    templateApplier: templateApplier,
   );
   ref.onDispose(service.dispose);
   return service;
@@ -244,6 +306,21 @@ final attachmentStoreProvider = FutureProvider<AttachmentStore>((ref) async {
         (throw StateError('Not signed in; cannot store attachments.')),
     newId: uuid.v4,
     now: () => DateTime.now().toUtc(),
+  );
+});
+
+/// On-device PDF report generator (FR-DAT-06). Pure; no DB or network.
+final reportServiceProvider = Provider<ReportService>(
+  (ref) => const PdfReportService(),
+);
+
+/// Monthly rollup cache maintainer (NFR-01/02). Local-only derived cache.
+final rollupServiceProvider = FutureProvider<RollupService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftRollupService(
+    db,
+    ref.watch(authServiceProvider),
+    ref.watch(appConfigProvider).baseCurrencyCode,
   );
 });
 

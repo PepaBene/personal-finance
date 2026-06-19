@@ -242,5 +242,164 @@
     "placeholders": {
       "error": { "type": "String" }
     }
+  },
+
+  "settingsManageBudgets": "Budgets",
+  "budgetsTitle": "Budgets",
+  "budgetsAddAction": "Add budget",
+  "budgetsEmptyTitle": "No budgets yet",
+  "budgetsEmptyBody": "Set a monthly limit per category to track your spending.",
+  "budgetOver": "Over",
+  "budgetNearing": "Nearing",
+  "budgetOnTrack": "On track",
+  "budgetSpentOfLimit": "{actual} of {limit}",
+  "@budgetSpentOfLimit": {
+    "placeholders": {
+      "actual": { "type": "String" },
+      "limit": { "type": "String" }
+    }
+  },
+  "budgetNewTitle": "New budget",
+  "budgetEditTitle": "Edit budget",
+  "budgetCategory": "Category",
+  "budgetMonthlyLimit": "Monthly limit",
+  "budgetSave": "Save budget",
+  "budgetDelete": "Delete budget",
+  "budgetValidationCategory": "Choose a category.",
+  "budgetValidationAmount": "Enter a limit greater than zero.",
+  "dashboardBudgetAlertsTitle": "Budget alerts",
+
+  "settingsAnalytics": "Advanced analytics",
+  "analyticsTitle": "Analytics",
+  "analyticsTopMerchants": "Top merchants",
+  "analyticsHeatmap": "Daily spending",
+  "analyticsComparison": "Category change vs previous period",
+  "analyticsTreemap": "Category composition",
+  "analyticsWaterfall": "Cash-flow waterfall",
+  "analyticsPrevious": "Previous",
+  "analyticsCurrent": "Current",
+  "analyticsOther": "Other",
+  "waterfallIncome": "Income",
+  "waterfallNet": "Net",
+
+  "settingsRecurring": "Recurring transactions",
+  "recurringTitle": "Recurring",
+  "recurringGenerate": "Generate due",
+  "recurringAddAction": "Add recurring",
+  "recurringGenerated": "Generated {count} transaction(s)",
+  "@recurringGenerated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recurringEmptyTitle": "No recurring transactions",
+  "recurringEmptyBody": "Add a template to auto-generate regular entries like subscriptions or rent.",
+  "recurringNext": "next {date}",
+  "@recurringNext": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "recurringDetectedTitle": "Detected subscriptions",
+  "recurringDetectedSubtitle": "{frequency} · {count} occurrences",
+  "@recurringDetectedSubtitle": {
+    "placeholders": {
+      "frequency": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "recurringCreateFromDetected": "Add",
+  "recurringWeekly": "Weekly",
+  "recurringMonthly": "Monthly",
+  "recurringYearly": "Yearly",
+  "recurringNewTitle": "New recurring",
+  "recurringEditTitle": "Edit recurring",
+  "recurringName": "Name",
+  "recurringAccount": "Account",
+  "recurringCategory": "Category",
+  "recurringAmount": "Amount",
+  "recurringNextDate": "Next date",
+  "recurringActive": "Active",
+  "recurringSave": "Save",
+  "recurringDelete": "Delete recurring",
+  "recurringValidationName": "Enter a name.",
+  "recurringValidationAccount": "Choose an account.",
+  "recurringValidationCategory": "Choose a category.",
+  "recurringValidationAmount": "Enter an amount greater than zero.",
+
+  "analyticsExportPdf": "Export PDF",
+  "reportSummary": "Summary",
+  "reportGeneratedOn": "Generated",
+  "reportExportDialogTitle": "Save report",
+  "reportFileName": "ledgerly-report.pdf",
+  "reportExportCancelled": "Export cancelled",
+  "reportExportedTo": "Report saved to {path}",
+  "@reportExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "reportExportFailed": "Export failed: {error}",
+  "@reportExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "transactionFetchRate": "Fetch rate online",
+  "transactionFetchRateFailed": "Could not fetch rate: {error}",
+  "@transactionFetchRateFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "settingsAppearance": "Appearance & language",
+  "settingsThemeMode": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsHighContrast": "High contrast",
+  "settingsReduceMotion": "Reduce motion",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System default",
+
+  "settingsSecurity": "Security",
+  "settingsBiometric": "Biometric unlock",
+  "settingsBiometricSubtitle": "Unlock with Face ID, Touch ID or device biometrics",
+  "settingsAutoLock": "Auto-lock",
+  "settingsAutoLockNever": "Never",
+  "settingsAutoLockMinutes": "{count} min",
+  "@settingsAutoLockMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "lockBiometricAction": "Unlock with biometrics",
+  "lockBiometricReason": "Unlock Ledgerly",
+
+  "lockRecoveryTitle": "Save your recovery code",
+  "lockRecoveryBody": "Write this code down and keep it safe. It's the only way to recover your encrypted data if you forget your passphrase. We can't recover it for you.",
+  "lockRecoverySaved": "I've saved it",
+  "lockForgotPassphrase": "Forgot passphrase? Recover with code",
+  "lockRecoverTitle": "Recover access",
+  "lockRecoverCodeField": "Recovery code",
+  "lockRecoverNewPassphrase": "New passphrase",
+  "lockRecoverAction": "Recover",
+  "lockRecoverInvalid": "Invalid recovery code",
+  "settingsChangePassphrase": "Change passphrase",
+  "settingsChangePassphraseOld": "Current passphrase",
+  "settingsChangePassphraseNew": "New passphrase",
+  "settingsChangePassphraseAction": "Change",
+  "settingsChangePassphraseDone": "Passphrase changed",
+  "settingsChangePassphraseWrong": "Current passphrase is incorrect",
+
+  "settingsRebuildCache": "Rebuild analytics cache",
+  "settingsRebuildCacheSubtitle": "Speeds up dashboards on large histories",
+  "settingsRebuildCacheDone": "Analytics cache rebuilt ({count} rows)",
+  "@settingsRebuildCacheDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }
