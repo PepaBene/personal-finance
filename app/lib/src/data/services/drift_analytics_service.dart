@@ -73,7 +73,8 @@ class DriftAnalyticsService implements AnalyticsService {
       ),
     ])
       ..where(
-        _db.lineItems.deleted.equals(false) &
+        _db.transactions.userId.equals(_userId) &
+            _db.lineItems.deleted.equals(false) &
             _db.transactions.deleted.equals(false) &
             _db.transactions.status.equalsValue(TxStatus.active) &
             _db.transactions.type.equalsValue(TxType.expense) &
@@ -155,7 +156,8 @@ class DriftAnalyticsService implements AnalyticsService {
     final ids = await (_db.selectOnly(_db.lineItems, distinct: true)
           ..addColumns([_db.lineItems.transactionId])
           ..where(
-            _db.lineItems.categoryId.equals(categoryId) &
+            _db.lineItems.userId.equals(_userId) &
+                _db.lineItems.categoryId.equals(categoryId) &
                 _db.lineItems.deleted.equals(false),
           ))
         .map((r) => r.read(_db.lineItems.transactionId)!)
@@ -166,7 +168,10 @@ class DriftAnalyticsService implements AnalyticsService {
           ..where(
             (t) =>
                 t.id.isIn(ids) &
+                t.userId.equals(_userId) &
                 t.deleted.equals(false) &
+                t.status.equalsValue(TxStatus.active) &
+                t.type.equalsValue(TxType.expense) &
                 _inRange(t.date, range),
           )
           ..orderBy([(t) => OrderingTerm.desc(t.date)]))
@@ -183,7 +188,10 @@ class DriftAnalyticsService implements AnalyticsService {
           ..where(
             (t) =>
                 t.merchantId.equals(merchantId) &
+                t.userId.equals(_userId) &
                 t.deleted.equals(false) &
+                t.status.equalsValue(TxStatus.active) &
+                t.type.equalsValue(TxType.expense) &
                 _inRange(t.date, range),
           )
           ..orderBy([(t) => OrderingTerm.desc(t.date)]))
@@ -210,7 +218,12 @@ class DriftAnalyticsService implements AnalyticsService {
             share.toDecimal(scaleOnInfinitePrecision: 2),
             base,
           );
-          statuses.add(BudgetStatus(budget: budget, actual: actual));
+          // Treat the budget's stored amount as a base-currency magnitude so
+          // actual and limit are always in the same currency (H2).
+          final limit = Money(budget.amount.amount, base);
+          statuses.add(
+            BudgetStatus(budget: budget, actual: actual, limit: limit),
+          );
         }
         statuses.sort((a, b) => b.utilization.compareTo(a.utilization));
         return statuses;
@@ -346,6 +359,7 @@ class DriftAnalyticsService implements AnalyticsService {
     return _db.select(_db.transactions)
       ..where(
         (t) =>
+            t.userId.equals(_userId) &
             t.deleted.equals(false) &
             t.status.equalsValue(TxStatus.active) &
             _inRange(t.date, range),

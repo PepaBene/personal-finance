@@ -105,18 +105,24 @@ class PeriodPoint {
 /// How a budget is tracking against actual spend (FR-BUD-02, docs/11 §5.5).
 enum BudgetAlertLevel { ok, nearing, over }
 
-/// Actual-vs-budget for one budgeted category over a month (FR-ANL-06). [actual]
-/// is base-currency expense for the category; [budget] carries the limit.
+/// Actual-vs-budget for one budgeted category over a month (FR-ANL-06). Both
+/// [actual] and [limit] are in the **base currency**, computed by the service,
+/// so comparisons never mix currencies (the budget's stored amount is treated
+/// as a base-currency magnitude). [budget] is kept for its id/category.
 class BudgetStatus {
-  const BudgetStatus({required this.budget, required this.actual});
+  const BudgetStatus({
+    required this.budget,
+    required this.actual,
+    required this.limit,
+  });
 
   /// Spend at/over this fraction of the limit (but under it) is "nearing".
   static const nearingThreshold = 0.8;
 
   final BudgetEntity budget;
   final Money actual;
+  final Money limit;
 
-  Money get limit => budget.amount;
   Money get remaining =>
       Money(limit.amount - actual.amount, limit.currencyCode);
 

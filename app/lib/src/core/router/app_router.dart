@@ -98,6 +98,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // bytes) as `extra`. Full-screen, outside the shell chrome.
       GoRoute(
         path: Routes.scanReview,
+        // `extra` is null on a deep link / web reload (it isn't part of the
+        // URL). Redirect home rather than crash on a bad cast.
+        redirect: (_, state) =>
+            state.extra is ScanResult ? null : Routes.transactions,
         builder: (_, state) {
           final r = state.extra! as ScanResult;
           return ScanReviewScreen(draft: r.draft, imageBytes: r.imageBytes);
