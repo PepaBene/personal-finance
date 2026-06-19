@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/router/app_router.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/scan/document_draft.dart';
@@ -43,12 +44,10 @@ class TransactionsScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: EdgeInsets.all(context.space.lg),
-            child: Text('${l10n.syncStatusError}: $e'),
-          ),
+        loading: () => const LoadingView(),
+        error: (e, _) => ErrorView(
+          message: friendlyError(e),
+          onRetry: () => ref.invalidate(transactionsProvider),
         ),
         data: (items) => items.isEmpty
             ? _Empty(l10n: l10n)
@@ -105,10 +104,19 @@ class _TransactionTile extends StatelessWidget {
         ),
       ),
       onDismissed: (_) {
-        ref.read(transactionsControllerProvider).delete(tx.id);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
+        final controller = ref.read(transactionsControllerProvider);
+        controller.delete(tx.id);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: const Text('Transaction deleted'),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () => controller.restore(tx.id),
+              ),
+            ),
+          );
       },
       child: ListTile(
         leading: CircleAvatar(child: Icon(_iconFor(tx), size: 20)),

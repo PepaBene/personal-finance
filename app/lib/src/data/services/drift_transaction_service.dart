@@ -83,6 +83,10 @@ class DriftTransactionService implements TransactionService {
   Future<void> softDelete(String id) =>
       _db.softDeleteTransaction(id, DateTime.now().toUtc());
 
+  @override
+  Future<void> restore(String id) =>
+      _db.restoreTransaction(id, DateTime.now().toUtc());
+
   // --- mapping ----------------------------------------------------------
 
   TransactionEntity _toEntity(db.Transaction r) => TransactionEntity(

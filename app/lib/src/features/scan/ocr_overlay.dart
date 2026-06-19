@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/scan/ocr_result.dart';
@@ -24,10 +25,10 @@ class OcrOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
-    final box = Theme.of(context).colorScheme.outline;
+    final accent = context.colors.primary;
+    final box = context.colors.outline;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: context.radii.mdRadius,
       child: AspectRatio(
         aspectRatio: 3 / 4,
         child: Stack(

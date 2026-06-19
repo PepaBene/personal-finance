@@ -52,7 +52,7 @@ class AppShell extends ConsumerWidget {
               IconButton(
                 tooltip: l10n.commonSignOut,
                 icon: const Icon(Icons.logout),
-                onPressed: () => _signOut(ref),
+                onPressed: () => _signOut(context, ref, l10n),
               ),
               SizedBox(width: context.space.xs),
             ],
@@ -92,10 +92,33 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  Future<void> _signOut(WidgetRef ref) async {
-    // Just sign out; the SyncCoordinator reacts to the signed-out event by
+  Future<void> _signOut(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.commonSignOut),
+        content: const Text(
+          'You\'ll need to sign in again to access your data on this device.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.commonSignOut),
+          ),
+        ],
+      ),
+    );
+    // Sign out; the SyncCoordinator reacts to the signed-out event by
     // disconnecting PowerSync, locking, and clearing the in-memory key.
-    await ref.read(authServiceProvider).signOut();
+    if (confirmed ?? false) await ref.read(authServiceProvider).signOut();
   }
 }
 
@@ -132,6 +155,16 @@ class _SyncStatus extends ConsumerWidget {
           l10n.syncStatusError,
         ),
     };
-    return SyncStatusIndicator(state: state, label: label);
+    // Let the user retry from an error by re-subscribing to sync status.
+    final onTap = connectivity == SyncConnectivity.error
+        ? () {
+            ref.invalidate(syncServiceProvider);
+            ref.invalidate(syncStatusProvider);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Reconnecting…')),
+            );
+          }
+        : null;
+    return SyncStatusIndicator(state: state, label: label, onTap: onTap);
   }
 }

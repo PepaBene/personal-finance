@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/currency_service.dart';
 import '../../core/di/providers.dart';
+import '../../core/utils/error_text.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/currency.dart';
@@ -99,7 +100,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
           _docTypeMenu(),
           TextButton(
             onPressed: _busy ? null : _save,
-            child: const Text('Save'),
+            child: _busy ? const ButtonSpinner() : const Text('Save'),
           ),
         ],
       ),
@@ -149,7 +150,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
             Row(
               children: [
                 Icon(Icons.description_outlined,
-                    size: 18, color: context.texts.bodySmall?.color),
+                    size: 18, color: context.colors.onSurfaceVariant),
                 SizedBox(width: context.space.xs),
                 Text('Recognized text', style: context.texts.titleSmall),
               ],
@@ -345,6 +346,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.close),
+                tooltip: 'Remove item',
                 onPressed: () => _removeLine(i),
               ),
             ],
@@ -405,13 +407,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   Widget _docTypeMenu() {
     return PopupMenuButton<DocType>(
       initialValue: _c.docType,
+      tooltip: 'Document type',
       onSelected: _c.setDocType,
       itemBuilder: (_) => [
         for (final t in DocType.values)
           PopupMenuItem(value: t, child: Text(_docTypeLabel(t))),
       ],
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: EdgeInsets.symmetric(horizontal: context.space.xs),
         child: Row(
           children: [
             Text(_docTypeLabel(_c.docType)),
@@ -472,7 +475,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     } on _ReviewError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } on Exception catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

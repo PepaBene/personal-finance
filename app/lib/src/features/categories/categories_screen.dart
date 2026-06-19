@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/di/providers.dart';
+import '../../core/utils/error_text.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/enums.dart';
 import '../transactions/capture_providers.dart';
@@ -58,9 +59,24 @@ class CategoriesScreen extends ConsumerWidget {
         label: const Text('Add category'),
       ),
       body: treeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        loading: () => const LoadingView(),
+        error: (e, _) => ErrorView(
+          message: friendlyError(e),
+          onRetry: () => ref.invalidate(categoryTreeProvider),
+        ),
         data: (nodes) {
+          if (nodes.isEmpty) {
+            return EmptyView(
+              icon: Icons.label_outline,
+              title: 'No categories',
+              message: 'Create categories to organize your transactions.',
+              action: FilledButton.icon(
+                onPressed: () => _CategorySheet.show(context, ref),
+                icon: const Icon(Icons.add),
+                label: const Text('Add category'),
+              ),
+            );
+          }
           final tiles = <Widget>[];
           for (final node in nodes) {
             tiles.add(_row(context, ref, node.category, indent: 0));
@@ -179,11 +195,15 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
       );
       if (mounted) Navigator.of(context).pop();
     } on Exception catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  /// Contrast-aware tick colour for a coloured swatch (no color-only signal).
+  Color _onSwatch(Color bg) =>
+      bg.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
 
   @override
   Widget build(BuildContext context) {
@@ -259,18 +279,25 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               spacing: context.space.xs,
               children: [
                 for (final hex in _colorOptions)
-                  GestureDetector(
-                    onTap: () => setState(() => _color = hex),
-                    child: CircleAvatar(
-                      backgroundColor: categoryColor(hex),
-                      radius: 16,
-                      child: _color == hex
-                          ? const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: Colors.white,
-                            )
-                          : null,
+                  Semantics(
+                    button: true,
+                    selected: _color == hex,
+                    label: 'Colour',
+                    child: InkResponse(
+                      onTap: () => setState(() => _color = hex),
+                      radius: 22,
+                      customBorder: const CircleBorder(),
+                      child: CircleAvatar(
+                        backgroundColor: categoryColor(hex),
+                        radius: 16,
+                        child: _color == hex
+                            ? Icon(
+                                Icons.check,
+                                size: 16,
+                                color: _onSwatch(categoryColor(hex)),
+                              )
+                            : null,
+                      ),
                     ),
                   ),
               ],
@@ -310,7 +337,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             SizedBox(height: context.space.lg),
             FilledButton(
               onPressed: _busy ? null : _save,
-              child: const Text('Save'),
+              child: _busy ? const ButtonSpinner() : const Text('Save'),
             ),
           ],
         ),

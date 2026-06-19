@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../application/analytics_service.dart';
 import '../../core/di/providers.dart';
 import '../../core/router/app_router.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/category.dart';
 import '../categories/category_visuals.dart';
@@ -122,7 +123,7 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(spendByCategoryProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (totals) {
         if (totals.isEmpty) {
           return const _EmptyChart('No spending in this period');
@@ -188,7 +189,7 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(byPeriodProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (points) {
         if (points.isEmpty) return const _EmptyChart('No data in this period');
         final spots = <FlSpot>[
@@ -226,7 +227,7 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(byPeriodProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (points) {
         if (points.isEmpty) return const _EmptyChart('No data in this period');
         final groups = <BarChartGroupData>[
@@ -288,7 +289,11 @@ class DashboardScreen extends ConsumerWidget {
             ),
             Expanded(
               child: txs.isEmpty
-                  ? const Center(child: Text('No transactions'))
+                  ? const EmptyView(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'No transactions',
+                      message: 'Nothing in this category for the period.',
+                    )
                   : ListView.builder(
                       itemCount: txs.length,
                       itemBuilder: (_, i) {
@@ -358,8 +363,18 @@ class _EmptyChart extends StatelessWidget {
         child: Center(
           child: Text(
             message,
-            style: TextStyle(color: context.colors.onSurfaceVariant),
+            style: context.texts.bodyMedium?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
           ),
         ),
       );
+}
+
+class _ChartError extends StatelessWidget {
+  const _ChartError({required this.message});
+  final String message;
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox(height: 120, child: ErrorView(message: message, compact: true));
 }

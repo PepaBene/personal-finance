@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/error_text.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/enums.dart';
 import '../transactions/capture_providers.dart';
@@ -55,8 +56,9 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
           SizedBox(height: context.space.sm),
           Expanded(
             child: treeAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('$e')),
+              loading: () => const LoadingView(compact: true),
+              error: (e, _) =>
+                  ErrorView(message: friendlyError(e), compact: true),
               data: (nodes) => _buildList(context, nodes),
             ),
           ),

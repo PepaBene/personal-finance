@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/currency_service.dart';
 import '../../core/di/providers.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/category.dart';
@@ -145,7 +146,7 @@ class _TransactionEditorScreenState
         actions: [
           TextButton(
             onPressed: _busy ? null : _save,
-            child: const Text('Save'),
+            child: _busy ? const ButtonSpinner() : const Text('Save'),
           ),
         ],
       ),
@@ -429,6 +430,7 @@ class _TransactionEditorScreenState
               ),
               IconButton(
                 icon: const Icon(Icons.close),
+                tooltip: 'Remove item',
                 onPressed: () => setState(() {
                   if (line.existing) _originalLineIds.remove(line.id);
                   _lines.remove(line);
@@ -494,7 +496,7 @@ class _TransactionEditorScreenState
     } on _ValidationError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } on Exception catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/di/providers.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/currency.dart';
@@ -29,10 +30,22 @@ class AccountsScreen extends ConsumerWidget {
         label: const Text('Add account'),
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        loading: () => const LoadingView(),
+        error: (e, _) => ErrorView(
+          message: friendlyError(e),
+          onRetry: () => ref.invalidate(accountBalancesProvider),
+        ),
         data: (balances) => balances.isEmpty
-            ? const Center(child: Text('No accounts yet'))
+            ? EmptyView(
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'No accounts yet',
+                message: 'Add an account to start tracking balances.',
+                action: FilledButton.icon(
+                  onPressed: () => _AccountSheet.show(context, ref),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add account'),
+                ),
+              )
             : ListView.builder(
                 itemCount: balances.length,
                 itemBuilder: (context, i) {
@@ -146,7 +159,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
       );
       if (mounted) Navigator.of(context).pop();
     } on Exception catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -216,7 +229,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           SizedBox(height: context.space.lg),
           FilledButton(
             onPressed: _busy ? null : _save,
-            child: const Text('Save'),
+            child: _busy ? const ButtonSpinner() : const Text('Save'),
           ),
         ],
       ),

@@ -107,6 +107,23 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// Undo a soft-delete: un-tombstone the header and its line items (for the
+  /// delete → Undo affordance). Mirrors [softDeleteTransaction].
+  Future<void> restoreTransaction(String id, DateTime now) {
+    return transaction(() async {
+      await (update(transactions)..where((t) => t.id.equals(id))).write(
+        TransactionsCompanion(
+          deleted: const Value(false),
+          status: const Value(TxStatus.active),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(lineItems)..where((l) => l.transactionId.equals(id))).write(
+        LineItemsCompanion(deleted: const Value(false), updatedAt: Value(now)),
+      );
+    });
+  }
+
   /// Soft-delete a transaction and tombstone its line items (cascade-as-
   /// tombstones for sync — docs/04 §7).
   Future<void> softDeleteTransaction(String id, DateTime now) {
