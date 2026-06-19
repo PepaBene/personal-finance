@@ -244,13 +244,17 @@ class DashboardScreen extends ConsumerWidget {
         final top = totals.take(6).toList();
         return Column(
           children: [
-            SizedBox(
-              height: 180,
-              child: PieChart(
-                PieChartData(
-                  sections: sections,
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 36,
+            // The donut is decorative for a screen reader; the legend rows
+            // below carry the same data accessibly (NFR-07).
+            ExcludeSemantics(
+              child: SizedBox(
+                height: 180,
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 36,
+                  ),
                 ),
               ),
             ),

@@ -36,6 +36,18 @@ class LedgerlyApp extends ConsumerWidget {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      builder: (context, child) {
+        // Honour the reduce-motion preference app-wide by folding it into
+        // MediaQuery.disableAnimations, which Flutter's transitions respect
+        // (NFR-07). OS-level "remove animations" still wins when set.
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            disableAnimations: mq.disableAnimations || prefs.reduceMotion,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

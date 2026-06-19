@@ -21,6 +21,16 @@ class KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Read the label and value as a single node ("Income, €1,000") rather than
+    // two fragments, and drop the duplicate inner text semantics (NFR-07).
+    return Semantics(
+      container: true,
+      label: '$label, $value',
+      child: ExcludeSemantics(child: _card(context)),
+    );
+  }
+
+  Widget _card(BuildContext context) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(context.space.md),
