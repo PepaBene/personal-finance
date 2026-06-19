@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/app_lock_service.dart';
 import '../../application/preferences.dart';
 import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
@@ -152,6 +153,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
+              ListTile(
+                leading: const Icon(Icons.password_outlined),
+                title: Text(l10n.settingsChangePassphrase),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy ? null : _changePassphrase,
+              ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),
@@ -218,6 +225,73 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.showSnackBar(SnackBar(content: Text(friendlyError(e))));
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Change the passphrase, re-wrapping the DEK (no data re-encryption).
+  Future<void> _changePassphrase() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final oldCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsChangePassphrase),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: oldCtrl,
+              obscureText: true,
+              decoration:
+                  InputDecoration(labelText: l10n.settingsChangePassphraseOld),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: newCtrl,
+              obscureText: true,
+              decoration:
+                  InputDecoration(labelText: l10n.settingsChangePassphraseNew),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.settingsChangePassphraseAction),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) {
+      oldCtrl.dispose();
+      newCtrl.dispose();
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await ref.read(appLockServiceProvider).changePassphrase(
+            oldPassphrase: oldCtrl.text,
+            newPassphrase: newCtrl.text,
+          );
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.settingsChangePassphraseDone)),
+      );
+    } on InvalidPassphrase {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.settingsChangePassphraseWrong)),
+      );
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(friendlyError(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+      oldCtrl.dispose();
+      newCtrl.dispose();
     }
   }
 

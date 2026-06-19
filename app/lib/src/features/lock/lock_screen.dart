@@ -38,17 +38,114 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     });
     final lock = ref.read(appLockServiceProvider);
     try {
-      final initialized = await lock.isInitialized();
-      final key = initialized
-          ? await lock.unlock(_passphrase.text)
-          : await lock.initialize(_passphrase.text);
-      await _enter(key);
+      if (await lock.isInitialized()) {
+        await _enter(await lock.unlock(_passphrase.text));
+      } else {
+        // First run: set up the envelope keys and show the recovery code once
+        // before entering (FR-AUTH-07).
+        final setup = await lock.initialize(_passphrase.text);
+        await _showRecoveryCode(setup.recoveryCode);
+        await _enter(setup.key);
+      }
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {
       if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Show the one-time recovery code so the user can save it (FR-AUTH-07).
+  Future<void> _showRecoveryCode(String code) async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.lockRecoveryTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.lockRecoveryBody),
+            SizedBox(height: context.space.md),
+            SelectableText(
+              code,
+              style: context.texts.titleMedium?.copyWith(
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.lockRecoverySaved),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// "Forgot passphrase" → recover with the saved code and set a new passphrase.
+  Future<void> _recoverFlow() async {
+    final l10n = AppLocalizations.of(context);
+    final codeCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.lockRecoverTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: codeCtrl,
+              decoration:
+                  InputDecoration(labelText: l10n.lockRecoverCodeField),
+            ),
+            SizedBox(height: context.space.sm),
+            TextField(
+              controller: newPassCtrl,
+              obscureText: true,
+              decoration:
+                  InputDecoration(labelText: l10n.lockRecoverNewPassphrase),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.lockRecoverAction),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final key = await ref.read(appLockServiceProvider).recoverWithCode(
+            recoveryCode: codeCtrl.text,
+            newPassphrase: newPassCtrl.text,
+          );
+      await _enter(key);
+    } on InvalidRecoveryCode {
+      if (mounted) setState(() => _error = l10n.lockRecoverInvalid);
+    } on Exception catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+      codeCtrl.dispose();
+      newPassCtrl.dispose();
     }
   }
 
@@ -152,6 +249,11 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                     label: Text(l10n.lockBiometricAction),
                   ),
                 ],
+                SizedBox(height: context.space.xs),
+                TextButton(
+                  onPressed: _busy ? null : _recoverFlow,
+                  child: Text(l10n.lockForgotPassphrase),
+                ),
               ],
             ),
           ),

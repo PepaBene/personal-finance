@@ -67,11 +67,31 @@ class _FakeLock implements AppLockService {
   @override
   Stream<LockState> watch() => const Stream.empty();
   @override
-  Future<Uint8List> initialize(String passphrase) async => Uint8List(32);
+  Future<KeySetup> initialize(String passphrase) async =>
+      KeySetup(key: Uint8List(32), recoveryCode: 'TEST-CODE');
   @override
   Future<Uint8List> unlock(String passphrase) async => Uint8List(32);
   @override
+  Future<Uint8List> recoverWithCode({
+    required String recoveryCode,
+    required String newPassphrase,
+  }) async =>
+      Uint8List(32);
+  @override
+  Future<void> changePassphrase({
+    required String oldPassphrase,
+    required String newPassphrase,
+  }) async {}
+  @override
   Future<bool> isInitialized() async => true;
+  @override
+  Future<void> enrollBiometric(Uint8List key) async {}
+  @override
+  Future<bool> isBiometricEnrolled() async => false;
+  @override
+  Future<Uint8List> unlockWithBiometricKey() async => Uint8List(32);
+  @override
+  Future<void> clearBiometric() async {}
 }
 
 /// Let queued microtasks / FutureProvider resolutions settle (a couple of

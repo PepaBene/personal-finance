@@ -375,5 +375,21 @@
     }
   },
   "lockBiometricAction": "Odemknout biometrií",
-  "lockBiometricReason": "Odemknout Ledgerly"
+  "lockBiometricReason": "Odemknout Ledgerly",
+
+  "lockRecoveryTitle": "Uložte si záchranný kód",
+  "lockRecoveryBody": "Zapište si tento kód a uložte jej na bezpečné místo. Je to jediný způsob, jak obnovit zašifrovaná data, pokud zapomenete heslo. Nemůžeme jej za vás obnovit.",
+  "lockRecoverySaved": "Uložil(a) jsem si ho",
+  "lockForgotPassphrase": "Zapomněli jste heslo? Obnovit pomocí kódu",
+  "lockRecoverTitle": "Obnovit přístup",
+  "lockRecoverCodeField": "Záchranný kód",
+  "lockRecoverNewPassphrase": "Nové heslo",
+  "lockRecoverAction": "Obnovit",
+  "lockRecoverInvalid": "Neplatný záchranný kód",
+  "settingsChangePassphrase": "Změnit heslo",
+  "settingsChangePassphraseOld": "Současné heslo",
+  "settingsChangePassphraseNew": "Nové heslo",
+  "settingsChangePassphraseAction": "Změnit",
+  "settingsChangePassphraseDone": "Heslo bylo změněno",
+  "settingsChangePassphraseWrong": "Současné heslo je nesprávné"
 }

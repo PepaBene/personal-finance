@@ -376,5 +376,21 @@
     }
   },
   "lockBiometricAction": "Unlock with biometrics",
-  "lockBiometricReason": "Unlock Ledgerly"
+  "lockBiometricReason": "Unlock Ledgerly",
+
+  "lockRecoveryTitle": "Save your recovery code",
+  "lockRecoveryBody": "Write this code down and keep it safe. It's the only way to recover your encrypted data if you forget your passphrase. We can't recover it for you.",
+  "lockRecoverySaved": "I've saved it",
+  "lockForgotPassphrase": "Forgot passphrase? Recover with code",
+  "lockRecoverTitle": "Recover access",
+  "lockRecoverCodeField": "Recovery code",
+  "lockRecoverNewPassphrase": "New passphrase",
+  "lockRecoverAction": "Recover",
+  "lockRecoverInvalid": "Invalid recovery code",
+  "settingsChangePassphrase": "Change passphrase",
+  "settingsChangePassphraseOld": "Current passphrase",
+  "settingsChangePassphraseNew": "New passphrase",
+  "settingsChangePassphraseAction": "Change",
+  "settingsChangePassphraseDone": "Passphrase changed",
+  "settingsChangePassphraseWrong": "Current passphrase is incorrect"
 }
