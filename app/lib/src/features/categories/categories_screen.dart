@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/di/providers.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/utils/error_text.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/enums.dart';
@@ -50,13 +51,14 @@ class CategoriesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final treeAsync = ref.watch(categoryTreeProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(title: Text(l10n.categoriesTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _CategorySheet.show(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Add category'),
+        label: Text(l10n.categoriesAddAction),
       ),
       body: treeAsync.when(
         loading: () => const LoadingView(),
@@ -68,12 +70,12 @@ class CategoriesScreen extends ConsumerWidget {
           if (nodes.isEmpty) {
             return EmptyView(
               icon: Icons.label_outline,
-              title: 'No categories',
-              message: 'Create categories to organize your transactions.',
+              title: l10n.categoriesEmptyTitle,
+              message: l10n.categoriesEmptyBody,
               action: FilledButton.icon(
                 onPressed: () => _CategorySheet.show(context, ref),
                 icon: const Icon(Icons.add),
-                label: const Text('Add category'),
+                label: Text(l10n.categoriesAddAction),
               ),
             );
           }
@@ -96,6 +98,7 @@ class CategoriesScreen extends ConsumerWidget {
     CategoryEntity c, {
     required int indent,
   }) {
+    final l10n = AppLocalizations.of(context);
     return ListTile(
       contentPadding: EdgeInsets.only(
         left: context.space.md + context.space.lg * indent,
@@ -110,7 +113,8 @@ class CategoriesScreen extends ConsumerWidget {
         ),
       ),
       title: Text(c.name),
-      subtitle: Text(c.kind.name + (c.isArchived ? ' · archived' : '')),
+      subtitle:
+          Text(c.kind.name + (c.isArchived ? l10n.categoryArchivedSuffix : '')),
       onTap: () => _CategorySheet.show(context, ref, category: c),
     );
   }
@@ -172,9 +176,10 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
       _busy = true;
       _error = null;
     });
+    final l10n = AppLocalizations.of(context);
     try {
       final name = _nameCtrl.text.trim();
-      if (name.isEmpty) throw Exception('Enter a name');
+      if (name.isEmpty) throw Exception(l10n.categoryValidationEnterName);
       final session = ref.read(authServiceProvider).current.session!;
       final service = await ref.read(categoryServiceProvider.future);
       final existing = widget.category;
@@ -207,6 +212,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final all = ref.watch(categoriesFlatProvider).valueOrNull ?? const [];
     final parents = all
         .where(
@@ -232,24 +238,26 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.category == null ? 'New category' : 'Edit category',
+              widget.category == null
+                  ? l10n.categoryNewTitle
+                  : l10n.categoryEditTitle,
               style: context.texts.titleLarge,
             ),
             SizedBox(height: context.space.md),
             TextField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: l10n.categoryName),
             ),
             SizedBox(height: context.space.sm),
             SegmentedButton<CategoryKind>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: CategoryKind.expense,
-                  label: Text('Expense'),
+                  label: Text(l10n.categoryExpense),
                 ),
                 ButtonSegment(
                   value: CategoryKind.income,
-                  label: Text('Income'),
+                  label: Text(l10n.categoryIncome),
                 ),
               ],
               selected: {_kind},
@@ -261,11 +269,11 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             SizedBox(height: context.space.sm),
             DropdownButtonFormField<String?>(
               value: parents.any((p) => p.id == _parentId) ? _parentId : null,
-              decoration: const InputDecoration(labelText: 'Parent (optional)'),
+              decoration: InputDecoration(labelText: l10n.categoryParent),
               items: [
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: null,
-                  child: Text('None (top level)'),
+                  child: Text(l10n.categoryParentNone),
                 ),
                 for (final p in parents)
                   DropdownMenuItem<String?>(value: p.id, child: Text(p.name)),
@@ -273,7 +281,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               onChanged: (v) => setState(() => _parentId = v),
             ),
             SizedBox(height: context.space.md),
-            Text('Color', style: context.texts.labelLarge),
+            Text(l10n.categoryColor, style: context.texts.labelLarge),
             SizedBox(height: context.space.xs),
             Wrap(
               spacing: context.space.xs,
@@ -282,7 +290,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
                   Semantics(
                     button: true,
                     selected: _color == hex,
-                    label: 'Colour',
+                    label: l10n.categoryColorSemantics,
                     child: InkResponse(
                       onTap: () => setState(() => _color = hex),
                       radius: 22,
@@ -303,7 +311,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               ],
             ),
             SizedBox(height: context.space.md),
-            Text('Icon', style: context.texts.labelLarge),
+            Text(l10n.categoryIcon, style: context.texts.labelLarge),
             SizedBox(height: context.space.xs),
             Wrap(
               spacing: context.space.xs,
@@ -320,7 +328,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               SizedBox(height: context.space.sm),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Archived'),
+                title: Text(l10n.categoryArchived),
                 value: _archived,
                 onChanged: (v) => setState(() => _archived = v),
               ),
@@ -337,7 +345,7 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             SizedBox(height: context.space.lg),
             FilledButton(
               onPressed: _busy ? null : _save,
-              child: _busy ? const ButtonSpinner() : const Text('Save'),
+              child: _busy ? const ButtonSpinner() : Text(l10n.categorySave),
             ),
           ],
         ),

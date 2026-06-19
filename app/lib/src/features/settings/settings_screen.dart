@@ -41,29 +41,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.category_outlined),
-                title: const Text('Manage categories'),
+                title: Text(l10n.settingsManageCategories),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _busy ? null : () => context.push(Routes.categories),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),
-                title: const Text('Export to CSV'),
-                subtitle: const Text('Transactions and line items'),
+                title: Text(l10n.settingsExportCsv),
+                subtitle: Text(l10n.settingsExportCsvSubtitle),
                 enabled: !_busy,
                 onTap: _export,
               ),
               ListTile(
                 leading: const Icon(Icons.download_outlined),
-                title: const Text('Import from CSV'),
-                subtitle: const Text('Add transactions from a CSV file'),
+                title: Text(l10n.settingsImportCsv),
+                subtitle: Text(l10n.settingsImportCsvSubtitle),
                 enabled: !_busy,
                 onTap: _import,
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.payments_outlined),
-                title: const Text('Base currency'),
+                title: Text(l10n.settingsBaseCurrency),
                 trailing: Text(base ?? '—', style: context.texts.titleMedium),
               ),
               const Divider(height: 1),
@@ -89,13 +89,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.commonSignOut),
-        content: const Text(
-          'You\'ll need to sign in again to access your data on this device.',
-        ),
+        content: Text(l10n.signOutConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -111,24 +109,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _export() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
     setState(() => _busy = true);
     try {
       final service = await ref.read(importExportServiceProvider.future);
       final csv = await service.exportCsv();
       final path = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Ledgerly export',
-        fileName: 'ledgerly-export.csv',
+        dialogTitle: l10n.settingsExportDialogTitle,
+        fileName: l10n.settingsExportFileName,
         bytes: Uint8List.fromList(utf8.encode(csv)),
       );
       messenger.showSnackBar(
         SnackBar(
-          content:
-              Text(path == null ? 'Export cancelled' : 'Exported to $path'),
+          content: Text(
+            path == null
+                ? l10n.settingsExportCancelled
+                : l10n.settingsExportedTo(path),
+          ),
         ),
       );
     } on Exception catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Export failed: ${friendlyError(e)}')),
+        SnackBar(content: Text(l10n.settingsExportFailed(friendlyError(e)))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -137,6 +139,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _import() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
     setState(() => _busy = true);
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -153,14 +156,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Imported ${report.imported}'
-            '${report.skipped > 0 ? ', skipped ${report.skipped}' : ''}',
+            report.skipped > 0
+                ? l10n.settingsImportedCountSkipped(
+                    report.imported,
+                    report.skipped,
+                  )
+                : l10n.settingsImportedCount(report.imported),
           ),
         ),
       );
     } on Exception catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Import failed: ${friendlyError(e)}')),
+        SnackBar(content: Text(l10n.settingsImportFailed(friendlyError(e)))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);

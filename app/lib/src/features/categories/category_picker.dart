@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/utils/error_text.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/enums.dart';
@@ -39,6 +40,7 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final treeAsync = ref.watch(categoryTreeProvider);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: context.space.md),
@@ -47,9 +49,9 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
         children: [
           TextField(
             autofocus: true,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search categories',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: l10n.categoryPickerSearchHint,
             ),
             onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
           ),
@@ -89,7 +91,9 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
       }
     }
     if (tiles.isEmpty) {
-      return const Center(child: Text('No matching categories'));
+      return Center(
+        child: Text(AppLocalizations.of(context).categoryPickerNoMatches),
+      );
     }
     return ListView(children: tiles);
   }

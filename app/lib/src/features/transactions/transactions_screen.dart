@@ -30,7 +30,7 @@ class TransactionsScreen extends ConsumerWidget {
         children: [
           FloatingActionButton.small(
             heroTag: 'scan',
-            tooltip: 'Scan document',
+            tooltip: l10n.transactionsScanTooltip,
             onPressed: () => _scan(context, ref),
             child: const Icon(Icons.document_scanner_outlined),
           ),
@@ -71,7 +71,10 @@ class TransactionsScreen extends ConsumerWidget {
     } on Object catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not start scan: $e')),
+          SnackBar(
+            content:
+                Text(AppLocalizations.of(context).transactionsScanFailed('$e')),
+          ),
         );
       }
     }
@@ -104,15 +107,16 @@ class _TransactionTile extends StatelessWidget {
         ),
       ),
       onDismissed: (_) {
+        final l10n = AppLocalizations.of(context);
         final controller = ref.read(transactionsControllerProvider);
         controller.delete(tx.id);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: const Text('Transaction deleted'),
+              content: Text(l10n.transactionDeleted),
               action: SnackBarAction(
-                label: 'Undo',
+                label: l10n.transactionUndo,
                 onPressed: () => controller.restore(tx.id),
               ),
             ),

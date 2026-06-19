@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/currency_service.dart';
 import '../../core/di/providers.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/utils/error_text.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/entities/category.dart';
@@ -93,14 +94,15 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     if (!_loaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review document'),
+        title: Text(l10n.scanReviewTitle),
         actions: [
           _docTypeMenu(),
           TextButton(
             onPressed: _busy ? null : _save,
-            child: _busy ? const ButtonSpinner() : const Text('Save'),
+            child: _busy ? const ButtonSpinner() : Text(l10n.scanReviewSave),
           ),
         ],
       ),
@@ -152,14 +154,15 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                 Icon(Icons.description_outlined,
                     size: 18, color: context.colors.onSurfaceVariant),
                 SizedBox(width: context.space.xs),
-                Text('Recognized text', style: context.texts.titleSmall),
+                Text(AppLocalizations.of(context).scanRecognizedText,
+                    style: context.texts.titleSmall),
               ],
             ),
             SizedBox(height: context.space.sm),
             SelectableText(
               ocr?.fullText.trim().isNotEmpty ?? false
                   ? ocr!.fullText
-                  : 'No preview available.',
+                  : AppLocalizations.of(context).scanNoPreview,
               style: context.texts.bodySmall,
             ),
           ],
@@ -171,6 +174,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   // --- form pane ---------------------------------------------------------
 
   Widget _formPane(BuildContext context, {required bool showInlineImage}) {
+    final l10n = AppLocalizations.of(context);
     final accounts = ref.watch(accountsProvider).valueOrNull ?? const [];
     final currencies = ref.watch(currenciesProvider).valueOrNull ?? const [];
     final categories = ref.watch(categoriesFlatProvider).valueOrNull ??
@@ -195,14 +199,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
           SizedBox(height: context.space.sm),
           _totalField(context),
           SizedBox(height: context.space.md),
-          Text('Line items', style: context.texts.titleSmall),
+          Text(l10n.scanLineItems, style: context.texts.titleSmall),
           SizedBox(height: context.space.xs),
           for (var i = 0; i < _c.lines.length; i++)
             _lineRow(context, i, categories),
           TextButton.icon(
             onPressed: _addLine,
             icon: const Icon(Icons.add),
-            label: const Text('Add item'),
+            label: Text(l10n.scanAddItem),
           ),
           const Divider(),
           _reconciliationRow(context),
@@ -220,10 +224,11 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Widget _accountDropdown(List<AccountEntity> accounts) {
+    final l10n = AppLocalizations.of(context);
     final exists = accounts.any((a) => a.id == _accountId);
     return DropdownButtonFormField<String>(
       value: exists ? _accountId : null,
-      decoration: const InputDecoration(labelText: 'Account'),
+      decoration: InputDecoration(labelText: l10n.scanAccount),
       items: [
         for (final a in accounts)
           DropdownMenuItem(
@@ -236,11 +241,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Widget _currencyDropdown(List<CurrencyEntity> currencies) {
+    final l10n = AppLocalizations.of(context);
     final exists = currencies.any((c) => c.code == _c.currencyCode);
     return DropdownButtonFormField<String>(
       value: exists ? _c.currencyCode : null,
       decoration: InputDecoration(
-        labelText: 'Currency',
+        labelText: l10n.scanCurrency,
         suffixIcon: _confidenceDot('currency'),
       ),
       items: [
@@ -255,7 +261,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return TextField(
       controller: _merchantCtrl,
       decoration: InputDecoration(
-        labelText: 'Merchant',
+        labelText: AppLocalizations.of(context).scanMerchant,
         suffixIcon: _confidenceDot('merchant'),
       ),
       onChanged: _c.setMerchant,
@@ -264,12 +270,13 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Widget _dateField(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final d = _c.date;
     final text =
-        d == null ? 'No date' : '${d.year}-${_2(d.month)}-${_2(d.day)}';
+        d == null ? l10n.scanNoDate : '${d.year}-${_2(d.month)}-${_2(d.day)}';
     return InputDecorator(
       decoration: InputDecoration(
-        labelText: 'Date',
+        labelText: l10n.scanDate,
         suffixIcon: _confidenceDot('date'),
       ),
       child: Row(
@@ -285,7 +292,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
               );
               if (picked != null) _c.setDate(picked);
             },
-            child: const Text('Change'),
+            child: Text(l10n.scanChange),
           ),
         ],
       ),
@@ -297,7 +304,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       controller: _totalCtrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
-        labelText: 'Total',
+        labelText: AppLocalizations.of(context).scanTotal,
         suffixIcon: _confidenceDot('total'),
       ),
       onChanged: (v) => _c.setTotal(_parse(v)),
@@ -310,6 +317,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     int i,
     List<CategoryEntity> categories,
   ) {
+    final l10n = AppLocalizations.of(context);
     final (descCtrl, amountCtrl) = _lineCtrls[i];
     final line = _c.lines[i];
     final selected = categoryById(categories, line.categoryId);
@@ -326,7 +334,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                 flex: 3,
                 child: TextField(
                   controller: descCtrl,
-                  decoration: const InputDecoration(labelText: 'Description'),
+                  decoration: InputDecoration(labelText: l10n.scanDescription),
                   onChanged: (v) => _c.setLineDescription(i, v),
                   onTap: () =>
                       setState(() => _highlight = descCtrl.text.trim()),
@@ -339,14 +347,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   controller: amountCtrl,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Amount'),
+                  decoration: InputDecoration(labelText: l10n.scanAmount),
                   onChanged: (v) =>
                       _c.setLineAmount(i, _parse(v) ?? Decimal.zero),
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.close),
-                tooltip: 'Remove item',
+                tooltip: l10n.scanRemoveItem,
                 onPressed: () => _removeLine(i),
               ),
             ],
@@ -361,7 +369,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                     : categoryIcon(selected.icon),
                 color: lowCat ? context.semantic.warning : null,
               ),
-              label: Text(selected?.name ?? 'Category'),
+              label: Text(selected?.name ?? l10n.scanCategory),
             ),
           ),
         ],
@@ -370,6 +378,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Widget _reconciliationRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final balanced = _c.isReconciled;
     final hasLines = _c.lines.isNotEmpty;
     final delta = _c.reconciliationDelta;
@@ -379,11 +388,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
             ? context.semantic.success
             : context.semantic.warning;
     final label = !hasLines
-        ? 'No line items'
+        ? l10n.scanReconcileNoLineItems
         : balanced
-            ? 'Σ lines = total'
-            : 'Σ lines ${_c.lineSum} vs total ${_c.total ?? '—'}'
-                '${delta == null ? '' : '  (Δ $delta)'}';
+            ? l10n.scanReconcileBalanced
+            : l10n.scanReconcileMismatch(
+                  '${_c.lineSum}',
+                  '${_c.total ?? '—'}',
+                ) +
+                (delta == null ? '' : l10n.scanReconcileDelta('$delta'));
     return Row(
       children: [
         Icon(
@@ -405,19 +417,20 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Widget _docTypeMenu() {
+    final l10n = AppLocalizations.of(context);
     return PopupMenuButton<DocType>(
       initialValue: _c.docType,
-      tooltip: 'Document type',
+      tooltip: l10n.scanDocumentType,
       onSelected: _c.setDocType,
       itemBuilder: (_) => [
         for (final t in DocType.values)
-          PopupMenuItem(value: t, child: Text(_docTypeLabel(t))),
+          PopupMenuItem(value: t, child: Text(_docTypeLabel(l10n, t))),
       ],
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: context.space.xs),
         child: Row(
           children: [
-            Text(_docTypeLabel(_c.docType)),
+            Text(_docTypeLabel(l10n, _c.docType)),
             const Icon(Icons.arrow_drop_down),
           ],
         ),
@@ -430,11 +443,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     final low = _c.isFieldLow(key);
     final c = _c.fieldConfidence(key);
     if (c == null) return null;
+    final l10n = AppLocalizations.of(context);
     return Icon(
       low ? Icons.error_outline : Icons.check_circle,
       size: 18,
       color: low ? context.semantic.warning : context.semantic.success,
-      semanticLabel: low ? 'Low confidence' : 'High confidence',
+      semanticLabel: low ? l10n.scanLowConfidence : l10n.scanHighConfidence,
     );
   }
 
@@ -482,23 +496,26 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Future<void> _doSave() async {
+    final l10n = AppLocalizations.of(context);
     final accountId = _accountId;
-    if (accountId == null) throw const _ReviewError('Choose an account.');
+    if (accountId == null) {
+      throw _ReviewError(l10n.scanValidationChooseAccount);
+    }
     final total = _c.total;
     if (total == null && _c.lines.isEmpty) {
-      throw const _ReviewError('Enter a total or add at least one item.');
+      throw _ReviewError(l10n.scanValidationEnterTotalOrItem);
     }
     final currency = _c.currencyCode;
-    if (currency.isEmpty) throw const _ReviewError('Choose a currency.');
+    if (currency.isEmpty) throw _ReviewError(l10n.scanValidationChooseCurrency);
 
     final session = ref.read(authServiceProvider).current.session;
-    if (session == null) throw const _ReviewError('Not signed in.');
+    if (session == null) throw _ReviewError(l10n.scanValidationNotSignedIn);
 
     final categories = ref.read(categoriesFlatProvider).valueOrNull ??
         const <CategoryEntity>[];
     final fallback = _fallbackCategory(categories);
     if (fallback == null) {
-      throw const _ReviewError('No category available to assign items.');
+      throw _ReviewError(l10n.scanValidationNoCategory);
     }
 
     final txSvc = await ref.read(transactionServiceProvider.future);
@@ -548,12 +565,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     CurrencyService currencySvc,
   ) async {
     if (currency == _baseCurrency) return money;
+    final l10n = AppLocalizations.of(context);
     final conv = await currencySvc.toBase(money, date);
     final base = conv.base;
     if (conv.needsRate || base == null) {
       throw _ReviewError(
-        'No exchange rate for $currency on this date. Switch to '
-        '$_baseCurrency or add the rate via a manual entry first.',
+        l10n.scanValidationNoRate(currency, _baseCurrency),
       );
     }
     return base;
@@ -581,12 +598,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
   String _2(int n) => n.toString().padLeft(2, '0');
 
-  String _docTypeLabel(DocType t) => switch (t) {
-        DocType.receipt => 'Receipt',
-        DocType.invoice => 'Invoice',
-        DocType.bill => 'Bill',
-        DocType.paycheck => 'Paycheck',
-        DocType.other => 'Other',
+  String _docTypeLabel(AppLocalizations l10n, DocType t) => switch (t) {
+        DocType.receipt => l10n.scanDocTypeReceipt,
+        DocType.invoice => l10n.scanDocTypeInvoice,
+        DocType.bill => l10n.scanDocTypeBill,
+        DocType.paycheck => l10n.scanDocTypePaycheck,
+        DocType.other => l10n.scanDocTypeOther,
       };
 }
 

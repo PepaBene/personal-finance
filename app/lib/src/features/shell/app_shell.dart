@@ -101,13 +101,11 @@ class AppShell extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.commonSignOut),
-        content: const Text(
-          'You\'ll need to sign in again to access your data on this device.',
-        ),
+        content: Text(l10n.signOutConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -161,7 +159,7 @@ class _SyncStatus extends ConsumerWidget {
             ref.invalidate(syncServiceProvider);
             ref.invalidate(syncStatusProvider);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Reconnecting…')),
+              SnackBar(content: Text(l10n.syncReconnecting)),
             );
           }
         : null;

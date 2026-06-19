@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/di/providers.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/account.dart';
@@ -19,6 +20,7 @@ class AccountsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final async = ref.watch(accountBalancesProvider);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = MoneyFormatter(locale);
@@ -27,7 +29,7 @@ class AccountsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _AccountSheet.show(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Add account'),
+        label: Text(l10n.accountsAddAction),
       ),
       body: async.when(
         loading: () => const LoadingView(),
@@ -38,12 +40,12 @@ class AccountsScreen extends ConsumerWidget {
         data: (balances) => balances.isEmpty
             ? EmptyView(
                 icon: Icons.account_balance_wallet_outlined,
-                title: 'No accounts yet',
-                message: 'Add an account to start tracking balances.',
+                title: l10n.accountsEmptyTitle,
+                message: l10n.accountsEmptyBody,
                 action: FilledButton.icon(
                   onPressed: () => _AccountSheet.show(context, ref),
                   icon: const Icon(Icons.add),
-                  label: const Text('Add account'),
+                  label: Text(l10n.accountsAddAction),
                 ),
               )
             : ListView.builder(
@@ -132,11 +134,14 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
       _busy = true;
       _error = null;
     });
+    final l10n = AppLocalizations.of(context);
     try {
       final name = _nameCtrl.text.trim();
-      if (name.isEmpty) throw Exception('Enter a name');
+      if (name.isEmpty) throw Exception(l10n.accountValidationEnterName);
       final currency = _currency;
-      if (currency == null) throw Exception('Choose a currency');
+      if (currency == null) {
+        throw Exception(l10n.accountValidationChooseCurrency);
+      }
       final opening =
           Decimal.tryParse(_openingCtrl.text.trim().replaceAll(',', '.')) ??
               Decimal.zero;
@@ -167,6 +172,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final currencies =
         ref.watch(currenciesProvider).valueOrNull ?? const <CurrencyEntity>[];
     final insets = MediaQuery.viewInsetsOf(context);
@@ -182,18 +188,20 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            widget.account == null ? 'New account' : 'Edit account',
+            widget.account == null
+                ? l10n.accountNewTitle
+                : l10n.accountEditTitle,
             style: context.texts.titleLarge,
           ),
           SizedBox(height: context.space.md),
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: l10n.accountName),
           ),
           SizedBox(height: context.space.sm),
           DropdownButtonFormField<AccountKind>(
             value: _kind,
-            decoration: const InputDecoration(labelText: 'Type'),
+            decoration: InputDecoration(labelText: l10n.accountType),
             items: [
               for (final k in AccountKind.values)
                 DropdownMenuItem(value: k, child: Text(k.name)),
@@ -204,7 +212,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           DropdownButtonFormField<String>(
             value:
                 currencies.any((c) => c.code == _currency) ? _currency : null,
-            decoration: const InputDecoration(labelText: 'Currency'),
+            decoration: InputDecoration(labelText: l10n.accountCurrency),
             items: [
               for (final c in currencies)
                 DropdownMenuItem(value: c.code, child: Text(c.code)),
@@ -215,7 +223,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           TextField(
             controller: _openingCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Opening balance'),
+            decoration: InputDecoration(labelText: l10n.accountOpeningBalance),
           ),
           if (_error != null) ...[
             SizedBox(height: context.space.sm),
@@ -229,7 +237,7 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           SizedBox(height: context.space.lg),
           FilledButton(
             onPressed: _busy ? null : _save,
-            child: _busy ? const ButtonSpinner() : const Text('Save'),
+            child: _busy ? const ButtonSpinner() : Text(l10n.accountSave),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ledgerly_app/src/core/l10n/generated/app_localizations.dart';
 import 'package:ledgerly_app/src/domain/enums.dart';
 import 'package:ledgerly_app/src/domain/scan/document_draft.dart';
 import 'package:ledgerly_app/src/domain/scan/ocr_result.dart';
@@ -49,6 +50,8 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ScanReviewScreen(draft: _draft()),
         ),
       ),
@@ -81,6 +84,8 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ScanReviewScreen(draft: _draft()),
         ),
       ),
