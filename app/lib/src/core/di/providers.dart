@@ -18,9 +18,15 @@ import '../../application/attachment_service.dart';
 import '../../application/attachment_store.dart';
 import '../../application/auth_service.dart';
 import '../../application/categorization_rule_service.dart';
+import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
+import '../../application/document_parser.dart';
 import '../../application/import_export_service.dart';
+import '../../application/ocr_engine.dart';
+import '../../application/scan_coordinator.dart';
+import '../../application/scan_ingest.dart';
+import '../../application/scan_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
 import '../../data/attachments/default_attachment_store.dart';
@@ -28,8 +34,14 @@ import '../../data/attachments/memory_blob_cache.dart';
 import '../../data/attachments/null_remote_blob_store.dart';
 import '../../data/crypto/aes_gcm_attachment_cipher.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
+import '../../data/documents/default_scan_service.dart';
+import '../../data/documents/keyword_document_classifier.dart';
+import '../../data/documents/receipt_parser.dart';
+import '../../data/ingest/file_picker_scan_ingest.dart';
+import '../../data/ocr/ocr_engine_factory.dart';
 import '../../data/services/drift_attachment_service.dart';
 import '../../data/services/drift_categorization_rule_service.dart';
+import '../../domain/enums.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
@@ -178,6 +190,44 @@ final blobCacheProvider = Provider<BlobCache>((ref) => MemoryBlobCache());
 final remoteBlobStoreProvider = Provider<RemoteBlobStore>(
   (ref) => const NullRemoteBlobStore(),
 );
+
+// --- Scanning: ingest + OCR engine + pipeline (docs/05) -----------------
+
+/// Document ingest (file picker today; camera/gallery/PDF later).
+final scanIngestProvider = Provider<ScanIngest>(
+  (ref) => const FilePickerScanIngest(),
+);
+
+/// Platform-selected on-device OCR engine, or null when none is bundled
+/// (manual-entry fallback — docs/05 §6).
+final ocrEngineProvider = Provider<OcrEngine?>((ref) => createOcrEngine());
+
+/// The scan pipeline, wired with the user's categorizer; null when there is no
+/// OCR engine on this platform.
+final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
+  final engine = ref.watch(ocrEngineProvider);
+  if (engine == null) return null;
+  final ruleSvc = await ref.watch(categorizationRuleServiceProvider.future);
+  final categorizer =
+      CategorizingDraftCategorizer(await ruleSvc.buildCategorizer());
+  final base = ref.watch(appConfigProvider).baseCurrencyCode;
+  return DefaultScanService(
+    engine: engine,
+    classifier: const KeywordDocumentClassifier(),
+    parsers: const {DocType.receipt: ReceiptParser()},
+    contextBuilder: () => ParseContext(defaultCurrencyCode: base),
+    categorizer: categorizer,
+  );
+});
+
+/// Drives capture → review (ingest + optional OCR pipeline).
+final scanCoordinatorProvider = FutureProvider<ScanCoordinator>((ref) async {
+  final scanService = await ref.watch(scanServiceProvider.future);
+  return ScanCoordinator(
+    ingest: ref.watch(scanIngestProvider),
+    scanService: scanService,
+  );
+});
 
 final attachmentStoreProvider = FutureProvider<AttachmentStore>((ref) async {
   final cipher = await ref.watch(attachmentCipherProvider.future);

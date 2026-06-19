@@ -5,7 +5,7 @@ import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/categories/categories_screen.dart';
-import '../../domain/scan/document_draft.dart';
+import '../../application/scan_coordinator.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/lock/lock_screen.dart';
 import '../../features/scan/scan_review_screen.dart';
@@ -76,12 +76,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: Routes.categories,
         builder: (_, __) => const CategoriesScreen(),
       ),
-      // Reached from the (forthcoming) scan ingest flow with the parsed draft
-      // passed as `extra`. Full-screen, outside the shell chrome.
+      // Reached from the scan flow with the captured ScanResult (draft + image
+      // bytes) as `extra`. Full-screen, outside the shell chrome.
       GoRoute(
         path: Routes.scanReview,
-        builder: (_, state) =>
-            ScanReviewScreen(draft: state.extra! as DocumentDraft),
+        builder: (_, state) {
+          final r = state.extra! as ScanResult;
+          return ScanReviewScreen(draft: r.draft, imageBytes: r.imageBytes);
+        },
       ),
       ShellRoute(
         builder: (_, __, child) => AppShell(child: child),
