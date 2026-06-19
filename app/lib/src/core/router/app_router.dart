@@ -7,6 +7,7 @@ import '../../features/analytics/analytics_screen.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/budgets/budgets_screen.dart';
 import '../../features/categories/categories_screen.dart';
+import '../../features/recurring/recurring_screen.dart';
 import '../../application/scan_coordinator.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/lock/lock_screen.dart';
@@ -30,6 +31,7 @@ abstract final class Routes {
   static const categories = '/categories';
   static const budgets = '/budgets';
   static const analytics = '/analytics';
+  static const recurring = '/recurring';
   static const scanReview = '/scan/review';
 
   static String transactionEdit(String id) => '/transactions/$id/edit';
@@ -87,6 +89,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.analytics,
         builder: (_, __) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: Routes.recurring,
+        builder: (_, __) => const RecurringScreen(),
       ),
       // Reached from the scan flow with the captured ScanResult (draft + image
       // bytes) as `extra`. Full-screen, outside the shell chrome.

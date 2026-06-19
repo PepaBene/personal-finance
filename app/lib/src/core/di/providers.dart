@@ -25,6 +25,7 @@ import '../../application/currency_service.dart';
 import '../../application/document_parser.dart';
 import '../../application/import_export_service.dart';
 import '../../application/ocr_engine.dart';
+import '../../application/recurring_service.dart';
 import '../../application/scan_coordinator.dart';
 import '../../application/scan_ingest.dart';
 import '../../application/scan_service.dart';
@@ -52,6 +53,7 @@ import '../../data/seed/database_seeder.dart';
 import '../../data/services/drift_account_service.dart';
 import '../../data/services/drift_analytics_service.dart';
 import '../../data/services/drift_category_service.dart';
+import '../../data/services/drift_recurring_service.dart';
 import '../../data/services/drift_currency_service.dart';
 import '../../data/services/drift_import_export_service.dart';
 import '../../data/services/drift_transaction_service.dart';
@@ -175,6 +177,18 @@ final attachmentServiceProvider = FutureProvider<AttachmentService>((
 final budgetServiceProvider = FutureProvider<BudgetService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftBudgetService(db, ref.watch(authServiceProvider));
+});
+
+final recurringServiceProvider = FutureProvider<RecurringService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  final tx = await ref.watch(transactionServiceProvider.future);
+  final currency = await ref.watch(currencyServiceProvider.future);
+  return DriftRecurringService(
+    db,
+    ref.watch(authServiceProvider),
+    tx,
+    currency,
+  );
 });
 
 // --- Attachment blob encryption + storage (docs/09 §2/§3) ---------------

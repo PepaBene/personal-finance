@@ -280,5 +280,50 @@
   "analyticsCurrent": "Current",
   "analyticsOther": "Other",
   "waterfallIncome": "Income",
-  "waterfallNet": "Net"
+  "waterfallNet": "Net",
+
+  "settingsRecurring": "Recurring transactions",
+  "recurringTitle": "Recurring",
+  "recurringGenerate": "Generate due",
+  "recurringAddAction": "Add recurring",
+  "recurringGenerated": "Generated {count} transaction(s)",
+  "@recurringGenerated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recurringEmptyTitle": "No recurring transactions",
+  "recurringEmptyBody": "Add a template to auto-generate regular entries like subscriptions or rent.",
+  "recurringNext": "next {date}",
+  "@recurringNext": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "recurringDetectedTitle": "Detected subscriptions",
+  "recurringDetectedSubtitle": "{frequency} · {count} occurrences",
+  "@recurringDetectedSubtitle": {
+    "placeholders": {
+      "frequency": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "recurringCreateFromDetected": "Add",
+  "recurringWeekly": "Weekly",
+  "recurringMonthly": "Monthly",
+  "recurringYearly": "Yearly",
+  "recurringNewTitle": "New recurring",
+  "recurringEditTitle": "Edit recurring",
+  "recurringName": "Name",
+  "recurringAccount": "Account",
+  "recurringCategory": "Category",
+  "recurringAmount": "Amount",
+  "recurringNextDate": "Next date",
+  "recurringActive": "Active",
+  "recurringSave": "Save",
+  "recurringDelete": "Delete recurring",
+  "recurringValidationName": "Enter a name.",
+  "recurringValidationAccount": "Choose an account.",
+  "recurringValidationCategory": "Choose a category.",
+  "recurringValidationAmount": "Enter an amount greater than zero."
 }

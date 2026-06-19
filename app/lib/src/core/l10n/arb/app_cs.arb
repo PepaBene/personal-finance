@@ -279,5 +279,50 @@
   "analyticsCurrent": "Aktuální",
   "analyticsOther": "Ostatní",
   "waterfallIncome": "Příjem",
-  "waterfallNet": "Čistý tok"
+  "waterfallNet": "Čistý tok",
+
+  "settingsRecurring": "Opakované transakce",
+  "recurringTitle": "Opakované",
+  "recurringGenerate": "Vygenerovat splatné",
+  "recurringAddAction": "Přidat opakované",
+  "recurringGenerated": "Vygenerováno {count} transakcí",
+  "@recurringGenerated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recurringEmptyTitle": "Žádné opakované transakce",
+  "recurringEmptyBody": "Přidejte šablonu pro automatické generování pravidelných položek, jako jsou předplatná nebo nájem.",
+  "recurringNext": "další {date}",
+  "@recurringNext": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "recurringDetectedTitle": "Zjištěná předplatná",
+  "recurringDetectedSubtitle": "{frequency} · {count} výskytů",
+  "@recurringDetectedSubtitle": {
+    "placeholders": {
+      "frequency": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "recurringCreateFromDetected": "Přidat",
+  "recurringWeekly": "Týdně",
+  "recurringMonthly": "Měsíčně",
+  "recurringYearly": "Ročně",
+  "recurringNewTitle": "Nové opakované",
+  "recurringEditTitle": "Upravit opakované",
+  "recurringName": "Název",
+  "recurringAccount": "Účet",
+  "recurringCategory": "Kategorie",
+  "recurringAmount": "Částka",
+  "recurringNextDate": "Datum dalšího",
+  "recurringActive": "Aktivní",
+  "recurringSave": "Uložit",
+  "recurringDelete": "Smazat opakované",
+  "recurringValidationName": "Zadejte název.",
+  "recurringValidationAccount": "Vyberte účet.",
+  "recurringValidationCategory": "Vyberte kategorii.",
+  "recurringValidationAmount": "Zadejte částku větší než nula."
 }
