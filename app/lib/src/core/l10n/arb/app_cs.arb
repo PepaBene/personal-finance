@@ -361,5 +361,19 @@
   "settingsHighContrast": "Vysoký kontrast",
   "settingsReduceMotion": "Omezit animace",
   "settingsLanguage": "Jazyk",
-  "settingsLanguageSystem": "Výchozí systému"
+  "settingsLanguageSystem": "Výchozí systému",
+
+  "settingsSecurity": "Zabezpečení",
+  "settingsBiometric": "Biometrické odemknutí",
+  "settingsBiometricSubtitle": "Odemknout pomocí Face ID, Touch ID nebo biometrie zařízení",
+  "settingsAutoLock": "Automatický zámek",
+  "settingsAutoLockNever": "Nikdy",
+  "settingsAutoLockMinutes": "{count} min",
+  "@settingsAutoLockMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "lockBiometricAction": "Odemknout biometrií",
+  "lockBiometricReason": "Odemknout Ledgerly"
 }

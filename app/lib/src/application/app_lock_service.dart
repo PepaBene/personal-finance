@@ -26,6 +26,24 @@ abstract interface class AppLockService {
 
   /// True once a passphrase has been set up on this device.
   Future<bool> isInitialized();
+
+  // --- Biometric unlock (FR-SEC-03) -------------------------------------
+  // The DB [key] is stored in OS-secure storage and access is gated by a
+  // biometric/local check (performed by BiometricService) before
+  // [unlockWithBiometricKey] is called. The passphrase is always a fallback.
+
+  /// Store [key] so the user can later unlock with biometrics.
+  Future<void> enrollBiometric(Uint8List key);
+
+  /// Whether a biometric-unlock key is stored on this device.
+  Future<bool> isBiometricEnrolled();
+
+  /// Return the stored key and mark the app unlocked. Call only *after* a
+  /// successful biometric check. Throws [StateError] if nothing is enrolled.
+  Future<Uint8List> unlockWithBiometricKey();
+
+  /// Remove the stored biometric-unlock key.
+  Future<void> clearBiometric();
 }
 
 class InvalidPassphrase implements Exception {

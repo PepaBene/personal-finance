@@ -7,6 +7,7 @@ import 'core/l10n/generated/app_localizations.dart';
 import 'core/preferences/preferences_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/sync/sync_coordinator.dart';
+import 'features/lock/auto_lock_scope.dart';
 
 /// Root widget: Material 3 themed, localized (EN + CS), routed via go_router.
 class LedgerlyApp extends ConsumerWidget {
@@ -45,7 +46,9 @@ class LedgerlyApp extends ConsumerWidget {
           data: mq.copyWith(
             disableAnimations: mq.disableAnimations || prefs.reduceMotion,
           ),
-          child: child ?? const SizedBox.shrink(),
+          // Idle/background auto-lock wraps the whole app so it covers every
+          // route, including the full-screen editors (FR-SEC-05).
+          child: AutoLockScope(child: child ?? const SizedBox.shrink()),
         );
       },
     );

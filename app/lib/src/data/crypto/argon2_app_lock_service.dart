@@ -25,6 +25,7 @@ class Argon2AppLockService implements AppLockService {
 
   static const _saltKey = 'ledgerly.kdf.salt';
   static const _verifierKey = 'ledgerly.kdf.verifier';
+  static const _bioKeyKey = 'ledgerly.bio.key';
 
   // OWASP-tuned Argon2id baseline (revisit per-platform in docs/10).
   static final _kdf = Argon2id(
@@ -83,6 +84,28 @@ class Argon2AppLockService implements AppLockService {
     _state = LockState.locked;
     _controller.add(_state);
   }
+
+  @override
+  Future<void> enrollBiometric(Uint8List key) =>
+      _storage.write(key: _bioKeyKey, value: base64Encode(key));
+
+  @override
+  Future<bool> isBiometricEnrolled() async =>
+      (await _storage.read(key: _bioKeyKey)) != null;
+
+  @override
+  Future<Uint8List> unlockWithBiometricKey() async {
+    final stored = await _storage.read(key: _bioKeyKey);
+    if (stored == null) {
+      throw StateError('No biometric key enrolled.');
+    }
+    final key = Uint8List.fromList(base64Decode(stored));
+    _setUnlocked(key);
+    return key;
+  }
+
+  @override
+  Future<void> clearBiometric() => _storage.delete(key: _bioKeyKey);
 
   void _setUnlocked(Uint8List key) {
     _key = key;

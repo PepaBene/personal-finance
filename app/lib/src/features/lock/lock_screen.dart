@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,12 +42,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       final key = initialized
           ? await lock.unlock(_passphrase.text)
           : await lock.initialize(_passphrase.text);
-      // Publishing the key opens the encrypted store; the SyncCoordinator
-      // observes this and brings PowerSync online now that we have both a
-      // session and an unlocked store.
-      ref.read(databaseKeyProvider.notifier).state = key;
-      // Seed reference + default data on first unlock (idempotent).
-      await ref.read(bootstrapProvider.future);
+      await _enter(key);
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {
@@ -53,6 +50,35 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Biometric unlock (FR-SEC-03): a successful local check releases the stored
+  /// DB key. Falls back silently to the passphrase on cancel/failure.
+  Future<void> _biometricUnlock() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final ok = await ref
+          .read(biometricServiceProvider)
+          .authenticate(l10n.lockBiometricReason);
+      if (!ok) return;
+      final key = await ref.read(appLockServiceProvider).unlockWithBiometricKey();
+      await _enter(key);
+    } on Exception catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Publishing the key opens the encrypted store; the SyncCoordinator observes
+  /// this and brings PowerSync online. Seeds default data on first unlock.
+  Future<void> _enter(Uint8List key) async {
+    ref.read(databaseKeyProvider.notifier).state = key;
+    await ref.read(bootstrapProvider.future);
   }
 
   @override
@@ -117,6 +143,15 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                         )
                       : Text(l10n.lockUnlockAction),
                 ),
+                if (ref.watch(biometricUnlockAvailableProvider).valueOrNull ??
+                    false) ...[
+                  SizedBox(height: context.space.sm),
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _biometricUnlock,
+                    icon: const Icon(Icons.fingerprint),
+                    label: Text(l10n.lockBiometricAction),
+                  ),
+                ],
               ],
             ),
           ),

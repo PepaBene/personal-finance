@@ -362,5 +362,19 @@
   "settingsHighContrast": "High contrast",
   "settingsReduceMotion": "Reduce motion",
   "settingsLanguage": "Language",
-  "settingsLanguageSystem": "System default"
+  "settingsLanguageSystem": "System default",
+
+  "settingsSecurity": "Security",
+  "settingsBiometric": "Biometric unlock",
+  "settingsBiometricSubtitle": "Unlock with Face ID, Touch ID or device biometrics",
+  "settingsAutoLock": "Auto-lock",
+  "settingsAutoLockNever": "Never",
+  "settingsAutoLockMinutes": "{count} min",
+  "@settingsAutoLockMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "lockBiometricAction": "Unlock with biometrics",
+  "lockBiometricReason": "Unlock Ledgerly"
 }

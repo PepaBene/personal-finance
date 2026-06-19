@@ -17,6 +17,7 @@ import '../../application/app_lock_service.dart';
 import '../../application/attachment_service.dart';
 import '../../application/attachment_store.dart';
 import '../../application/auth_service.dart';
+import '../../application/biometric_service.dart';
 import '../../application/budget_service.dart';
 import '../../application/categorization_rule_service.dart';
 import '../../application/categorization_service.dart';
@@ -38,6 +39,7 @@ import '../../application/transaction_service.dart';
 import '../../data/attachments/default_attachment_store.dart';
 import '../../data/attachments/memory_blob_cache.dart';
 import '../../data/attachments/null_remote_blob_store.dart';
+import '../../data/auth/local_auth_biometric_service.dart';
 import '../../data/crypto/aes_gcm_attachment_cipher.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
 import '../../data/documents/default_scan_service.dart';
@@ -106,6 +108,19 @@ final appLockServiceProvider = Provider<AppLockService>(
 final lockStateProvider = StreamProvider<LockState>(
   (ref) => ref.watch(appLockServiceProvider).watch(),
 );
+
+/// Platform biometric gate (FR-SEC-03).
+final biometricServiceProvider = Provider<BiometricService>(
+  (ref) => LocalAuthBiometricService(),
+);
+
+/// Whether the lock screen should offer a biometric-unlock button: a key is
+/// enrolled *and* the device can perform a biometric check right now.
+final biometricUnlockAvailableProvider = FutureProvider<bool>((ref) async {
+  final lock = ref.watch(appLockServiceProvider);
+  if (!await lock.isBiometricEnrolled()) return false;
+  return ref.watch(biometricServiceProvider).isAvailable();
+});
 
 /// The in-memory database key produced by a successful unlock. `null` while the
 /// app is locked. Set by the lock flow (features/lock), cleared on sign-out.

@@ -123,6 +123,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const Divider(height: 1),
+              _SectionHeader(l10n.settingsSecurity),
+              SwitchListTile(
+                secondary: const Icon(Icons.fingerprint),
+                title: Text(l10n.settingsBiometric),
+                subtitle: Text(l10n.settingsBiometricSubtitle),
+                value: prefs.biometricEnabled,
+                onChanged: _busy ? null : _setBiometric,
+              ),
+              ListTile(
+                leading: const Icon(Icons.lock_clock_outlined),
+                title: Text(l10n.settingsAutoLock),
+                trailing: DropdownButton<int>(
+                  value: prefs.autoLockMinutes,
+                  underline: const SizedBox.shrink(),
+                  onChanged: (m) =>
+                      m == null ? null : prefsCtrl.setAutoLockMinutes(m),
+                  items: [
+                    DropdownMenuItem(
+                      value: 0,
+                      child: Text(l10n.settingsAutoLockNever),
+                    ),
+                    for (final m in const [1, 5, 15, 30])
+                      DropdownMenuItem(
+                        value: m,
+                        child: Text(l10n.settingsAutoLockMinutes(m)),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),
                 title: Text(l10n.settingsExportCsv),
@@ -159,6 +189,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  /// Enroll or remove biometric unlock (FR-SEC-03). Enabling verifies a
+  /// biometric check first, then stores the current DB key behind it.
+  Future<void> _setBiometric(bool enable) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final lock = ref.read(appLockServiceProvider);
+    final prefsCtrl = ref.read(preferencesProvider.notifier);
+    setState(() => _busy = true);
+    try {
+      if (enable) {
+        final key = ref.read(databaseKeyProvider);
+        if (key == null) return; // unreachable while unlocked
+        final ok = await ref
+            .read(biometricServiceProvider)
+            .authenticate(l10n.lockBiometricReason);
+        if (!ok) return;
+        await lock.enrollBiometric(key);
+        await prefsCtrl.setBiometricEnabled(true);
+      } else {
+        await lock.clearBiometric();
+        await prefsCtrl.setBiometricEnabled(false);
+      }
+      ref.invalidate(biometricUnlockAvailableProvider);
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(friendlyError(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _confirmSignOut(AppLocalizations l10n) async {
