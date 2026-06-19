@@ -78,12 +78,17 @@ class RecurringDetector {
       if (!withinTolerance) continue;
 
       // Intervals between consecutive dates must cluster around one cadence.
+      // Use the MEDIAN gap, which (unlike the mean) tolerates a single skipped
+      // period without shifting out of the cadence window.
       final gaps = <int>[];
       for (var i = 1; i < txs.length; i++) {
         gaps.add(txs[i].date.difference(txs[i - 1].date).inDays);
       }
-      final avgGap = gaps.reduce((a, b) => a + b) / gaps.length;
-      final cadence = _matchCadence(avgGap);
+      gaps.sort();
+      final medianGap = gaps.length.isOdd
+          ? gaps[gaps.length ~/ 2].toDouble()
+          : (gaps[gaps.length ~/ 2 - 1] + gaps[gaps.length ~/ 2]) / 2;
+      final cadence = _matchCadence(medianGap);
       if (cadence == null) continue;
 
       final last = txs.last.date;

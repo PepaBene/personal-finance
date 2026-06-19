@@ -327,6 +327,12 @@ class DriftAnalyticsService implements AnalyticsService {
     final summary = await watchSummary(range).first;
     final byCat = await watchSpendByCategory(range).first;
 
+    // Use a single line-grain expense basis so income − (categories + other)
+    // reconciles exactly with the ending net (no header-vs-line rounding drift).
+    final expenseTotal =
+        byCat.fold<Decimal>(Decimal.zero, (s, c) => s + c.total.amount);
+    final income = summary.income.amount;
+
     final steps = <WaterfallStep>[
       WaterfallStep(key: 'income', delta: summary.income),
     ];
@@ -341,14 +347,18 @@ class DriftAnalyticsService implements AnalyticsService {
         ),
       );
     }
-    final other = summary.expense.amount - topSum;
+    final other = expenseTotal - topSum;
     if (other > Decimal.zero) {
       steps.add(
         WaterfallStep(key: 'other', delta: Money(Decimal.zero - other, base)),
       );
     }
     steps.add(
-      WaterfallStep(key: 'net', delta: summary.net, isTotal: true),
+      WaterfallStep(
+        key: 'net',
+        delta: Money(income - expenseTotal, base),
+        isTotal: true,
+      ),
     );
     return steps;
   }

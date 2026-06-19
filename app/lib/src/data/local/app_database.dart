@@ -179,11 +179,14 @@ class AppDatabase extends _$AppDatabase {
     return {for (final c in rows) c.name.toLowerCase(): c.id};
   }
 
+  /// Count of the user's non-tombstoned categories (the seed guard, so a user
+  /// who deleted every category gets the defaults re-seeded).
   Future<int> countCategories(String userId) async {
     final count = countAll();
     final row = await (selectOnly(categories)
           ..addColumns([count])
-          ..where(categories.userId.equals(userId)))
+          ..where(categories.userId.equals(userId) &
+              categories.deleted.equals(false)))
         .getSingle();
     return row.read(count) ?? 0;
   }

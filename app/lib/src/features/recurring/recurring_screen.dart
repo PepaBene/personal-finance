@@ -75,6 +75,7 @@ class RecurringScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final service = await ref.read(recurringServiceProvider.future);
     final count = await service.generateDue(DateTime.now().toUtc());
+    if (!context.mounted) return;
     messenger.showSnackBar(
       SnackBar(content: Text(l10n.recurringGenerated(count))),
     );

@@ -56,8 +56,12 @@ class FrankfurterRateProvider implements ExchangeRateProvider {
     if (rates is! Map || !rates.containsKey(to)) {
       throw RateFetchException('No rate for $to in response');
     }
-    // Parse via string to preserve precision (no float round-trip).
-    final rate = Decimal.parse(rates[to].toString());
+    // Parse via string to preserve precision (no float round-trip); guard a
+    // non-numeric/null value so it surfaces as a friendly RateFetchException.
+    final rate = Decimal.tryParse(rates[to].toString());
+    if (rate == null) {
+      throw RateFetchException('Non-numeric rate for $to in response');
+    }
     final dateStr = json['date'];
     final date = dateStr is String
         ? (DateTime.tryParse(dateStr) ?? DateTime.now().toUtc())

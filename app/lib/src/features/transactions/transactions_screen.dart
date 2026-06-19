@@ -54,7 +54,7 @@ class TransactionsScreen extends ConsumerWidget {
             : ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, i) =>
-                    _TransactionTile(tx: items[i], ref: ref),
+                    _TransactionTile(tx: items[i]),
               ),
       ),
     );
@@ -81,14 +81,13 @@ class TransactionsScreen extends ConsumerWidget {
   }
 }
 
-class _TransactionTile extends StatelessWidget {
-  const _TransactionTile({required this.tx, required this.ref});
+class _TransactionTile extends ConsumerWidget {
+  const _TransactionTile({required this.tx});
 
   final TransactionEntity tx;
-  final WidgetRef ref;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = MoneyFormatter(locale);
     final dateText = DateFormat.yMMMd(locale).format(tx.date.toLocal());

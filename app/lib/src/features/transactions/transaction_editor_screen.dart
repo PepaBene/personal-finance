@@ -546,10 +546,22 @@ class _TransactionEditorScreenState
     return sum;
   }
 
+  /// Tolerant amount parse: drops spaces/NBSP grouping and handles both
+  /// comma-decimal and dot-decimal input (the last separator is the decimal
+  /// point; the other groups thousands).
   Decimal? _parse(String text) {
-    final cleaned = text.trim().replaceAll(',', '.');
-    if (cleaned.isEmpty) return null;
-    final d = Decimal.tryParse(cleaned);
+    var s = text.trim().replaceAll(RegExp(r'[\s ]'), '');
+    if (s.isEmpty) return null;
+    final hasComma = s.contains(',');
+    final hasDot = s.contains('.');
+    if (hasComma && hasDot) {
+      s = s.lastIndexOf(',') > s.lastIndexOf('.')
+          ? s.replaceAll('.', '').replaceAll(',', '.') // comma is the decimal
+          : s.replaceAll(',', ''); // dot is the decimal, comma groups
+    } else if (hasComma) {
+      s = s.replaceAll(',', '.'); // single comma = decimal separator
+    }
+    final d = Decimal.tryParse(s);
     return (d == null || d <= Decimal.zero) ? null : d;
   }
 
