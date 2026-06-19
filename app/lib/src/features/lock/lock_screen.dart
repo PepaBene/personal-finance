@@ -127,7 +127,11 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         ],
       ),
     );
-    if (ok != true) return;
+    if (ok != true) {
+      codeCtrl.dispose();
+      newPassCtrl.dispose();
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
