@@ -176,10 +176,18 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   /// Publishing the key opens the encrypted store; the SyncCoordinator observes
-  /// this and brings PowerSync online. Seeds default data on first unlock.
+  /// this and brings PowerSync online. Seeds default data on first unlock. If
+  /// seeding fails, re-lock (clear the key + lock) so the user is never left in
+  /// an open-but-unseeded app, and rethrow so the error is surfaced (M8).
   Future<void> _enter(Uint8List key) async {
     ref.read(databaseKeyProvider.notifier).state = key;
-    await ref.read(bootstrapProvider.future);
+    try {
+      await ref.read(bootstrapProvider.future);
+    } catch (_) {
+      ref.read(databaseKeyProvider.notifier).state = null;
+      ref.read(appLockServiceProvider).lock();
+      rethrow;
+    }
   }
 
   @override

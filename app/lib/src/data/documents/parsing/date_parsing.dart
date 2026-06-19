@@ -17,7 +17,24 @@ abstract final class DateParsing {
     for (final m in _dmy.allMatches(text)) {
       var year = int.parse(m[3]!);
       if (year < 100) year += 2000;
-      final d = _build(year, int.parse(m[2]!), int.parse(m[1]!));
+      final a = int.parse(m[1]!);
+      final b = int.parse(m[2]!);
+      // Disambiguate by which field can't be a month: a value > 12 must be the
+      // day. Only when both are <= 12 do we fall back to the day-first default
+      // (matches CS/most-of-Europe receipts).
+      final int day;
+      final int month;
+      if (a > 12 && b <= 12) {
+        day = a;
+        month = b;
+      } else if (b > 12 && a <= 12) {
+        day = b;
+        month = a;
+      } else {
+        day = a;
+        month = b;
+      }
+      final d = _build(year, month, day);
       if (d != null) return d;
     }
     return null;

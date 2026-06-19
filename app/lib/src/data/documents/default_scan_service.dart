@@ -44,9 +44,11 @@ class DefaultScanService implements ScanService {
     _emit('ocr', 0.3);
     final ocr = await _engine.recognize(input.image, token: token);
 
+    token?.throwIfCancelled();
     _emit('classify', 0.6);
     final classification = _classifier.classify(ocr);
 
+    token?.throwIfCancelled();
     _emit('parse', 0.8);
     final parser = _parsers[classification.type] ?? _parsers[DocType.receipt]!;
     var draft = parser.parse(ocr, _contextBuilder()).copyWith(
@@ -55,6 +57,7 @@ class DefaultScanService implements ScanService {
           source: input.source,
         );
 
+    token?.throwIfCancelled();
     // Apply learned per-merchant template (FR-SCAN-10) before generic
     // categorization, so merchant-specific memory wins.
     final applier = _templateApplier;

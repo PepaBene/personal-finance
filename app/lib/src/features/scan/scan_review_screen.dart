@@ -564,8 +564,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       // Rebuild the pipeline so the next scan applies the updated template.
       ref.invalidate(scanServiceProvider);
       ref.invalidate(scanCoordinatorProvider);
-    } on Exception {
-      // Swallow — learning is an optimization, not part of the save contract.
+    } catch (_) {
+      // Swallow everything (incl. Errors like a lost session): the transaction
+      // is already saved; learning is an optimization, not part of the contract.
     }
   }
 
