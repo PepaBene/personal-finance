@@ -191,6 +191,12 @@ void main() {
     expect(cmp.first.categoryId, 'groceries');
   });
 
+  test('transactionsForMerchant returns that merchant in range', () async {
+    await seed();
+    final txs = await analytics.transactionsForMerchant('m1', march);
+    expect(txs.map((t) => t.id).toSet(), {'m1a', 'm1b'}); // not Feb f1, not m2
+  });
+
   test('cashflow waterfall: income, top categories, net', () async {
     await seed();
     final steps = await analytics.cashflowWaterfall(march);

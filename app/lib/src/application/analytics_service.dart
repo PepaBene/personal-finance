@@ -164,6 +164,13 @@ abstract interface class AnalyticsService {
     DateRange range,
   );
 
+  /// Transactions for [merchantId] within [range], newest first (drill-down from
+  /// the top-merchants view, FR-ANL-10, docs/11 §6).
+  Future<List<TransactionEntity>> transactionsForMerchant(
+    String merchantId,
+    DateRange range,
+  );
+
   /// Actual-vs-budget for each active budget over [monthRange] (FR-BUD-02,
   /// FR-ANL-06), reactive to both spend and budget changes. Sorted by
   /// utilization (most-stretched first).
@@ -171,7 +178,10 @@ abstract interface class AnalyticsService {
 
   /// Top merchants by base-currency expense over [range], ranked, capped at
   /// [limit] (FR-ANL-08).
-  Stream<List<MerchantTotal>> watchTopMerchants(DateRange range, {int limit});
+  Stream<List<MerchantTotal>> watchTopMerchants(
+    DateRange range, {
+    int limit = 10,
+  });
 
   /// Base-currency expense per day over [range] (FR-ANL-07, calendar heatmap).
   /// Only days with spend are returned.
@@ -189,6 +199,6 @@ abstract interface class AnalyticsService {
   /// (FR-ANL-07, docs/11 §4.2).
   Future<List<WaterfallStep>> cashflowWaterfall(
     DateRange range, {
-    int topCategories,
+    int topCategories = 5,
   });
 }

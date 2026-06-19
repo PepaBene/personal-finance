@@ -15,6 +15,7 @@ import '../../core/router/app_router.dart';
 import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/transaction.dart';
 import '../../domain/money.dart';
 import '../budgets/budget_providers.dart';
 import '../categories/category_visuals.dart';
@@ -130,6 +131,12 @@ class AnalyticsScreen extends ConsumerWidget {
                     ? 0
                     : merchants[i].total.amount.toDouble() / max,
                 color: context.categoryColors.forIndex(i),
+                onTap: () => _drillMerchant(
+                  context,
+                  ref,
+                  merchants[i].merchantId,
+                  merchants[i].name,
+                ),
               ),
           ],
         );
@@ -452,6 +459,27 @@ class AnalyticsScreen extends ConsumerWidget {
     final service = await ref.read(analyticsServiceProvider.future);
     final txs = await service.transactionsInCategory(categoryId, filter.range);
     if (!context.mounted) return;
+    await _showTransactions(context, name, txs);
+  }
+
+  Future<void> _drillMerchant(
+    BuildContext context,
+    WidgetRef ref,
+    String merchantId,
+    String name,
+  ) async {
+    final filter = ref.read(analyticsFilterProvider);
+    final service = await ref.read(analyticsServiceProvider.future);
+    final txs = await service.transactionsForMerchant(merchantId, filter.range);
+    if (!context.mounted) return;
+    await _showTransactions(context, name, txs);
+  }
+
+  Future<void> _showTransactions(
+    BuildContext context,
+    String name,
+    List<TransactionEntity> txs,
+  ) async {
     final fmt = MoneyFormatter(Localizations.localeOf(context).toLanguageTag());
     await showModalBottomSheet<void>(
       context: context,
@@ -541,45 +569,51 @@ class _Error extends StatelessWidget {
       SizedBox(height: 120, child: ErrorView(message: message, compact: true));
 }
 
-/// A single labelled bar in a ranked list (top merchants).
+/// A single labelled bar in a ranked list (top merchants); tappable to drill in.
 class _RankedBar extends StatelessWidget {
   const _RankedBar({
     required this.label,
     required this.value,
     required this.fraction,
     required this.color,
+    this.onTap,
   });
   final String label;
   final String value;
   final double fraction;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: context.space.xs),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(label, overflow: TextOverflow.ellipsis),
-              ),
-              Text(value, style: context.texts.labelMedium),
-            ],
-          ),
-          SizedBox(height: context.space.xs),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(context.radii.sm),
-            child: LinearProgressIndicator(
-              value: fraction.clamp(0.0, 1.0).toDouble(),
-              minHeight: 8,
-              backgroundColor: context.colors.surfaceContainerHighest,
-              color: color,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(context.radii.sm),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: context.space.xs),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(label, overflow: TextOverflow.ellipsis),
+                ),
+                Text(value, style: context.texts.labelMedium),
+              ],
             ),
-          ),
-        ],
+            SizedBox(height: context.space.xs),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(context.radii.sm),
+              child: LinearProgressIndicator(
+                value: fraction.clamp(0.0, 1.0).toDouble(),
+                minHeight: 8,
+                backgroundColor: context.colors.surfaceContainerHighest,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -661,7 +695,7 @@ class _CalendarHeatmap extends StatelessWidget {
 
 /// Recursive binary slice-and-dice treemap: splits the tile list into two
 /// weight-balanced halves, alternating the split axis at each level. Pure
-/// layout (Flexible flex), so it works on every platform without a chart lib.
+/// layout (Expanded flex), so it works on every platform without a chart lib.
 class _Treemap extends StatelessWidget {
   const _Treemap({required this.tiles});
   final List<_TreemapTile> tiles;
@@ -684,12 +718,14 @@ class _Treemap extends StatelessWidget {
     final right = items.sublist(split);
     final leftWeight = left.fold<double>(0, (s, t) => s + t.weight);
     final rightWeight = right.fold<double>(0, (s, t) => s + t.weight);
+    // Expanded (tight fit) so each partition fills its proportional slice;
+    // Flexible (loose) would let leaf tiles shrink to their content.
     final children = [
-      Flexible(
+      Expanded(
         flex: math.max(1, (leftWeight * 1000).round()),
         child: _build(left, horizontal: !horizontal),
       ),
-      Flexible(
+      Expanded(
         flex: math.max(1, (rightWeight * 1000).round()),
         child: _build(right, horizontal: !horizontal),
       ),
@@ -803,7 +839,9 @@ class _Waterfall extends StatelessWidget {
         SizedBox(
           height: chartHeight,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            // Stretch so each column's Stack gets a tight chartHeight to
+            // position its bar against (a loose Stack would collapse to 0).
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < steps.length; i++)
                 Expanded(

@@ -174,6 +174,23 @@ class DriftAnalyticsService implements AnalyticsService {
     return rows.map(_toEntity).toList();
   }
 
+  @override
+  Future<List<TransactionEntity>> transactionsForMerchant(
+    String merchantId,
+    DateRange range,
+  ) async {
+    final rows = await (_db.select(_db.transactions)
+          ..where(
+            (t) =>
+                t.merchantId.equals(merchantId) &
+                t.deleted.equals(false) &
+                _inRange(t.date, range),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+        .get();
+    return rows.map(_toEntity).toList();
+  }
+
   // --- budgets (actual vs budget) ---------------------------------------
 
   @override
