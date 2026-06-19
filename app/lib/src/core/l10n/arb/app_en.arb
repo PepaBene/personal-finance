@@ -325,5 +325,24 @@
   "recurringValidationName": "Enter a name.",
   "recurringValidationAccount": "Choose an account.",
   "recurringValidationCategory": "Choose a category.",
-  "recurringValidationAmount": "Enter an amount greater than zero."
+  "recurringValidationAmount": "Enter an amount greater than zero.",
+
+  "analyticsExportPdf": "Export PDF",
+  "reportSummary": "Summary",
+  "reportGeneratedOn": "Generated",
+  "reportExportDialogTitle": "Save report",
+  "reportFileName": "ledgerly-report.pdf",
+  "reportExportCancelled": "Export cancelled",
+  "reportExportedTo": "Report saved to {path}",
+  "@reportExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "reportExportFailed": "Export failed: {error}",
+  "@reportExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  }
 }

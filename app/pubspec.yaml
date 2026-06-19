@@ -44,6 +44,7 @@ dependencies:
   logger: ^2.4.0
   csv: ^6.0.0          # CSV import/export (FR-DAT-04/05)
   file_picker: ^8.1.2  # pick/save files for import/export
+  pdf: ^3.11.0         # PDF report export (FR-DAT-06) — pure-Dart generation
 
   # --- Design system (workspace package) ---
   design_system:

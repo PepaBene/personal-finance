@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:design_system/design_system.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/analytics_service.dart';
+import '../../application/report_service.dart';
 import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/router/app_router.dart';
@@ -14,6 +16,7 @@ import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/money.dart';
+import '../budgets/budget_providers.dart';
 import '../categories/category_visuals.dart';
 import '../dashboard/dashboard_providers.dart';
 import '../transactions/capture_providers.dart';
@@ -34,7 +37,16 @@ class AnalyticsScreen extends ConsumerWidget {
         const <CategoryEntity>[];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.analyticsTitle)),
+      appBar: AppBar(
+        title: Text(l10n.analyticsTitle),
+        actions: [
+          IconButton(
+            tooltip: l10n.analyticsExportPdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: () => _exportPdf(context, ref, fmt, categories),
+          ),
+        ],
+      ),
       body: ListView(
         padding: EdgeInsets.all(context.space.md),
         children: [
@@ -345,6 +357,90 @@ class AnalyticsScreen extends ConsumerWidget {
           ),
         ),
       );
+
+  /// Assembles the current period's figures and exports them as an on-device
+  /// PDF (FR-DAT-06), saved to a user-chosen file. Works fully offline.
+  Future<void> _exportPdf(
+    BuildContext context,
+    WidgetRef ref,
+    MoneyFormatter fmt,
+    List<CategoryEntity> categories,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final preset = ref.read(rangePresetProvider);
+    final periodLabel = switch (preset) {
+      RangePreset.thisMonth => l10n.rangePresetThisMonth,
+      RangePreset.last30Days => l10n.rangePresetLast30Days,
+      RangePreset.thisYear => l10n.rangePresetThisYear,
+      RangePreset.last12Months => l10n.rangePresetLast12Months,
+    };
+    try {
+      final filter = ref.read(analyticsFilterProvider);
+      final analytics = await ref.read(analyticsServiceProvider.future);
+      final summary = await analytics.watchSummary(filter.range).first;
+      final cats = await analytics.watchSpendByCategory(filter.range).first;
+      final merchants = await analytics.watchTopMerchants(filter.range).first;
+      final budgets =
+          await analytics.watchBudgetStatus(currentMonthRange()).first;
+
+      String catName(String id) =>
+          categoryById(categories, id)?.name ?? l10n.dashboardUncategorized;
+
+      final data = ReportData(
+        title: l10n.appTitle,
+        periodLabel: periodLabel,
+        generatedOn: DateTime.now().toLocal().toString().split('.').first,
+        income: fmt.format(summary.income),
+        expense: fmt.format(summary.expense),
+        net: fmt.format(summary.net),
+        topCategories: [
+          for (final c in cats.take(10))
+            ReportLine(label: catName(c.categoryId), value: fmt.format(c.total)),
+        ],
+        topMerchants: [
+          for (final m in merchants.take(10))
+            ReportLine(label: m.name, value: fmt.format(m.total)),
+        ],
+        budgets: [
+          for (final b in budgets)
+            ReportLine(
+              label: catName(b.budget.categoryId),
+              detail: ReportService.budgetMarker(b.level),
+              value: '${fmt.format(b.actual)} / ${fmt.format(b.limit)}',
+            ),
+        ],
+        labels: ReportLabels(
+          summary: l10n.reportSummary,
+          income: l10n.dashboardIncome,
+          expense: l10n.dashboardExpense,
+          net: l10n.dashboardNet,
+          topCategories: l10n.analyticsTreemap,
+          topMerchants: l10n.analyticsTopMerchants,
+          budgets: l10n.budgetsTitle,
+          generatedOn: l10n.reportGeneratedOn,
+        ),
+      );
+
+      final bytes = await ref.read(reportServiceProvider).buildPdf(data);
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.reportExportDialogTitle,
+        fileName: l10n.reportFileName,
+        bytes: bytes,
+      );
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            path == null ? l10n.reportExportCancelled : l10n.reportExportedTo(path),
+          ),
+        ),
+      );
+    } on Exception catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.reportExportFailed(friendlyError(e)))),
+      );
+    }
+  }
 
   Future<void> _drillCategory(
     BuildContext context,

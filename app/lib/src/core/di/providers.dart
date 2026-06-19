@@ -26,6 +26,7 @@ import '../../application/document_parser.dart';
 import '../../application/import_export_service.dart';
 import '../../application/ocr_engine.dart';
 import '../../application/recurring_service.dart';
+import '../../application/report_service.dart';
 import '../../application/scan_coordinator.dart';
 import '../../application/scan_ingest.dart';
 import '../../application/scan_service.dart';
@@ -52,6 +53,7 @@ import '../../data/remote/supabase_powersync_connector.dart';
 import '../../data/seed/database_seeder.dart';
 import '../../data/services/drift_account_service.dart';
 import '../../data/services/drift_analytics_service.dart';
+import '../../data/reports/pdf_report_service.dart';
 import '../../data/services/drift_category_service.dart';
 import '../../data/services/drift_recurring_service.dart';
 import '../../data/services/drift_currency_service.dart';
@@ -267,6 +269,11 @@ final attachmentStoreProvider = FutureProvider<AttachmentStore>((ref) async {
     now: () => DateTime.now().toUtc(),
   );
 });
+
+/// On-device PDF report generator (FR-DAT-06). Pure; no DB or network.
+final reportServiceProvider = Provider<ReportService>(
+  (ref) => const PdfReportService(),
+);
 
 final analyticsServiceProvider = FutureProvider<AnalyticsService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);

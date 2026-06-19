@@ -324,5 +324,24 @@
   "recurringValidationName": "Zadejte název.",
   "recurringValidationAccount": "Vyberte účet.",
   "recurringValidationCategory": "Vyberte kategorii.",
-  "recurringValidationAmount": "Zadejte částku větší než nula."
+  "recurringValidationAmount": "Zadejte částku větší než nula.",
+
+  "analyticsExportPdf": "Exportovat PDF",
+  "reportSummary": "Souhrn",
+  "reportGeneratedOn": "Vygenerováno",
+  "reportExportDialogTitle": "Uložit report",
+  "reportFileName": "ledgerly-report.pdf",
+  "reportExportCancelled": "Export zrušen",
+  "reportExportedTo": "Report uložen do {path}",
+  "@reportExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "reportExportFailed": "Export se nezdařil: {error}",
+  "@reportExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  }
 }
