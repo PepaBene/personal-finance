@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ledgerly_app/src/application/auth_service.dart';
 import 'package:ledgerly_app/src/data/local/app_database.dart';
 import 'package:ledgerly_app/src/data/services/drift_transaction_service.dart';
+import 'package:ledgerly_app/src/domain/entities/line_item.dart';
 import 'package:ledgerly_app/src/domain/entities/transaction.dart';
 import 'package:ledgerly_app/src/domain/enums.dart';
 import 'package:ledgerly_app/src/domain/money.dart';
@@ -97,4 +98,30 @@ void main() {
       expect(raw.single.status, TxStatus.deleted);
     },
   );
+
+  test('restore un-tombstones the header and its line items (undo)', () async {
+    final header = sample('tx-1');
+    final line = LineItemEntity(
+      id: 'li-1',
+      userId: 'user-1',
+      transactionId: 'tx-1',
+      description: 'Item',
+      quantity: Decimal.one,
+      lineAmount: header.total,
+      categoryId: 'cat-1',
+      updatedAt: header.updatedAt,
+    );
+    await service.upsertWithLines(header, [line]);
+    await service.softDelete('tx-1');
+    expect(await service.watchAll().first, isEmpty);
+
+    await service.restore('tx-1');
+
+    final restored = await service.watchAll().first;
+    expect(restored.single.id, 'tx-1');
+    expect(restored.single.status, TxStatus.active);
+    final lines = await service.watchLineItems('tx-1').first;
+    expect(lines.single.id, 'li-1');
+    expect(lines.single.deleted, isFalse);
+  });
 }

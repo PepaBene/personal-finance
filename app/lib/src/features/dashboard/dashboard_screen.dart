@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../application/analytics_service.dart';
 import '../../core/di/providers.dart';
+import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/router/app_router.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/category.dart';
 import '../categories/category_visuals.dart';
@@ -21,6 +23,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final fmt = MoneyFormatter(locale);
     final categories = ref.watch(categoriesFlatProvider).valueOrNull ??
@@ -34,17 +37,17 @@ class DashboardScreen extends ConsumerWidget {
         _kpis(context, ref, fmt),
         SizedBox(height: context.space.lg),
         _Section(
-          title: 'Spending by category',
+          title: l10n.dashboardSpendingByCategory,
           child: _categorySection(context, ref, fmt, categories),
         ),
         SizedBox(height: context.space.lg),
         _Section(
-          title: 'Spending over time',
+          title: l10n.dashboardSpendingOverTime,
           child: _overTimeChart(context, ref),
         ),
         SizedBox(height: context.space.lg),
         _Section(
-          title: 'Income vs expense',
+          title: l10n.dashboardIncomeVsExpense,
           child: _incomeExpenseChart(context, ref),
         ),
         SizedBox(height: context.space.xl),
@@ -53,6 +56,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _presetBar(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final current = ref.watch(rangePresetProvider);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -62,7 +66,7 @@ class DashboardScreen extends ConsumerWidget {
             Padding(
               padding: EdgeInsets.only(right: context.space.xs),
               child: ChoiceChip(
-                label: Text(p.label),
+                label: Text(_presetLabel(l10n, p)),
                 selected: p == current,
                 onSelected: (_) =>
                     ref.read(rangePresetProvider.notifier).state = p,
@@ -73,7 +77,15 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  String _presetLabel(AppLocalizations l10n, RangePreset p) => switch (p) {
+        RangePreset.thisMonth => l10n.rangePresetThisMonth,
+        RangePreset.last30Days => l10n.rangePresetLast30Days,
+        RangePreset.thisYear => l10n.rangePresetThisYear,
+        RangePreset.last12Months => l10n.rangePresetLast12Months,
+      };
+
   Widget _kpis(BuildContext context, WidgetRef ref, MoneyFormatter fmt) {
+    final l10n = AppLocalizations.of(context);
     final async = ref.watch(summaryProvider);
     final summary = async.valueOrNull;
     final income = summary?.income;
@@ -83,7 +95,7 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Expanded(
           child: KpiCard(
-            label: 'Income',
+            label: l10n.dashboardIncome,
             value: income == null ? '—' : fmt.format(income),
             sign: MoneySign.positive,
             icon: Icons.south_west,
@@ -92,7 +104,7 @@ class DashboardScreen extends ConsumerWidget {
         SizedBox(width: context.space.sm),
         Expanded(
           child: KpiCard(
-            label: 'Expense',
+            label: l10n.dashboardExpense,
             value: expense == null ? '—' : fmt.format(expense),
             sign: MoneySign.negative,
             icon: Icons.north_east,
@@ -101,7 +113,7 @@ class DashboardScreen extends ConsumerWidget {
         SizedBox(width: context.space.sm),
         Expanded(
           child: KpiCard(
-            label: 'Net',
+            label: l10n.dashboardNet,
             value: net == null ? '—' : fmt.format(net),
             sign: net == null
                 ? MoneySign.neutral
@@ -122,10 +134,10 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(spendByCategoryProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (totals) {
         if (totals.isEmpty) {
-          return const _EmptyChart('No spending in this period');
+          return _EmptyChart(AppLocalizations.of(context).dashboardNoSpending);
         }
         final sections = <PieChartSectionData>[];
         for (var i = 0; i < totals.length; i++) {
@@ -171,7 +183,8 @@ class DashboardScreen extends ConsumerWidget {
     CategoryTotal t,
   ) {
     final cat = categoryById(categories, t.categoryId);
-    final name = cat?.name ?? 'Uncategorized';
+    final name =
+        cat?.name ?? AppLocalizations.of(context).dashboardUncategorized;
     final color =
         cat == null ? context.colors.outline : categoryColor(cat.colorHex);
     return ListTile(
@@ -188,9 +201,11 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(byPeriodProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (points) {
-        if (points.isEmpty) return const _EmptyChart('No data in this period');
+        if (points.isEmpty) {
+          return _EmptyChart(AppLocalizations.of(context).dashboardNoData);
+        }
         final spots = <FlSpot>[
           for (var i = 0; i < points.length; i++)
             FlSpot(i.toDouble(), points[i].outflow.amount.toDouble()),
@@ -226,9 +241,11 @@ class DashboardScreen extends ConsumerWidget {
     final async = ref.watch(byPeriodProvider);
     return async.when(
       loading: () => const _ChartPlaceholder(),
-      error: (e, _) => Text('$e'),
+      error: (e, _) => _ChartError(message: friendlyError(e)),
       data: (points) {
-        if (points.isEmpty) return const _EmptyChart('No data in this period');
+        if (points.isEmpty) {
+          return _EmptyChart(AppLocalizations.of(context).dashboardNoData);
+        }
         final groups = <BarChartGroupData>[
           for (var i = 0; i < points.length; i++)
             BarChartGroupData(
@@ -288,7 +305,13 @@ class DashboardScreen extends ConsumerWidget {
             ),
             Expanded(
               child: txs.isEmpty
-                  ? const Center(child: Text('No transactions'))
+                  ? EmptyView(
+                      icon: Icons.receipt_long_outlined,
+                      title:
+                          AppLocalizations.of(context).dashboardDrillEmptyTitle,
+                      message:
+                          AppLocalizations.of(context).dashboardDrillEmptyBody,
+                    )
                   : ListView.builder(
                       itemCount: txs.length,
                       itemBuilder: (_, i) {
@@ -358,8 +381,18 @@ class _EmptyChart extends StatelessWidget {
         child: Center(
           child: Text(
             message,
-            style: TextStyle(color: context.colors.onSurfaceVariant),
+            style: context.texts.bodyMedium?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
           ),
         ),
       );
+}
+
+class _ChartError extends StatelessWidget {
+  const _ChartError({required this.message});
+  final String message;
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox(height: 120, child: ErrorView(message: message, compact: true));
 }

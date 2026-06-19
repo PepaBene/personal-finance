@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 // `show` avoids name clashes: powersync also exports `SyncStatus` and
 // supabase_flutter (gotrue) also exports `AuthState`, which collide with our
 // application-layer types of the same name.
@@ -13,13 +14,34 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 import '../../application/account_service.dart';
 import '../../application/analytics_service.dart';
 import '../../application/app_lock_service.dart';
+import '../../application/attachment_service.dart';
+import '../../application/attachment_store.dart';
 import '../../application/auth_service.dart';
+import '../../application/categorization_rule_service.dart';
+import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
+import '../../application/document_parser.dart';
 import '../../application/import_export_service.dart';
+import '../../application/ocr_engine.dart';
+import '../../application/scan_coordinator.dart';
+import '../../application/scan_ingest.dart';
+import '../../application/scan_service.dart';
 import '../../application/sync_service.dart';
 import '../../application/transaction_service.dart';
+import '../../data/attachments/default_attachment_store.dart';
+import '../../data/attachments/memory_blob_cache.dart';
+import '../../data/attachments/null_remote_blob_store.dart';
+import '../../data/crypto/aes_gcm_attachment_cipher.dart';
 import '../../data/crypto/argon2_app_lock_service.dart';
+import '../../data/documents/default_scan_service.dart';
+import '../../data/documents/keyword_document_classifier.dart';
+import '../../data/documents/receipt_parser.dart';
+import '../../data/ingest/file_picker_scan_ingest.dart';
+import '../../data/ocr/ocr_engine_factory.dart';
+import '../../data/services/drift_attachment_service.dart';
+import '../../data/services/drift_categorization_rule_service.dart';
+import '../../domain/enums.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
 import '../../data/remote/powersync_sync_service.dart';
@@ -132,6 +154,96 @@ final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
     db,
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,
+  );
+});
+
+final categorizationRuleServiceProvider =
+    FutureProvider<CategorizationRuleService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCategorizationRuleService(db, ref.watch(authServiceProvider));
+});
+
+final attachmentServiceProvider = FutureProvider<AttachmentService>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftAttachmentService(db, ref.watch(authServiceProvider));
+});
+
+// --- Attachment blob encryption + storage (docs/09 §2/§3) ---------------
+
+/// Content-encryption cipher for attachments, derived from the unlock key via
+/// HKDF (docs/09 §3). Throws while locked, like the other key-gated providers.
+final attachmentCipherProvider = FutureProvider<AttachmentCipher>((ref) async {
+  final key = ref.watch(databaseKeyProvider);
+  if (key == null) {
+    throw StateError('Locked: no key available for attachment encryption.');
+  }
+  return AesGcmAttachmentCipher.fromMasterKey(key);
+});
+
+/// Local encrypted-blob cache. In-memory for now (works on every platform); a
+/// persistent native/OPFS cache lands later.
+final blobCacheProvider = Provider<BlobCache>((ref) => MemoryBlobCache());
+
+/// Remote blob store. Offline by default (cloud Storage upload is a follow-up).
+final remoteBlobStoreProvider = Provider<RemoteBlobStore>(
+  (ref) => const NullRemoteBlobStore(),
+);
+
+// --- Scanning: ingest + OCR engine + pipeline (docs/05) -----------------
+
+/// Document ingest (file picker today; camera/gallery/PDF later).
+final scanIngestProvider = Provider<ScanIngest>(
+  (ref) => const FilePickerScanIngest(),
+);
+
+/// Platform-selected on-device OCR engine, or null when none is bundled
+/// (manual-entry fallback — docs/05 §6).
+final ocrEngineProvider = Provider<OcrEngine?>((ref) => createOcrEngine());
+
+/// The scan pipeline, wired with the user's categorizer; null when there is no
+/// OCR engine on this platform.
+final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
+  final engine = ref.watch(ocrEngineProvider);
+  if (engine == null) return null;
+  final ruleSvc = await ref.watch(categorizationRuleServiceProvider.future);
+  final categorizer =
+      CategorizingDraftCategorizer(await ruleSvc.buildCategorizer());
+  final base = ref.watch(appConfigProvider).baseCurrencyCode;
+  final service = DefaultScanService(
+    engine: engine,
+    classifier: const KeywordDocumentClassifier(),
+    parsers: const {DocType.receipt: ReceiptParser()},
+    contextBuilder: () => ParseContext(defaultCurrencyCode: base),
+    categorizer: categorizer,
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// Drives capture → review (ingest + optional OCR pipeline).
+final scanCoordinatorProvider = FutureProvider<ScanCoordinator>((ref) async {
+  final scanService = await ref.watch(scanServiceProvider.future);
+  return ScanCoordinator(
+    ingest: ref.watch(scanIngestProvider),
+    scanService: scanService,
+  );
+});
+
+final attachmentStoreProvider = FutureProvider<AttachmentStore>((ref) async {
+  final cipher = await ref.watch(attachmentCipherProvider.future);
+  final auth = ref.watch(authServiceProvider);
+  const uuid = Uuid();
+  return DefaultAttachmentStore(
+    cipher: cipher,
+    cache: ref.watch(blobCacheProvider),
+    remote: ref.watch(remoteBlobStoreProvider),
+    userId: () =>
+        auth.current.session?.userId ??
+        (throw StateError('Not signed in; cannot store attachments.')),
+    newId: uuid.v4,
+    now: () => DateTime.now().toUtc(),
   );
 });
 

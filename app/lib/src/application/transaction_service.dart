@@ -30,4 +30,7 @@ abstract interface class TransactionService {
   /// Soft-delete: tombstones the header and its line items so the deletion
   /// propagates via sync (FR-CAP-08, FR-SYNC-03).
   Future<void> softDelete(String id);
+
+  /// Undo a [softDelete]: un-tombstones the header and its line items.
+  Future<void> restore(String id);
 }

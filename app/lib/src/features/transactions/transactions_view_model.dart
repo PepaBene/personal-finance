@@ -26,4 +26,9 @@ class TransactionsController {
     final service = await _ref.read(transactionServiceProvider.future);
     await service.softDelete(id);
   }
+
+  Future<void> restore(String id) async {
+    final service = await _ref.read(transactionServiceProvider.future);
+    await service.restore(id);
+  }
 }

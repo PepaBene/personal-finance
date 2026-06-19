@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/app_lock_service.dart';
 import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
+import '../../core/utils/error_text.dart';
 
 /// Passphrase unlock gate (FR-SEC-02). The passphrase is stretched with
 /// Argon2id into the local DB key; a successful unlock publishes the key to
@@ -48,7 +49,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     } on InvalidPassphrase {
       if (mounted) setState(() => _error = 'Incorrect passphrase');
     } on Exception catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

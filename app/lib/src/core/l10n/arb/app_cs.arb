@@ -38,5 +38,208 @@
   "syncStatusError": "Chyba synchronizace",
 
   "commonRetry": "Zkusit znovu",
-  "commonSignOut": "Odhlásit se"
+  "commonSignOut": "Odhlásit se",
+
+  "commonCancel": "Zrušit",
+
+  "signOutConfirmBody": "Pro přístup ke svým datům na tomto zařízení se budete muset znovu přihlásit.",
+  "syncReconnecting": "Připojování…",
+
+  "transactionEditorEditTitle": "Upravit transakci",
+  "transactionEditorNewTitle": "Nová transakce",
+  "transactionEditorSave": "Uložit",
+  "transactionTypeExpense": "Výdaj",
+  "transactionTypeIncome": "Příjem",
+  "transactionTypeTransfer": "Převod",
+  "transactionFromAccount": "Z účtu",
+  "transactionToAccount": "Na účet",
+  "transactionAccount": "Účet",
+  "transactionCurrency": "Měna",
+  "transactionExchangeRateLabel": "Směnný kurz (1 {currency} = ? {baseCurrency})",
+  "@transactionExchangeRateLabel": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+  "transactionExchangeRateHelper": "Ponechte prázdné pro použití uloženého kurzu k tomuto datu",
+  "transactionAmount": "Částka",
+  "transactionNote": "Poznámka (nepovinné)",
+  "transactionSplitIntoItems": "Rozdělit na položky",
+  "transactionAddItem": "Přidat položku",
+  "transactionTotal": "Celkem",
+  "transactionDescription": "Popis",
+  "transactionRemoveItem": "Odebrat položku",
+  "transactionChooseCategory": "Vybrat kategorii",
+  "transactionCategory": "Kategorie",
+  "transactionValidationChooseAccount": "Vyberte účet.",
+  "transactionValidationChooseDestination": "Vyberte cílový účet.",
+  "transactionValidationDifferentAccounts": "Převod vyžaduje dva různé účty.",
+  "transactionValidationEnterAmount": "Zadejte částku.",
+  "transactionValidationAddItem": "Přidejte alespoň jednu položku.",
+  "transactionValidationItemPositiveAmount": "Každá položka musí mít kladnou částku.",
+  "transactionValidationItemCategory": "Každá položka musí mít kategorii.",
+  "transactionValidationChooseCategory": "Vyberte kategorii.",
+  "transactionValidationEnterRate": "Zadejte směnný kurz pro {currency} → {baseCurrency}.",
+  "@transactionValidationEnterRate": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+
+  "accountsAddAction": "Přidat účet",
+  "accountsEmptyTitle": "Zatím žádné účty",
+  "accountsEmptyBody": "Přidejte účet a začněte sledovat zůstatky.",
+  "accountNewTitle": "Nový účet",
+  "accountEditTitle": "Upravit účet",
+  "accountName": "Název",
+  "accountType": "Typ",
+  "accountCurrency": "Měna",
+  "accountOpeningBalance": "Počáteční zůstatek",
+  "accountSave": "Uložit",
+  "accountValidationEnterName": "Zadejte název",
+  "accountValidationChooseCurrency": "Vyberte měnu",
+
+  "categoriesTitle": "Kategorie",
+  "categoriesAddAction": "Přidat kategorii",
+  "categoriesEmptyTitle": "Žádné kategorie",
+  "categoriesEmptyBody": "Vytvořte kategorie pro uspořádání svých transakcí.",
+  "categoryNewTitle": "Nová kategorie",
+  "categoryEditTitle": "Upravit kategorii",
+  "categoryName": "Název",
+  "categoryExpense": "Výdaj",
+  "categoryIncome": "Příjem",
+  "categoryParent": "Nadřazená (nepovinné)",
+  "categoryParentNone": "Žádná (nejvyšší úroveň)",
+  "categoryColor": "Barva",
+  "categoryColorSemantics": "Barva",
+  "categoryIcon": "Ikona",
+  "categoryArchived": "Archivováno",
+  "categoryArchivedSuffix": " · archivováno",
+  "categorySave": "Uložit",
+  "categoryValidationEnterName": "Zadejte název",
+
+  "categoryPickerSearchHint": "Hledat kategorie",
+  "categoryPickerNoMatches": "Žádné odpovídající kategorie",
+
+  "settingsManageCategories": "Spravovat kategorie",
+  "settingsExportCsv": "Exportovat do CSV",
+  "settingsExportCsvSubtitle": "Transakce a položky",
+  "settingsImportCsv": "Importovat z CSV",
+  "settingsImportCsvSubtitle": "Přidat transakce ze souboru CSV",
+  "settingsBaseCurrency": "Základní měna",
+  "settingsExportDialogTitle": "Uložit export Ledgerly",
+  "settingsExportFileName": "ledgerly-export.csv",
+  "settingsExportCancelled": "Export zrušen",
+  "settingsExportedTo": "Exportováno do {path}",
+  "@settingsExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "settingsExportFailed": "Export selhal: {error}",
+  "@settingsExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsImportFailed": "Import selhal: {error}",
+  "@settingsImportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsImportedCount": "Importováno {count}",
+  "@settingsImportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settingsImportedCountSkipped": "Importováno {count}, přeskočeno {skipped}",
+  "@settingsImportedCountSkipped": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+
+  "dashboardSpendingByCategory": "Výdaje podle kategorie",
+  "dashboardSpendingOverTime": "Výdaje v čase",
+  "dashboardIncomeVsExpense": "Příjmy vs výdaje",
+  "dashboardIncome": "Příjem",
+  "dashboardExpense": "Výdaj",
+  "dashboardNet": "Čistý",
+  "dashboardNoSpending": "V tomto období žádné výdaje",
+  "dashboardNoData": "V tomto období žádná data",
+  "dashboardUncategorized": "Bez kategorie",
+  "dashboardDrillEmptyTitle": "Žádné transakce",
+  "dashboardDrillEmptyBody": "V této kategorii za dané období nic není.",
+  "rangePresetThisMonth": "Tento měsíc",
+  "rangePresetLast30Days": "Posledních 30 dní",
+  "rangePresetThisYear": "Tento rok",
+  "rangePresetLast12Months": "Posledních 12 měsíců",
+
+  "scanReviewTitle": "Zkontrolovat dokument",
+  "scanReviewSave": "Uložit",
+  "scanAccount": "Účet",
+  "scanCurrency": "Měna",
+  "scanMerchant": "Obchodník",
+  "scanDate": "Datum",
+  "scanTotal": "Celkem",
+  "scanLineItems": "Položky",
+  "scanAddItem": "Přidat položku",
+  "scanDescription": "Popis",
+  "scanAmount": "Částka",
+  "scanRemoveItem": "Odebrat položku",
+  "scanNoDate": "Bez data",
+  "scanChange": "Změnit",
+  "scanRecognizedText": "Rozpoznaný text",
+  "scanNoPreview": "Náhled není k dispozici.",
+  "scanDocumentType": "Typ dokumentu",
+  "scanCategory": "Kategorie",
+  "scanDocTypeReceipt": "Účtenka",
+  "scanDocTypeInvoice": "Faktura",
+  "scanDocTypeBill": "Složenka",
+  "scanDocTypePaycheck": "Výplatní páska",
+  "scanDocTypeOther": "Ostatní",
+  "scanLowConfidence": "Nízká spolehlivost",
+  "scanHighConfidence": "Vysoká spolehlivost",
+  "scanReconcileNoLineItems": "Žádné položky",
+  "scanReconcileBalanced": "Σ položky = celkem",
+  "scanReconcileMismatch": "Σ položky {sum} vs celkem {total}",
+  "@scanReconcileMismatch": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "scanReconcileDelta": "  (Δ {delta})",
+  "@scanReconcileDelta": {
+    "placeholders": {
+      "delta": { "type": "String" }
+    }
+  },
+  "scanValidationChooseAccount": "Vyberte účet.",
+  "scanValidationEnterTotalOrItem": "Zadejte celkovou částku nebo přidejte alespoň jednu položku.",
+  "scanValidationChooseCurrency": "Vyberte měnu.",
+  "scanValidationNotSignedIn": "Nejste přihlášeni.",
+  "scanValidationNoCategory": "Není k dispozici žádná kategorie pro přiřazení položek.",
+  "scanValidationNoRate": "Pro {currency} k tomuto datu není směnný kurz. Přepněte na {baseCurrency} nebo nejprve přidejte kurz pomocí ručního zadání.",
+  "@scanValidationNoRate": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+
+  "transactionsScanTooltip": "Naskenovat dokument",
+  "transactionDeleted": "Transakce smazána",
+  "transactionUndo": "Zpět",
+  "transactionsScanFailed": "Skenování se nepodařilo spustit: {error}",
+  "@transactionsScanFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  }
 }

@@ -39,5 +39,208 @@
   "syncStatusError": "Sync error",
 
   "commonRetry": "Retry",
-  "commonSignOut": "Sign out"
+  "commonSignOut": "Sign out",
+
+  "commonCancel": "Cancel",
+
+  "signOutConfirmBody": "You'll need to sign in again to access your data on this device.",
+  "syncReconnecting": "Reconnecting…",
+
+  "transactionEditorEditTitle": "Edit transaction",
+  "transactionEditorNewTitle": "New transaction",
+  "transactionEditorSave": "Save",
+  "transactionTypeExpense": "Expense",
+  "transactionTypeIncome": "Income",
+  "transactionTypeTransfer": "Transfer",
+  "transactionFromAccount": "From account",
+  "transactionToAccount": "To account",
+  "transactionAccount": "Account",
+  "transactionCurrency": "Currency",
+  "transactionExchangeRateLabel": "Exchange rate (1 {currency} = ? {baseCurrency})",
+  "@transactionExchangeRateLabel": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+  "transactionExchangeRateHelper": "Leave blank to use a saved rate for this date",
+  "transactionAmount": "Amount",
+  "transactionNote": "Note (optional)",
+  "transactionSplitIntoItems": "Split into items",
+  "transactionAddItem": "Add item",
+  "transactionTotal": "Total",
+  "transactionDescription": "Description",
+  "transactionRemoveItem": "Remove item",
+  "transactionChooseCategory": "Choose category",
+  "transactionCategory": "Category",
+  "transactionValidationChooseAccount": "Choose an account.",
+  "transactionValidationChooseDestination": "Choose a destination account.",
+  "transactionValidationDifferentAccounts": "Transfer needs two different accounts.",
+  "transactionValidationEnterAmount": "Enter an amount.",
+  "transactionValidationAddItem": "Add at least one item.",
+  "transactionValidationItemPositiveAmount": "Each item needs a positive amount.",
+  "transactionValidationItemCategory": "Each item needs a category.",
+  "transactionValidationChooseCategory": "Choose a category.",
+  "transactionValidationEnterRate": "Enter an exchange rate for {currency} → {baseCurrency}.",
+  "@transactionValidationEnterRate": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+
+  "accountsAddAction": "Add account",
+  "accountsEmptyTitle": "No accounts yet",
+  "accountsEmptyBody": "Add an account to start tracking balances.",
+  "accountNewTitle": "New account",
+  "accountEditTitle": "Edit account",
+  "accountName": "Name",
+  "accountType": "Type",
+  "accountCurrency": "Currency",
+  "accountOpeningBalance": "Opening balance",
+  "accountSave": "Save",
+  "accountValidationEnterName": "Enter a name",
+  "accountValidationChooseCurrency": "Choose a currency",
+
+  "categoriesTitle": "Categories",
+  "categoriesAddAction": "Add category",
+  "categoriesEmptyTitle": "No categories",
+  "categoriesEmptyBody": "Create categories to organize your transactions.",
+  "categoryNewTitle": "New category",
+  "categoryEditTitle": "Edit category",
+  "categoryName": "Name",
+  "categoryExpense": "Expense",
+  "categoryIncome": "Income",
+  "categoryParent": "Parent (optional)",
+  "categoryParentNone": "None (top level)",
+  "categoryColor": "Color",
+  "categoryColorSemantics": "Colour",
+  "categoryIcon": "Icon",
+  "categoryArchived": "Archived",
+  "categoryArchivedSuffix": " · archived",
+  "categorySave": "Save",
+  "categoryValidationEnterName": "Enter a name",
+
+  "categoryPickerSearchHint": "Search categories",
+  "categoryPickerNoMatches": "No matching categories",
+
+  "settingsManageCategories": "Manage categories",
+  "settingsExportCsv": "Export to CSV",
+  "settingsExportCsvSubtitle": "Transactions and line items",
+  "settingsImportCsv": "Import from CSV",
+  "settingsImportCsvSubtitle": "Add transactions from a CSV file",
+  "settingsBaseCurrency": "Base currency",
+  "settingsExportDialogTitle": "Save Ledgerly export",
+  "settingsExportFileName": "ledgerly-export.csv",
+  "settingsExportCancelled": "Export cancelled",
+  "settingsExportedTo": "Exported to {path}",
+  "@settingsExportedTo": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "settingsExportFailed": "Export failed: {error}",
+  "@settingsExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsImportFailed": "Import failed: {error}",
+  "@settingsImportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsImportedCount": "Imported {count}",
+  "@settingsImportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settingsImportedCountSkipped": "Imported {count}, skipped {skipped}",
+  "@settingsImportedCountSkipped": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+
+  "dashboardSpendingByCategory": "Spending by category",
+  "dashboardSpendingOverTime": "Spending over time",
+  "dashboardIncomeVsExpense": "Income vs expense",
+  "dashboardIncome": "Income",
+  "dashboardExpense": "Expense",
+  "dashboardNet": "Net",
+  "dashboardNoSpending": "No spending in this period",
+  "dashboardNoData": "No data in this period",
+  "dashboardUncategorized": "Uncategorized",
+  "dashboardDrillEmptyTitle": "No transactions",
+  "dashboardDrillEmptyBody": "Nothing in this category for the period.",
+  "rangePresetThisMonth": "This month",
+  "rangePresetLast30Days": "Last 30 days",
+  "rangePresetThisYear": "This year",
+  "rangePresetLast12Months": "Last 12 months",
+
+  "scanReviewTitle": "Review document",
+  "scanReviewSave": "Save",
+  "scanAccount": "Account",
+  "scanCurrency": "Currency",
+  "scanMerchant": "Merchant",
+  "scanDate": "Date",
+  "scanTotal": "Total",
+  "scanLineItems": "Line items",
+  "scanAddItem": "Add item",
+  "scanDescription": "Description",
+  "scanAmount": "Amount",
+  "scanRemoveItem": "Remove item",
+  "scanNoDate": "No date",
+  "scanChange": "Change",
+  "scanRecognizedText": "Recognized text",
+  "scanNoPreview": "No preview available.",
+  "scanDocumentType": "Document type",
+  "scanCategory": "Category",
+  "scanDocTypeReceipt": "Receipt",
+  "scanDocTypeInvoice": "Invoice",
+  "scanDocTypeBill": "Bill",
+  "scanDocTypePaycheck": "Paycheck",
+  "scanDocTypeOther": "Other",
+  "scanLowConfidence": "Low confidence",
+  "scanHighConfidence": "High confidence",
+  "scanReconcileNoLineItems": "No line items",
+  "scanReconcileBalanced": "Σ lines = total",
+  "scanReconcileMismatch": "Σ lines {sum} vs total {total}",
+  "@scanReconcileMismatch": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "scanReconcileDelta": "  (Δ {delta})",
+  "@scanReconcileDelta": {
+    "placeholders": {
+      "delta": { "type": "String" }
+    }
+  },
+  "scanValidationChooseAccount": "Choose an account.",
+  "scanValidationEnterTotalOrItem": "Enter a total or add at least one item.",
+  "scanValidationChooseCurrency": "Choose a currency.",
+  "scanValidationNotSignedIn": "Not signed in.",
+  "scanValidationNoCategory": "No category available to assign items.",
+  "scanValidationNoRate": "No exchange rate for {currency} on this date. Switch to {baseCurrency} or add the rate via a manual entry first.",
+  "@scanValidationNoRate": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "baseCurrency": { "type": "String" }
+    }
+  },
+
+  "transactionsScanTooltip": "Scan document",
+  "transactionDeleted": "Transaction deleted",
+  "transactionUndo": "Undo",
+  "transactionsScanFailed": "Could not start scan: {error}",
+  "@transactionsScanFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  }
 }

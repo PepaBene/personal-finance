@@ -5,8 +5,10 @@ import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/categories/categories_screen.dart';
+import '../../application/scan_coordinator.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/lock/lock_screen.dart';
+import '../../features/scan/scan_review_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/transactions/transaction_editor_screen.dart';
@@ -24,6 +26,7 @@ abstract final class Routes {
   static const accounts = '/accounts';
   static const settings = '/settings';
   static const categories = '/categories';
+  static const scanReview = '/scan/review';
 
   static String transactionEdit(String id) => '/transactions/$id/edit';
 }
@@ -72,6 +75,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.categories,
         builder: (_, __) => const CategoriesScreen(),
+      ),
+      // Reached from the scan flow with the captured ScanResult (draft + image
+      // bytes) as `extra`. Full-screen, outside the shell chrome.
+      GoRoute(
+        path: Routes.scanReview,
+        builder: (_, state) {
+          final r = state.extra! as ScanResult;
+          return ScanReviewScreen(draft: r.draft, imageBytes: r.imageBytes);
+        },
       ),
       ShellRoute(
         builder: (_, __, child) => AppShell(child: child),

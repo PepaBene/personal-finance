@@ -61,3 +61,12 @@ const rateSourceConverter = EnumNameConverter(
   RateSource.values,
   RateSource.manual,
 );
+const docTypeConverter = EnumNameConverter(DocType.values, DocType.receipt);
+const scanStatusConverter = EnumNameConverter(
+  ScanStatus.values,
+  ScanStatus.pending,
+);
+const categoryMatchTypeConverter = EnumNameConverter(
+  CategoryMatchType.values,
+  CategoryMatchType.descriptionContains,
+);

@@ -14,4 +14,5 @@ export 'src/theme/app_theme.dart';
 export 'src/widgets/category_chip.dart';
 export 'src/widgets/kpi_card.dart';
 export 'src/widgets/money_text.dart';
+export 'src/widgets/state_views.dart';
 export 'src/widgets/sync_status_indicator.dart';

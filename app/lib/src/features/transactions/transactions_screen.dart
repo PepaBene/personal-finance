@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/di/providers.dart';
 import '../../core/l10n/generated/app_localizations.dart';
 import '../../core/router/app_router.dart';
+import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/transaction.dart';
+import '../../domain/scan/document_draft.dart';
 import 'transactions_view_model.dart';
 
 /// Transaction list. Tapping the FAB opens the editor (quick or split capture);
@@ -21,18 +24,30 @@ class TransactionsScreen extends ConsumerWidget {
     final async = ref.watch(transactionsProvider);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(Routes.transactionNew),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.transactionsAddAction),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'scan',
+            tooltip: l10n.transactionsScanTooltip,
+            onPressed: () => _scan(context, ref),
+            child: const Icon(Icons.document_scanner_outlined),
+          ),
+          SizedBox(height: context.space.sm),
+          FloatingActionButton.extended(
+            heroTag: 'add',
+            onPressed: () => context.push(Routes.transactionNew),
+            icon: const Icon(Icons.add),
+            label: Text(l10n.transactionsAddAction),
+          ),
+        ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: EdgeInsets.all(context.space.lg),
-            child: Text('${l10n.syncStatusError}: $e'),
-          ),
+        loading: () => const LoadingView(),
+        error: (e, _) => ErrorView(
+          message: friendlyError(e),
+          onRetry: () => ref.invalidate(transactionsProvider),
         ),
         data: (items) => items.isEmpty
             ? _Empty(l10n: l10n)
@@ -43,6 +58,26 @@ class TransactionsScreen extends ConsumerWidget {
               ),
       ),
     );
+  }
+
+  /// Capture a document (ingest → OCR when available) then open the review
+  /// screen (docs/05 §2). Falls back to manual entry when no engine is present.
+  Future<void> _scan(BuildContext context, WidgetRef ref) async {
+    try {
+      final coordinator = await ref.read(scanCoordinatorProvider.future);
+      final result = await coordinator.capture(ScanSource.imageFile);
+      if (result == null || !context.mounted) return;
+      await context.push(Routes.scanReview, extra: result);
+    } on Object catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(AppLocalizations.of(context).transactionsScanFailed('$e')),
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -72,10 +107,20 @@ class _TransactionTile extends StatelessWidget {
         ),
       ),
       onDismissed: (_) {
-        ref.read(transactionsControllerProvider).delete(tx.id);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
+        final l10n = AppLocalizations.of(context);
+        final controller = ref.read(transactionsControllerProvider);
+        controller.delete(tx.id);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(l10n.transactionDeleted),
+              action: SnackBarAction(
+                label: l10n.transactionUndo,
+                onPressed: () => controller.restore(tx.id),
+              ),
+            ),
+          );
       },
       child: ListTile(
         leading: CircleAvatar(child: Icon(_iconFor(tx), size: 20)),
