@@ -59,12 +59,14 @@ class ReceiptParser implements DocumentParser {
       if (amount == null) continue;
       final lower = row.text.toLowerCase();
 
+      // Subtotals first: a "celkem bez DPH" (total-excluding-VAT) row also
+      // contains the tax + total keywords, so skip it before those checks.
+      if (_containsAny(lower, _subtotalKw)) {
+        continue; // ignore subtotals
+      }
       if (_containsAny(lower, _taxKw)) {
         tax = amount;
         continue;
-      }
-      if (_containsAny(lower, _subtotalKw)) {
-        continue; // ignore subtotals
       }
       if (_containsAny(lower, _totalKw)) {
         total = amount; // last total keyword wins

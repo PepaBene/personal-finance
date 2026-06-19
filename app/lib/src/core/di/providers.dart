@@ -211,13 +211,15 @@ final scanServiceProvider = FutureProvider<ScanService?>((ref) async {
   final categorizer =
       CategorizingDraftCategorizer(await ruleSvc.buildCategorizer());
   final base = ref.watch(appConfigProvider).baseCurrencyCode;
-  return DefaultScanService(
+  final service = DefaultScanService(
     engine: engine,
     classifier: const KeywordDocumentClassifier(),
     parsers: const {DocType.receipt: ReceiptParser()},
     contextBuilder: () => ParseContext(defaultCurrencyCode: base),
     categorizer: categorizer,
   );
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 /// Drives capture → review (ingest + optional OCR pipeline).

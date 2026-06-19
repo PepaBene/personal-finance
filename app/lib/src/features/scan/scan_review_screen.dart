@@ -105,23 +105,24 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final image = _imagePane(context);
-          final form = _formPane(context);
-          if (constraints.maxWidth >= _wideBreakpoint) {
+          final wide = constraints.maxWidth >= _wideBreakpoint;
+          if (wide) {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                    child: Padding(
-                  padding: EdgeInsets.all(context.space.md),
-                  child: image,
-                )),
+                  child: Padding(
+                    padding: EdgeInsets.all(context.space.md),
+                    child: _imagePane(context),
+                  ),
+                ),
                 const VerticalDivider(width: 1),
-                Expanded(child: form),
+                // Image is in the left pane already → don't repeat it inline.
+                Expanded(child: _formPane(context, showInlineImage: false)),
               ],
             );
           }
-          return form;
+          return _formPane(context, showInlineImage: true);
         },
       ),
     );
@@ -168,7 +169,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
   // --- form pane ---------------------------------------------------------
 
-  Widget _formPane(BuildContext context) {
+  Widget _formPane(BuildContext context, {required bool showInlineImage}) {
     final accounts = ref.watch(accountsProvider).valueOrNull ?? const [];
     final currencies = ref.watch(currenciesProvider).valueOrNull ?? const [];
     final categories = ref.watch(categoriesFlatProvider).valueOrNull ??
@@ -179,7 +180,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       builder: (context, _) => ListView(
         padding: EdgeInsets.all(context.space.md),
         children: [
-          if (widget.imageBytes == null && widget.draft.ocr != null) ...[
+          if (showInlineImage && widget.draft.ocr != null) ...[
             _imagePane(context),
             SizedBox(height: context.space.md),
           ],

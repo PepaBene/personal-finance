@@ -86,4 +86,35 @@ void main() {
     final d = parser.parse(noCurrency, ctx);
     expect(d.currencyCode, 'EUR');
   });
+
+  test('treats a "celkem bez DPH" subtotal as neither tax nor a line', () {
+    final r = OcrResult(
+      engineId: 'fixture',
+      fullText: 'SHOP\nItem 100,00\nCelkem bez DPH 100,00\n'
+          'DPH 21% 21,00\nCELKEM 121,00\nKč',
+      lines: [
+        _line('SHOP', [_w('SHOP', 0.2, 0.05)]),
+        _line(
+            'Item 100,00', [_w('Item', 0.15, 0.20), _w('100,00', 0.85, 0.20)]),
+        _line('Celkem bez DPH 100,00', [
+          _w('Celkem', 0.10, 0.30),
+          _w('bez', 0.25, 0.30),
+          _w('DPH', 0.40, 0.30),
+          _w('100,00', 0.85, 0.30),
+        ]),
+        _line('DPH 21% 21,00', [
+          _w('DPH', 0.15, 0.40),
+          _w('21%', 0.40, 0.40),
+          _w('21,00', 0.85, 0.40),
+        ]),
+        _line('CELKEM 121,00',
+            [_w('CELKEM', 0.15, 0.50), _w('121,00', 0.85, 0.50)]),
+        _line('Kč', [_w('Kč', 0.5, 0.60)]),
+      ],
+    );
+    final d = parser.parse(r, ctx);
+    expect(d.total, Decimal.parse('121.00')); // not the 100,00 subtotal
+    expect(d.taxAmount, Decimal.parse('21.00')); // not the 100,00 subtotal
+    expect(d.lineItems.map((l) => l.description), ['Item']);
+  });
 }
