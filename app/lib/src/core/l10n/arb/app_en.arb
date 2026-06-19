@@ -344,5 +344,13 @@
     "placeholders": {
       "error": { "type": "String" }
     }
+  },
+
+  "transactionFetchRate": "Fetch rate online",
+  "transactionFetchRateFailed": "Could not fetch rate: {error}",
+  "@transactionFetchRateFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }

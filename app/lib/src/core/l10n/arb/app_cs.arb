@@ -343,5 +343,13 @@
     "placeholders": {
       "error": { "type": "String" }
     }
+  },
+
+  "transactionFetchRate": "Načíst kurz online",
+  "transactionFetchRateFailed": "Kurz se nepodařilo načíst: {error}",
+  "@transactionFetchRateFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }

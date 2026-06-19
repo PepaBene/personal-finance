@@ -27,6 +27,16 @@ abstract interface class CurrencyService {
     required Decimal rate,
     required DateTime date,
   });
+
+  /// Optionally fetch [fromCode]→[toCode] for [date] from an online source and
+  /// store it as a `fetched` historical rate (FR-CUR-05). Explicit, opt-in, and
+  /// one-off — never invoked automatically. Returns the fetched rate. Throws if
+  /// no online provider is configured or the lookup fails.
+  Future<Decimal> fetchOnlineRate({
+    required String fromCode,
+    required String toCode,
+    required DateTime date,
+  });
 }
 
 class ConversionResult {

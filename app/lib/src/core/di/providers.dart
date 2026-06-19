@@ -23,6 +23,7 @@ import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
 import '../../application/currency_service.dart';
 import '../../application/document_parser.dart';
+import '../../application/exchange_rate_provider.dart';
 import '../../application/import_export_service.dart';
 import '../../application/ocr_engine.dart';
 import '../../application/recurring_service.dart';
@@ -48,6 +49,7 @@ import '../../data/services/drift_categorization_rule_service.dart';
 import '../../domain/enums.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/ledgerly_powersync.dart';
+import '../../data/remote/frankfurter_rate_provider.dart';
 import '../../data/remote/powersync_sync_service.dart';
 import '../../data/remote/supabase_powersync_connector.dart';
 import '../../data/seed/database_seeder.dart';
@@ -154,12 +156,18 @@ final accountServiceProvider = FutureProvider<AccountService>((ref) async {
   return DriftAccountService(db, ref.watch(authServiceProvider));
 });
 
+/// Online FX provider (FR-CUR-05) — opt-in, used only on explicit user action.
+final exchangeRateProviderProvider = Provider<ExchangeRateProvider>(
+  (ref) => FrankfurterRateProvider(),
+);
+
 final currencyServiceProvider = FutureProvider<CurrencyService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftCurrencyService(
     db,
     ref.watch(authServiceProvider),
     ref.watch(appConfigProvider).baseCurrencyCode,
+    rateProvider: ref.watch(exchangeRateProviderProvider),
   );
 });
 

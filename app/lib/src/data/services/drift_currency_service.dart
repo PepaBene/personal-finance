@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/auth_service.dart';
 import '../../application/currency_service.dart';
+import '../../application/exchange_rate_provider.dart';
 import '../../domain/entities/currency.dart';
 import '../../domain/enums.dart';
 import '../../domain/money.dart';
@@ -12,11 +13,19 @@ import '../local/app_database.dart' as db;
 /// manual rate on or before the transaction date (docs/04 §3.3); rounding to
 /// the base currency's decimal digits is banker's rounding via [Decimal].
 class DriftCurrencyService implements CurrencyService {
-  DriftCurrencyService(this._db, this._auth, this._defaultBaseCurrency);
+  DriftCurrencyService(
+    this._db,
+    this._auth,
+    this._defaultBaseCurrency, {
+    ExchangeRateProvider? rateProvider,
+  }) : _rateProvider = rateProvider;
 
   final db.AppDatabase _db;
   final AuthService _auth;
   final String _defaultBaseCurrency;
+
+  /// Optional online provider (FR-CUR-05); null when not configured.
+  final ExchangeRateProvider? _rateProvider;
 
   static const _baseCurrencyKey = 'base_currency';
   static const _fxNamespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
@@ -95,6 +104,44 @@ class DriftCurrencyService implements CurrencyService {
     required String toCode,
     required Decimal rate,
     required DateTime date,
+  }) =>
+      _storeRate(
+        fromCode: fromCode,
+        toCode: toCode,
+        rate: rate,
+        date: date,
+        source: RateSource.manual,
+      );
+
+  @override
+  Future<Decimal> fetchOnlineRate({
+    required String fromCode,
+    required String toCode,
+    required DateTime date,
+  }) async {
+    final provider = _rateProvider;
+    if (provider == null) {
+      throw const RateFetchException('Online rate fetch is not available.');
+    }
+    final fetched =
+        await provider.fetch(from: fromCode, to: toCode, date: date);
+    // Store under the requested date so toBase(date) finds it, marked fetched.
+    await _storeRate(
+      fromCode: fromCode,
+      toCode: toCode,
+      rate: fetched.rate,
+      date: date,
+      source: RateSource.fetched,
+    );
+    return fetched.rate;
+  }
+
+  Future<void> _storeRate({
+    required String fromCode,
+    required String toCode,
+    required Decimal rate,
+    required DateTime date,
+    required RateSource source,
   }) async {
     final day = DateTime.utc(date.year, date.month, date.day);
     // Deterministic id on (user, from, to, day) so re-entering a day's rate
@@ -112,7 +159,7 @@ class DriftCurrencyService implements CurrencyService {
             toCode: toCode,
             rate: rate,
             date: day,
-            source: RateSource.manual,
+            source: source,
           ),
         );
   }
