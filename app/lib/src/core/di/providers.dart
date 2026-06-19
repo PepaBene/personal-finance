@@ -17,6 +17,7 @@ import '../../application/app_lock_service.dart';
 import '../../application/attachment_service.dart';
 import '../../application/attachment_store.dart';
 import '../../application/auth_service.dart';
+import '../../application/budget_service.dart';
 import '../../application/categorization_rule_service.dart';
 import '../../application/categorization_service.dart';
 import '../../application/category_service.dart';
@@ -40,6 +41,7 @@ import '../../data/documents/receipt_parser.dart';
 import '../../data/ingest/file_picker_scan_ingest.dart';
 import '../../data/ocr/ocr_engine_factory.dart';
 import '../../data/services/drift_attachment_service.dart';
+import '../../data/services/drift_budget_service.dart';
 import '../../data/services/drift_categorization_rule_service.dart';
 import '../../domain/enums.dart';
 import '../../data/local/app_database.dart';
@@ -168,6 +170,11 @@ final attachmentServiceProvider = FutureProvider<AttachmentService>((
 ) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftAttachmentService(db, ref.watch(authServiceProvider));
+});
+
+final budgetServiceProvider = FutureProvider<BudgetService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftBudgetService(db, ref.watch(authServiceProvider));
 });
 
 // --- Attachment blob encryption + storage (docs/09 §2/§3) ---------------

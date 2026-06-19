@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../application/auth_service.dart';
 import '../../features/accounts/accounts_screen.dart';
 import '../../features/auth/auth_screen.dart';
+import '../../features/budgets/budgets_screen.dart';
 import '../../features/categories/categories_screen.dart';
 import '../../application/scan_coordinator.dart';
 import '../../features/dashboard/dashboard_screen.dart';
@@ -26,6 +27,8 @@ abstract final class Routes {
   static const accounts = '/accounts';
   static const settings = '/settings';
   static const categories = '/categories';
+  static const budgets = '/budgets';
+  static const analytics = '/analytics';
   static const scanReview = '/scan/review';
 
   static String transactionEdit(String id) => '/transactions/$id/edit';
@@ -75,6 +78,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.categories,
         builder: (_, __) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: Routes.budgets,
+        builder: (_, __) => const BudgetsScreen(),
       ),
       // Reached from the scan flow with the captured ScanResult (draft + image
       // bytes) as `extra`. Full-screen, outside the shell chrome.

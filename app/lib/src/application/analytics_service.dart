@@ -1,3 +1,6 @@
+import 'package:decimal/decimal.dart';
+
+import '../domain/entities/budget.dart';
 import '../domain/entities/transaction.dart';
 import '../domain/money.dart';
 
@@ -43,6 +46,38 @@ class PeriodPoint {
   Money get net => inflow - outflow;
 }
 
+/// How a budget is tracking against actual spend (FR-BUD-02, docs/11 §5.5).
+enum BudgetAlertLevel { ok, nearing, over }
+
+/// Actual-vs-budget for one budgeted category over a month (FR-ANL-06). [actual]
+/// is base-currency expense for the category; [budget] carries the limit.
+class BudgetStatus {
+  const BudgetStatus({required this.budget, required this.actual});
+
+  /// Spend at/over this fraction of the limit (but under it) is "nearing".
+  static const nearingThreshold = 0.8;
+
+  final BudgetEntity budget;
+  final Money actual;
+
+  Money get limit => budget.amount;
+  Money get remaining =>
+      Money(limit.amount - actual.amount, limit.currencyCode);
+
+  /// actual ÷ limit (0 when the limit is zero), as a 0..n fraction.
+  double get utilization {
+    if (limit.amount == Decimal.zero) return 0;
+    return (actual.amount / limit.amount).toDouble();
+  }
+
+  BudgetAlertLevel get level {
+    final u = utilization;
+    if (u >= 1.0) return BudgetAlertLevel.over;
+    if (u >= nearingThreshold) return BudgetAlertLevel.nearing;
+    return BudgetAlertLevel.ok;
+  }
+}
+
 /// Dashboard headline figures for the selected range (FR-ANL-01), base currency.
 class DashboardSummary {
   const DashboardSummary({required this.income, required this.expense});
@@ -72,4 +107,9 @@ abstract interface class AnalyticsService {
     String categoryId,
     DateRange range,
   );
+
+  /// Actual-vs-budget for each active budget over [monthRange] (FR-BUD-02,
+  /// FR-ANL-06), reactive to both spend and budget changes. Sorted by
+  /// utilization (most-stretched first).
+  Stream<List<BudgetStatus>> watchBudgetStatus(DateRange monthRange);
 }

@@ -70,3 +70,11 @@ const categoryMatchTypeConverter = EnumNameConverter(
   CategoryMatchType.values,
   CategoryMatchType.descriptionContains,
 );
+const budgetPeriodConverter = EnumNameConverter(
+  BudgetPeriod.values,
+  BudgetPeriod.monthly,
+);
+const recurringFrequencyConverter = EnumNameConverter(
+  RecurringFrequency.values,
+  RecurringFrequency.monthly,
+);

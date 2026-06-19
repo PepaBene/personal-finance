@@ -242,5 +242,30 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "settingsManageBudgets": "Budgets",
+  "budgetsTitle": "Budgets",
+  "budgetsAddAction": "Add budget",
+  "budgetsEmptyTitle": "No budgets yet",
+  "budgetsEmptyBody": "Set a monthly limit per category to track your spending.",
+  "budgetOver": "Over",
+  "budgetNearing": "Nearing",
+  "budgetOnTrack": "On track",
+  "budgetSpentOfLimit": "{actual} of {limit}",
+  "@budgetSpentOfLimit": {
+    "placeholders": {
+      "actual": { "type": "String" },
+      "limit": { "type": "String" }
+    }
+  },
+  "budgetNewTitle": "New budget",
+  "budgetEditTitle": "Edit budget",
+  "budgetCategory": "Category",
+  "budgetMonthlyLimit": "Monthly limit",
+  "budgetSave": "Save budget",
+  "budgetDelete": "Delete budget",
+  "budgetValidationCategory": "Choose a category.",
+  "budgetValidationAmount": "Enter a limit greater than zero.",
+  "dashboardBudgetAlertsTitle": "Budget alerts"
 }

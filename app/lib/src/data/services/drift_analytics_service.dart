@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:decimal/decimal.dart';
 import 'package:drift/drift.dart';
 import 'package:rational/rational.dart';
 
 import '../../application/analytics_service.dart';
 import '../../application/auth_service.dart';
+import '../../domain/entities/budget.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/enums.dart';
 import '../../domain/money.dart';
@@ -42,6 +45,27 @@ class DriftAnalyticsService implements AnalyticsService {
   @override
   Stream<List<CategoryTotal>> watchSpendByCategory(DateRange range) async* {
     final base = await _baseCurrency();
+    yield* _spendByCategory(range).map((acc) {
+      return acc.entries
+          .map(
+            (e) => CategoryTotal(
+              categoryId: e.key,
+              total: Money(
+                e.value.toDecimal(scaleOnInfinitePrecision: 2),
+                base,
+              ),
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.total.amount.compareTo(a.total.amount));
+    });
+  }
+
+  /// Reactive `categoryId → base-currency spend share` over [range] (expense
+  /// lines only). The exact [Rational] is kept until the boundary so splits and
+  /// multi-currency conversions stay precise (docs/11 §1.2). Single source of
+  /// truth for both spend-by-category and budget actuals.
+  Stream<Map<String, Rational>> _spendByCategory(DateRange range) {
     final query = _db.select(_db.lineItems).join([
       innerJoin(
         _db.transactions,
@@ -56,7 +80,7 @@ class DriftAnalyticsService implements AnalyticsService {
             _inRange(_db.transactions.date, range),
       );
 
-    yield* query.watch().map((rows) {
+    return query.watch().map((rows) {
       final acc = <String, Rational>{};
       for (final row in rows) {
         final line = row.readTable(_db.lineItems);
@@ -66,19 +90,7 @@ class DriftAnalyticsService implements AnalyticsService {
         final share = (line.lineAmount * tx.baseAmount) / tx.totalAmount;
         acc[line.categoryId] = (acc[line.categoryId] ?? Rational.zero) + share;
       }
-      final totals = acc.entries
-          .map(
-            (e) => CategoryTotal(
-              categoryId: e.key,
-              total: Money(
-                e.value.toDecimal(scaleOnInfinitePrecision: 2),
-                base,
-              ),
-            ),
-          )
-          .toList()
-        ..sort((a, b) => b.total.amount.compareTo(a.total.amount));
-      return totals;
+      return acc;
     });
   }
 
@@ -162,6 +174,46 @@ class DriftAnalyticsService implements AnalyticsService {
     return rows.map(_toEntity).toList();
   }
 
+  // --- budgets (actual vs budget) ---------------------------------------
+
+  @override
+  Stream<List<BudgetStatus>> watchBudgetStatus(DateRange monthRange) async* {
+    final base = await _baseCurrency();
+    final month = monthRange.start;
+    yield* _combineLatest2(
+      _spendByCategory(monthRange),
+      _db.watchBudgets(_userId),
+      (spend, budgetRows) {
+        final statuses = <BudgetStatus>[];
+        for (final row in budgetRows) {
+          final budget = _toBudget(row);
+          if (!budget.appliesTo(month)) continue;
+          final share = spend[budget.categoryId] ?? Rational.zero;
+          final actual = Money(
+            share.toDecimal(scaleOnInfinitePrecision: 2),
+            base,
+          );
+          statuses.add(BudgetStatus(budget: budget, actual: actual));
+        }
+        statuses.sort((a, b) => b.utilization.compareTo(a.utilization));
+        return statuses;
+      },
+    );
+  }
+
+  BudgetEntity _toBudget(db.Budget r) => BudgetEntity(
+        id: r.id,
+        userId: r.userId,
+        categoryId: r.categoryId,
+        amount: Money(r.amount, r.currencyCode),
+        period: r.period,
+        startMonth: r.startMonth,
+        isActive: r.isActive,
+        updatedAt: r.updatedAt,
+        deleted: r.deleted,
+        version: r.version,
+      );
+
   // --- helpers -----------------------------------------------------------
 
   Selectable<db.Transaction> _headerQuery(DateRange range) {
@@ -197,6 +249,54 @@ class DriftAnalyticsService implements AnalyticsService {
         deleted: r.deleted,
         version: r.version,
       );
+}
+
+/// Emits [combine] of the latest value of [a] and [b] whenever either emits,
+/// once both have produced a value. Dependency-free `combineLatest` for two
+/// reactive Drift streams (e.g. spend + budgets), so budget status refreshes on
+/// changes to either. Single-subscription; cancels both sources on cancel.
+Stream<R> _combineLatest2<A, B, R>(
+  Stream<A> a,
+  Stream<B> b,
+  R Function(A, B) combine,
+) {
+  late StreamController<R> controller;
+  late StreamSubscription<A> subA;
+  late StreamSubscription<B> subB;
+  A? latestA;
+  B? latestB;
+  var hasA = false;
+  var hasB = false;
+
+  void emit() {
+    if (hasA && hasB) controller.add(combine(latestA as A, latestB as B));
+  }
+
+  controller = StreamController<R>(
+    onListen: () {
+      subA = a.listen(
+        (v) {
+          latestA = v;
+          hasA = true;
+          emit();
+        },
+        onError: controller.addError,
+      );
+      subB = b.listen(
+        (v) {
+          latestB = v;
+          hasB = true;
+          emit();
+        },
+        onError: controller.addError,
+      );
+    },
+    onCancel: () async {
+      await subA.cancel();
+      await subB.cancel();
+    },
+  );
+  return controller.stream;
 }
 
 /// Start of the period bucket containing [d] (UTC), Monday-based weeks.

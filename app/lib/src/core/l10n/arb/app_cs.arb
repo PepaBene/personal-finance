@@ -241,5 +241,30 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "settingsManageBudgets": "Rozpočty",
+  "budgetsTitle": "Rozpočty",
+  "budgetsAddAction": "Přidat rozpočet",
+  "budgetsEmptyTitle": "Zatím žádné rozpočty",
+  "budgetsEmptyBody": "Nastavte měsíční limit pro kategorii a sledujte své výdaje.",
+  "budgetOver": "Překročeno",
+  "budgetNearing": "Blíží se",
+  "budgetOnTrack": "V normě",
+  "budgetSpentOfLimit": "{actual} z {limit}",
+  "@budgetSpentOfLimit": {
+    "placeholders": {
+      "actual": { "type": "String" },
+      "limit": { "type": "String" }
+    }
+  },
+  "budgetNewTitle": "Nový rozpočet",
+  "budgetEditTitle": "Upravit rozpočet",
+  "budgetCategory": "Kategorie",
+  "budgetMonthlyLimit": "Měsíční limit",
+  "budgetSave": "Uložit rozpočet",
+  "budgetDelete": "Smazat rozpočet",
+  "budgetValidationCategory": "Vyberte kategorii.",
+  "budgetValidationAmount": "Zadejte limit větší než nula.",
+  "dashboardBudgetAlertsTitle": "Upozornění na rozpočet"
 }
