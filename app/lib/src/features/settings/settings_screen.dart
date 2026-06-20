@@ -43,160 +43,190 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         Expanded(
           child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              context.space.md,
+              context.space.md,
+              context.space.md,
+              context.space.xxl,
+            ),
             children: [
-              ListTile(
-                leading: const Icon(Icons.category_outlined),
-                title: Text(l10n.settingsManageCategories),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy ? null : () => context.push(Routes.categories),
-              ),
-              ListTile(
-                leading: const Icon(Icons.savings_outlined),
-                title: Text(l10n.settingsManageBudgets),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy ? null : () => context.push(Routes.budgets),
-              ),
-              ListTile(
-                leading: const Icon(Icons.insights_outlined),
-                title: Text(l10n.settingsAnalytics),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy ? null : () => context.push(Routes.analytics),
-              ),
-              ListTile(
-                leading: const Icon(Icons.event_repeat_outlined),
-                title: Text(l10n.settingsRecurring),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy ? null : () => context.push(Routes.recurring),
-              ),
-              const Divider(height: 1),
-              _SectionHeader(l10n.settingsAppearance),
-              ListTile(
-                leading: const Icon(Icons.brightness_6_outlined),
-                title: Text(l10n.settingsThemeMode),
-                trailing: DropdownButton<AppThemeMode>(
-                  value: prefs.themeMode,
-                  underline: const SizedBox.shrink(),
-                  onChanged: (m) =>
-                      m == null ? null : prefsCtrl.setThemeMode(m),
-                  items: [
-                    DropdownMenuItem(
-                      value: AppThemeMode.system,
-                      child: Text(l10n.settingsThemeSystem),
-                    ),
-                    DropdownMenuItem(
-                      value: AppThemeMode.light,
-                      child: Text(l10n.settingsThemeLight),
-                    ),
-                    DropdownMenuItem(
-                      value: AppThemeMode.dark,
-                      child: Text(l10n.settingsThemeDark),
-                    ),
-                  ],
-                ),
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.contrast),
-                title: Text(l10n.settingsHighContrast),
-                value: prefs.highContrast,
-                onChanged: prefsCtrl.setHighContrast,
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.animation_outlined),
-                title: Text(l10n.settingsReduceMotion),
-                value: prefs.reduceMotion,
-                onChanged: prefsCtrl.setReduceMotion,
-              ),
-              ListTile(
-                leading: const Icon(Icons.translate_outlined),
-                title: Text(l10n.settingsLanguage),
-                trailing: DropdownButton<String?>(
-                  value: prefs.localeTag,
-                  underline: const SizedBox.shrink(),
-                  onChanged: prefsCtrl.setLocaleTag,
-                  items: [
-                    DropdownMenuItem(
-                      value: null,
-                      child: Text(l10n.settingsLanguageSystem),
-                    ),
-                    const DropdownMenuItem(value: 'en', child: Text('English')),
-                    const DropdownMenuItem(value: 'cs', child: Text('Čeština')),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              _SectionHeader(l10n.settingsSecurity),
-              SwitchListTile(
-                secondary: const Icon(Icons.fingerprint),
-                title: Text(l10n.settingsBiometric),
-                subtitle: Text(l10n.settingsBiometricSubtitle),
-                value: prefs.biometricEnabled,
-                onChanged: _busy ? null : _setBiometric,
-              ),
-              ListTile(
-                leading: const Icon(Icons.lock_clock_outlined),
-                title: Text(l10n.settingsAutoLock),
-                trailing: DropdownButton<int>(
-                  value: prefs.autoLockMinutes,
-                  underline: const SizedBox.shrink(),
-                  onChanged: (m) =>
-                      m == null ? null : prefsCtrl.setAutoLockMinutes(m),
-                  items: [
-                    DropdownMenuItem(
-                      value: 0,
-                      child: Text(l10n.settingsAutoLockNever),
-                    ),
-                    for (final m in const [1, 5, 15, 30])
-                      DropdownMenuItem(
-                        value: m,
-                        child: Text(l10n.settingsAutoLockMinutes(m)),
-                      ),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.password_outlined),
-                title: Text(l10n.settingsChangePassphrase),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy ? null : _changePassphrase,
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.upload_file_outlined),
-                title: Text(l10n.settingsExportCsv),
-                subtitle: Text(l10n.settingsExportCsvSubtitle),
-                enabled: !_busy,
-                onTap: _export,
-              ),
-              ListTile(
-                leading: const Icon(Icons.download_outlined),
-                title: Text(l10n.settingsImportCsv),
-                subtitle: Text(l10n.settingsImportCsvSubtitle),
-                enabled: !_busy,
-                onTap: _import,
-              ),
-              ListTile(
-                leading: const Icon(Icons.speed_outlined),
-                title: Text(l10n.settingsRebuildCache),
-                subtitle: Text(l10n.settingsRebuildCacheSubtitle),
-                enabled: !_busy,
-                onTap: _rebuildCache,
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.payments_outlined),
-                title: Text(l10n.settingsBaseCurrency),
-                trailing: Text(base ?? '—', style: context.texts.titleMedium),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: Icon(Icons.logout, color: context.semantic.danger),
-                title: Text(
-                  l10n.commonSignOut,
-                  style: context.texts.bodyLarge?.copyWith(
-                    color: context.semantic.danger,
+              // Manage: navigational shortcuts into feature areas.
+              _GroupCard(
+                children: [
+                  _NavRow(
+                    icon: Icons.category_outlined,
+                    title: l10n.settingsManageCategories,
+                    onTap:
+                        _busy ? null : () => context.push(Routes.categories),
                   ),
-                ),
-                onTap: _busy ? null : () => _confirmSignOut(l10n),
+                  _NavRow(
+                    icon: Icons.savings_outlined,
+                    title: l10n.settingsManageBudgets,
+                    onTap: _busy ? null : () => context.push(Routes.budgets),
+                  ),
+                  _NavRow(
+                    icon: Icons.insights_outlined,
+                    title: l10n.settingsAnalytics,
+                    onTap: _busy ? null : () => context.push(Routes.analytics),
+                  ),
+                  _NavRow(
+                    icon: Icons.event_repeat_outlined,
+                    title: l10n.settingsRecurring,
+                    onTap: _busy ? null : () => context.push(Routes.recurring),
+                  ),
+                ],
+              ),
+              _Group(
+                title: l10n.settingsAppearance,
+                children: [
+                  ListTile(
+                    leading: const _TileIcon(Icons.brightness_6_outlined),
+                    title: Text(l10n.settingsThemeMode),
+                    trailing: DropdownButton<AppThemeMode>(
+                      value: prefs.themeMode,
+                      underline: const SizedBox.shrink(),
+                      onChanged: (m) =>
+                          m == null ? null : prefsCtrl.setThemeMode(m),
+                      items: [
+                        DropdownMenuItem(
+                          value: AppThemeMode.system,
+                          child: Text(l10n.settingsThemeSystem),
+                        ),
+                        DropdownMenuItem(
+                          value: AppThemeMode.light,
+                          child: Text(l10n.settingsThemeLight),
+                        ),
+                        DropdownMenuItem(
+                          value: AppThemeMode.dark,
+                          child: Text(l10n.settingsThemeDark),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SwitchListTile(
+                    secondary: const _TileIcon(Icons.contrast),
+                    title: Text(l10n.settingsHighContrast),
+                    value: prefs.highContrast,
+                    onChanged: prefsCtrl.setHighContrast,
+                  ),
+                  SwitchListTile(
+                    secondary: const _TileIcon(Icons.animation_outlined),
+                    title: Text(l10n.settingsReduceMotion),
+                    value: prefs.reduceMotion,
+                    onChanged: prefsCtrl.setReduceMotion,
+                  ),
+                  ListTile(
+                    leading: const _TileIcon(Icons.translate_outlined),
+                    title: Text(l10n.settingsLanguage),
+                    trailing: DropdownButton<String?>(
+                      value: prefs.localeTag,
+                      underline: const SizedBox.shrink(),
+                      onChanged: prefsCtrl.setLocaleTag,
+                      items: [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(l10n.settingsLanguageSystem),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'en',
+                          child: Text('English'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'cs',
+                          child: Text('Čeština'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              _Group(
+                title: l10n.settingsSecurity,
+                children: [
+                  SwitchListTile(
+                    secondary: const _TileIcon(Icons.fingerprint),
+                    title: Text(l10n.settingsBiometric),
+                    subtitle: Text(l10n.settingsBiometricSubtitle),
+                    value: prefs.biometricEnabled,
+                    onChanged: _busy ? null : _setBiometric,
+                  ),
+                  ListTile(
+                    leading: const _TileIcon(Icons.lock_clock_outlined),
+                    title: Text(l10n.settingsAutoLock),
+                    trailing: DropdownButton<int>(
+                      value: prefs.autoLockMinutes,
+                      underline: const SizedBox.shrink(),
+                      onChanged: (m) =>
+                          m == null ? null : prefsCtrl.setAutoLockMinutes(m),
+                      items: [
+                        DropdownMenuItem(
+                          value: 0,
+                          child: Text(l10n.settingsAutoLockNever),
+                        ),
+                        for (final m in const [1, 5, 15, 30])
+                          DropdownMenuItem(
+                            value: m,
+                            child: Text(l10n.settingsAutoLockMinutes(m)),
+                          ),
+                      ],
+                    ),
+                  ),
+                  _NavRow(
+                    icon: Icons.password_outlined,
+                    title: l10n.settingsChangePassphrase,
+                    onTap: _busy ? null : _changePassphrase,
+                  ),
+                ],
+              ),
+              _GroupCard(
+                children: [
+                  ListTile(
+                    leading: const _TileIcon(Icons.upload_file_outlined),
+                    title: Text(l10n.settingsExportCsv),
+                    subtitle: Text(l10n.settingsExportCsvSubtitle),
+                    enabled: !_busy,
+                    onTap: _export,
+                  ),
+                  ListTile(
+                    leading: const _TileIcon(Icons.download_outlined),
+                    title: Text(l10n.settingsImportCsv),
+                    subtitle: Text(l10n.settingsImportCsvSubtitle),
+                    enabled: !_busy,
+                    onTap: _import,
+                  ),
+                  ListTile(
+                    leading: const _TileIcon(Icons.speed_outlined),
+                    title: Text(l10n.settingsRebuildCache),
+                    subtitle: Text(l10n.settingsRebuildCacheSubtitle),
+                    enabled: !_busy,
+                    onTap: _rebuildCache,
+                  ),
+                  ListTile(
+                    leading: const _TileIcon(Icons.payments_outlined),
+                    title: Text(l10n.settingsBaseCurrency),
+                    trailing: Text(
+                      base ?? '—',
+                      style: context.texts.titleMedium,
+                    ),
+                  ),
+                ],
+              ),
+              _GroupCard(
+                children: [
+                  ListTile(
+                    leading: _TileIcon(
+                      Icons.logout,
+                      color: context.semantic.danger,
+                    ),
+                    title: Text(
+                      l10n.commonSignOut,
+                      style: context.texts.bodyLarge?.copyWith(
+                        color: context.semantic.danger,
+                      ),
+                    ),
+                    onTap: _busy ? null : () => _confirmSignOut(l10n),
+                  ),
+                ],
               ),
             ],
           ),
@@ -272,7 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration:
                   InputDecoration(labelText: l10n.settingsChangePassphraseOld),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: context.space.md),
             TextField(
               controller: newCtrl,
               obscureText: true,
@@ -411,24 +441,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-/// Group heading inside the settings list.
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.title);
+/// A titled settings group: a [SectionHeader] above an [AppCard] of rows.
+class _Group extends StatelessWidget {
+  const _Group({required this.title, required this.children});
+
   final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(height: context.space.lg),
+        SectionHeader(
+          title: title,
+          padding: EdgeInsets.only(
+            left: context.space.xs,
+            bottom: context.space.sm,
+          ),
+        ),
+        _GroupCard(children: children),
+      ],
+    );
+  }
+}
+
+/// An untitled settings group: an [AppCard] wrapping a column of tidy rows with
+/// hairline dividers between them.
+class _GroupCard extends StatelessWidget {
+  const _GroupCard({required this.children});
+
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        context.space.md,
-        context.space.md,
-        context.space.md,
-        context.space.xs,
+      padding: EdgeInsets.only(top: context.space.sm),
+      child: AppCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) const Divider(height: 1),
+              children[i],
+            ],
+          ],
+        ),
       ),
-      child: Text(
-        title,
-        style: context.texts.labelLarge?.copyWith(color: context.colors.primary),
+    );
+  }
+}
+
+/// A navigational settings row with a tinted leading glyph and a chevron.
+class _NavRow extends StatelessWidget {
+  const _NavRow({required this.icon, required this.title, this.onTap});
+
+  final IconData icon;
+  final String title;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: _TileIcon(icon),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+}
+
+/// A small tinted rounded container holding a settings row's leading icon, so
+/// every row reads with the same calm, soft-depth glyph treatment.
+class _TileIcon extends StatelessWidget {
+  const _TileIcon(this.icon, {this.color});
+
+  final IconData icon;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = color ?? context.colors.primary;
+    return Container(
+      width: context.space.xl + context.space.xxs,
+      height: context.space.xl + context.space.xxs,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.12),
+        borderRadius: context.radii.mdRadius,
       ),
+      child: Icon(icon, size: context.space.md + context.space.xxs, color: tint),
     );
   }
 }

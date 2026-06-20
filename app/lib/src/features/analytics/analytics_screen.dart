@@ -77,7 +77,7 @@ class AnalyticsScreen extends ConsumerWidget {
             title: l10n.analyticsWaterfall,
             child: _waterfall(context, ref, fmt, categories),
           ),
-          SizedBox(height: context.space.xl),
+          SizedBox(height: context.space.xxl),
         ],
       ),
     );
@@ -180,6 +180,9 @@ class AnalyticsScreen extends ConsumerWidget {
                   c.previous.amount.toDouble(),
                 ))
             .fold<double>(0, (a, b) => math.max(a, b));
+        final radius = BorderRadius.vertical(
+          top: Radius.circular(context.radii.sm),
+        );
         final groups = <BarChartGroupData>[
           for (var i = 0; i < movers.length; i++)
             BarChartGroupData(
@@ -189,11 +192,13 @@ class AnalyticsScreen extends ConsumerWidget {
                   toY: movers[i].previous.amount.toDouble(),
                   color: context.colors.outline,
                   width: 7,
+                  borderRadius: radius,
                 ),
                 BarChartRodData(
                   toY: movers[i].current.amount.toDouble(),
                   color: context.semantic.expense,
                   width: 7,
+                  borderRadius: radius,
                 ),
               ],
             ),
@@ -205,41 +210,44 @@ class AnalyticsScreen extends ConsumerWidget {
               (context.colors.outline, l10n.analyticsPrevious),
               (context.semantic.expense, l10n.analyticsCurrent),
             ]),
-            SizedBox(height: context.space.sm),
-            SizedBox(
-              height: 180,
-              child: BarChart(
-                BarChartData(
-                  maxY: maxY == 0 ? 1 : maxY * 1.15,
-                  gridData: const FlGridData(show: false),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(),
-                    topTitles: const AxisTitles(),
-                    rightTitles: const AxisTitles(),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final i = value.toInt();
-                          if (i < 0 || i >= movers.length) {
-                            return const SizedBox.shrink();
-                          }
-                          final cat =
-                              categoryById(categories, movers[i].categoryId);
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              cat?.name ?? '—',
-                              style: context.texts.labelSmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        },
+            SizedBox(height: context.space.md),
+            ExcludeSemantics(
+              child: SizedBox(
+                height: 180,
+                child: BarChart(
+                  BarChartData(
+                    maxY: maxY == 0 ? 1 : maxY * 1.15,
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    barTouchData: BarTouchData(enabled: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: const AxisTitles(),
+                      topTitles: const AxisTitles(),
+                      rightTitles: const AxisTitles(),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final i = value.toInt();
+                            if (i < 0 || i >= movers.length) {
+                              return const SizedBox.shrink();
+                            }
+                            final cat =
+                                categoryById(categories, movers[i].categoryId);
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                cat?.name ?? '—',
+                                style: context.texts.labelSmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
+                    barGroups: groups,
                   ),
-                  barGroups: groups,
                 ),
               ),
             ),
@@ -288,7 +296,7 @@ class AnalyticsScreen extends ConsumerWidget {
         return SizedBox(
           height: 220,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(context.radii.sm),
+            borderRadius: context.radii.mdRadius,
             child: _Treemap(tiles: tiles),
           ),
         );
@@ -536,17 +544,14 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(context.space.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(title, style: context.texts.titleMedium),
-            SizedBox(height: context.space.sm),
-            child,
-          ],
-        ),
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionHeader(title: title),
+          SizedBox(height: context.space.md),
+          child,
+        ],
       ),
     );
   }
@@ -555,9 +560,15 @@ class _Section extends StatelessWidget {
 class _Loading extends StatelessWidget {
   const _Loading();
   @override
-  Widget build(BuildContext context) => const SizedBox(
+  Widget build(BuildContext context) => SizedBox(
         height: 140,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: Skeleton(
+            width: 120,
+            height: 120,
+            borderRadius: context.radii.mdRadius,
+          ),
+        ),
       );
 }
 
@@ -604,11 +615,11 @@ class _RankedBar extends StatelessWidget {
             ),
             SizedBox(height: context.space.xs),
             ClipRRect(
-              borderRadius: BorderRadius.circular(context.radii.sm),
+              borderRadius: context.radii.pillRadius,
               child: LinearProgressIndicator(
                 value: fraction.clamp(0.0, 1.0).toDouble(),
                 minHeight: 8,
-                backgroundColor: context.colors.surfaceContainerHighest,
+                backgroundColor: context.colors.surfaceContainerHigh,
                 color: color,
               ),
             ),

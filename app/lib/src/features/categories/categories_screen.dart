@@ -86,7 +86,16 @@ class CategoriesScreen extends ConsumerWidget {
               tiles.add(_row(context, ref, child, indent: 1));
             }
           }
-          return ListView(children: tiles);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(
+              context.space.md,
+              context.space.md,
+              context.space.md,
+              // Leave room for the FAB so the last card isn't covered.
+              context.space.xxxl + context.space.lg,
+            ),
+            children: tiles,
+          );
         },
       ),
     );
@@ -99,23 +108,55 @@ class CategoriesScreen extends ConsumerWidget {
     required int indent,
   }) {
     final l10n = AppLocalizations.of(context);
-    return ListTile(
-      contentPadding: EdgeInsets.only(
-        left: context.space.md + context.space.lg * indent,
-        right: context.space.md,
+    final color = categoryColor(c.colorHex);
+    return Padding(
+      padding: EdgeInsets.only(
+        // Nested categories sit slightly inset to read as children.
+        left: context.space.lg * indent,
+        bottom: context.space.sm,
       ),
-      leading: CircleAvatar(
-        backgroundColor: categoryColor(c.colorHex).withValues(alpha: 0.2),
-        child: Icon(
-          categoryIcon(c.icon),
-          size: 20,
-          color: categoryColor(c.colorHex),
+      child: AppCard(
+        onTap: () => _CategorySheet.show(context, ref, category: c),
+        padding: EdgeInsets.all(context.space.sm),
+        child: Row(
+          children: [
+            CategoryAvatar(
+              icon: categoryIcon(c.icon),
+              color: color,
+              size: indent == 0 ? 44 : 38,
+            ),
+            SizedBox(width: context.space.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    c.name,
+                    style: context.texts.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (c.isArchived) ...[
+                    SizedBox(height: context.space.xxs),
+                    Text(
+                      l10n.categoryArchived,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: context.colors.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
-      title: Text(c.name),
-      subtitle:
-          Text(c.kind.name + (c.isArchived ? l10n.categoryArchivedSuffix : '')),
-      onTap: () => _CategorySheet.show(context, ref, category: c),
     );
   }
 }
@@ -237,16 +278,30 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              widget.category == null
-                  ? l10n.categoryNewTitle
-                  : l10n.categoryEditTitle,
-              style: context.texts.titleLarge,
+            Row(
+              children: [
+                CategoryAvatar(
+                  icon: categoryIcon(_icon),
+                  color: categoryColor(_color),
+                ),
+                SizedBox(width: context.space.md),
+                Expanded(
+                  child: Text(
+                    widget.category == null
+                        ? l10n.categoryNewTitle
+                        : l10n.categoryEditTitle,
+                    style: context.texts.headlineSmall,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: context.space.md),
+            SizedBox(height: context.space.lg),
             TextField(
               controller: _nameCtrl,
-              decoration: InputDecoration(labelText: l10n.categoryName),
+              decoration: InputDecoration(
+                labelText: l10n.categoryName,
+                prefixIcon: const Icon(Icons.label_outline),
+              ),
             ),
             SizedBox(height: context.space.sm),
             SegmentedButton<CategoryKind>(
@@ -269,7 +324,10 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
             SizedBox(height: context.space.sm),
             DropdownButtonFormField<String?>(
               value: parents.any((p) => p.id == _parentId) ? _parentId : null,
-              decoration: InputDecoration(labelText: l10n.categoryParent),
+              decoration: InputDecoration(
+                labelText: l10n.categoryParent,
+                prefixIcon: const Icon(Icons.account_tree_outlined),
+              ),
               items: [
                 DropdownMenuItem<String?>(
                   value: null,
@@ -281,48 +339,60 @@ class _CategorySheetState extends ConsumerState<_CategorySheet> {
               onChanged: (v) => setState(() => _parentId = v),
             ),
             SizedBox(height: context.space.md),
-            Text(l10n.categoryColor, style: context.texts.labelLarge),
-            SizedBox(height: context.space.xs),
-            Wrap(
-              spacing: context.space.xs,
-              children: [
-                for (final hex in _colorOptions)
-                  Semantics(
-                    button: true,
-                    selected: _color == hex,
-                    label: l10n.categoryColorSemantics,
-                    child: InkResponse(
-                      onTap: () => setState(() => _color = hex),
-                      radius: 22,
-                      customBorder: const CircleBorder(),
-                      child: CircleAvatar(
-                        backgroundColor: categoryColor(hex),
-                        radius: 16,
-                        child: _color == hex
-                            ? Icon(
-                                Icons.check,
-                                size: 16,
-                                color: _onSwatch(categoryColor(hex)),
-                              )
-                            : null,
-                      ),
-                    ),
+            AppCard(
+              color: context.colors.surfaceContainerLow,
+              padding: EdgeInsets.all(context.space.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l10n.categoryColor, style: context.texts.labelLarge),
+                  SizedBox(height: context.space.sm),
+                  Wrap(
+                    spacing: context.space.sm,
+                    runSpacing: context.space.sm,
+                    children: [
+                      for (final hex in _colorOptions)
+                        Semantics(
+                          button: true,
+                          selected: _color == hex,
+                          label: l10n.categoryColorSemantics,
+                          child: InkResponse(
+                            onTap: () => setState(() => _color = hex),
+                            radius: 22,
+                            customBorder: const CircleBorder(),
+                            child: CircleAvatar(
+                              backgroundColor: categoryColor(hex),
+                              radius: 16,
+                              child: _color == hex
+                                  ? Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: _onSwatch(categoryColor(hex)),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
-            ),
-            SizedBox(height: context.space.md),
-            Text(l10n.categoryIcon, style: context.texts.labelLarge),
-            SizedBox(height: context.space.xs),
-            Wrap(
-              spacing: context.space.xs,
-              children: [
-                for (final key in _iconOptions)
-                  IconButton.filledTonal(
-                    isSelected: _icon == key,
-                    onPressed: () => setState(() => _icon = key),
-                    icon: Icon(categoryIcon(key)),
+                  SizedBox(height: context.space.md),
+                  Text(l10n.categoryIcon, style: context.texts.labelLarge),
+                  SizedBox(height: context.space.sm),
+                  Wrap(
+                    spacing: context.space.xs,
+                    runSpacing: context.space.xs,
+                    children: [
+                      for (final key in _iconOptions)
+                        IconButton.filledTonal(
+                          isSelected: _icon == key,
+                          onPressed: () => setState(() => _icon = key),
+                          icon: Icon(categoryIcon(key)),
+                        ),
+                    ],
                   ),
-              ],
+                ],
+              ),
             ),
             if (widget.category != null) ...[
               SizedBox(height: context.space.sm),

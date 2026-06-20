@@ -44,17 +44,31 @@ class TransactionsScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const LoadingView(),
+        loading: () => const SkeletonList(),
         error: (e, _) => ErrorView(
           message: friendlyError(e),
           onRetry: () => ref.invalidate(transactionsProvider),
         ),
         data: (items) => items.isEmpty
             ? _Empty(l10n: l10n)
-            : ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, i) =>
-                    _TransactionTile(tx: items[i]),
+            : Center(
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(maxWidth: context.space.contentMaxWidth),
+                  child: ListView.separated(
+                    padding: EdgeInsets.fromLTRB(
+                      context.space.md,
+                      context.space.md,
+                      context.space.md,
+                      context.space.xxxl,
+                    ),
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) =>
+                        SizedBox(height: context.space.sm),
+                    itemBuilder: (context, i) =>
+                        _TransactionTile(tx: items[i]),
+                  ),
+                ),
               ),
       ),
     );
@@ -91,12 +105,17 @@ class _TransactionTile extends ConsumerWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = MoneyFormatter(locale);
     final dateText = DateFormat.yMMMd(locale).format(tx.date.toLocal());
+    final hasNote = tx.note?.isNotEmpty == true;
+    final radius = context.radii.lgRadius;
 
     return Dismissible(
       key: ValueKey(tx.id),
       direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: context.semantic.danger,
+      background: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.semantic.danger,
+          borderRadius: radius,
+        ),
         child: Align(
           alignment: Alignment.centerRight,
           child: Padding(
@@ -121,19 +140,57 @@ class _TransactionTile extends ConsumerWidget {
             ),
           );
       },
-      child: ListTile(
-        leading: CircleAvatar(child: Icon(_iconFor(tx), size: 20)),
-        title: Text(tx.note?.isNotEmpty == true ? tx.note! : dateText),
-        subtitle: Text(dateText),
-        trailing: MoneyText(
-          formattedAmount: formatter.format(tx.total),
-          sign: switch (tx.direction) {
-            MoneyDirection.inflow => MoneySign.positive,
-            MoneyDirection.outflow => MoneySign.negative,
-            MoneyDirection.neutral => MoneySign.neutral,
-          },
+      child: AppCard(
+        borderRadius: radius,
+        padding: EdgeInsets.symmetric(
+          horizontal: context.space.md,
+          vertical: context.space.sm,
         ),
         onTap: () => context.push(Routes.transactionEdit(tx.id)),
+        child: Row(
+          children: [
+            CategoryAvatar(
+              icon: _iconFor(tx),
+              color: _colorFor(context, tx),
+            ),
+            SizedBox(width: context.space.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    hasNote ? tx.note! : dateText,
+                    style: context.texts.titleSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (hasNote) ...[
+                    SizedBox(height: context.space.xxs),
+                    Text(
+                      dateText,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(width: context.space.sm),
+            MoneyText(
+              formattedAmount: formatter.format(tx.total),
+              style: context.texts.titleMedium,
+              sign: switch (tx.direction) {
+                MoneyDirection.inflow => MoneySign.positive,
+                MoneyDirection.outflow => MoneySign.negative,
+                MoneyDirection.neutral => MoneySign.neutral,
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -143,6 +200,13 @@ class _TransactionTile extends ConsumerWidget {
         MoneyDirection.outflow => Icons.north_east,
         MoneyDirection.neutral => Icons.swap_horiz,
       };
+
+  Color _colorFor(BuildContext context, TransactionEntity tx) =>
+      switch (tx.direction) {
+        MoneyDirection.inflow => context.semantic.income,
+        MoneyDirection.outflow => context.semantic.expense,
+        MoneyDirection.neutral => context.semantic.transfer,
+      };
 }
 
 class _Empty extends StatelessWidget {
@@ -151,30 +215,10 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.space.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 56,
-              color: context.colors.onSurfaceVariant,
-            ),
-            SizedBox(height: context.space.md),
-            Text(l10n.transactionsEmptyTitle, style: context.texts.titleLarge),
-            SizedBox(height: context.space.xs),
-            Text(
-              l10n.transactionsEmptyBody,
-              textAlign: TextAlign.center,
-              style: context.texts.bodyMedium?.copyWith(
-                color: context.colors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return EmptyView(
+      icon: Icons.receipt_long_outlined,
+      title: l10n.transactionsEmptyTitle,
+      message: l10n.transactionsEmptyBody,
     );
   }
 }

@@ -14,6 +14,7 @@ import '../../domain/entities/recurring_template.dart';
 import '../../domain/enums.dart';
 import '../../domain/money.dart';
 import '../../domain/rules/recurring_detector.dart';
+import '../categories/category_visuals.dart';
 import '../transactions/capture_providers.dart';
 import 'recurring_providers.dart';
 
@@ -106,22 +107,69 @@ class _TemplateTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final next = template.nextDate.toLocal().toString().split(' ').first;
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: context.colors.secondaryContainer,
-          child: const Icon(Icons.event_repeat_outlined, size: 20),
-        ),
-        title: Text(template.name),
-        subtitle: Text(
-          '${_frequencyLabel(l10n, template.frequency)} · '
-          '${l10n.recurringNext(next)}',
-        ),
-        trailing: Text(
-          fmt.format(template.amount),
-          style: context.texts.titleMedium,
-        ),
+    final categories =
+        ref.watch(categoriesFlatProvider).valueOrNull ?? const [];
+    final category = categoryById(categories, template.categoryId);
+    // Resolve the category's hue + glyph; fall back to a calm neutral when the
+    // category can't be resolved yet (stream still loading).
+    final color = category != null
+        ? categoryColor(category.colorHex)
+        : context.categoryColors.forIndex(9);
+    final icon = category != null
+        ? categoryIcon(category.icon)
+        : Icons.event_repeat_outlined;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: context.space.sm),
+      child: AppCard(
         onTap: () => _TemplateSheet.show(context, ref, template: template),
+        padding: EdgeInsets.all(context.space.md),
+        child: Row(
+          children: [
+            CategoryAvatar(icon: icon, color: color),
+            SizedBox(width: context.space.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    template.name,
+                    style: context.texts.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: context.space.xs),
+                  Row(
+                    children: [
+                      CategoryChip(
+                        label: _frequencyLabel(l10n, template.frequency),
+                        color: color,
+                      ),
+                      SizedBox(width: context.space.sm),
+                      Flexible(
+                        child: Text(
+                          l10n.recurringNext(next),
+                          style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: context.space.sm),
+            MoneyText(
+              formattedAmount: fmt.format(template.amount),
+              sign: MoneySign.neutral,
+              style: context.texts.titleMedium,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -144,32 +192,57 @@ class _DetectedSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
+            SectionHeader(
+              title: l10n.recurringDetectedTitle,
               padding: EdgeInsets.symmetric(vertical: context.space.sm),
-              child: Text(
-                l10n.recurringDetectedTitle,
-                style: context.texts.titleMedium,
-              ),
             ),
             for (final s in series)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.auto_awesome_outlined),
-                  title: Text(names[s.merchantId] ?? s.merchantId),
-                  subtitle: Text(
-                    l10n.recurringDetectedSubtitle(
-                      _frequencyLabel(l10n, s.frequency),
-                      s.occurrences,
-                    ),
-                  ),
-                  trailing: TextButton(
-                    onPressed: () => _TemplateSheet.show(
-                      context,
-                      ref,
-                      seed: s,
-                      seedName: names[s.merchantId],
-                    ),
-                    child: Text(l10n.recurringCreateFromDetected),
+              Padding(
+                padding: EdgeInsets.only(bottom: context.space.sm),
+                child: AppCard(
+                  padding: EdgeInsets.all(context.space.md),
+                  child: Row(
+                    children: [
+                      CategoryAvatar(
+                        icon: Icons.auto_awesome_outlined,
+                        color: context.colors.primary,
+                      ),
+                      SizedBox(width: context.space.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              names[s.merchantId] ?? s.merchantId,
+                              style: context.texts.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: context.space.xxs),
+                            Text(
+                              l10n.recurringDetectedSubtitle(
+                                _frequencyLabel(l10n, s.frequency),
+                                s.occurrences,
+                              ),
+                              style: context.texts.bodySmall?.copyWith(
+                                color: context.colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: context.space.sm),
+                      TextButton(
+                        onPressed: () => _TemplateSheet.show(
+                          context,
+                          ref,
+                          seed: s,
+                          seedName: names[s.merchantId],
+                        ),
+                        child: Text(l10n.recurringCreateFromDetected),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -365,12 +438,15 @@ class _TemplateSheetState extends ConsumerState<_TemplateSheet> {
               widget.template == null
                   ? l10n.recurringNewTitle
                   : l10n.recurringEditTitle,
-              style: context.texts.titleLarge,
+              style: context.texts.headlineSmall,
             ),
-            SizedBox(height: context.space.md),
+            SizedBox(height: context.space.lg),
             TextField(
               controller: _nameCtrl,
-              decoration: InputDecoration(labelText: l10n.recurringName),
+              decoration: InputDecoration(
+                labelText: l10n.recurringName,
+                prefixIcon: const Icon(Icons.badge_outlined),
+              ),
             ),
             SizedBox(height: context.space.sm),
             SegmentedButton<TxType>(
@@ -390,7 +466,10 @@ class _TemplateSheetState extends ConsumerState<_TemplateSheet> {
             SizedBox(height: context.space.sm),
             DropdownButtonFormField<String>(
               value: accountId,
-              decoration: InputDecoration(labelText: l10n.recurringAccount),
+              decoration: InputDecoration(
+                labelText: l10n.recurringAccount,
+                prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
+              ),
               items: [
                 for (final a in accounts)
                   DropdownMenuItem(value: a.id, child: Text(a.name)),
@@ -400,7 +479,10 @@ class _TemplateSheetState extends ConsumerState<_TemplateSheet> {
             SizedBox(height: context.space.sm),
             DropdownButtonFormField<String>(
               value: categoryId,
-              decoration: InputDecoration(labelText: l10n.recurringCategory),
+              decoration: InputDecoration(
+                labelText: l10n.recurringCategory,
+                prefixIcon: const Icon(Icons.label_outline),
+              ),
               items: [
                 for (final c in categories)
                   DropdownMenuItem(value: c.id, child: Text(c.name)),
@@ -412,7 +494,10 @@ class _TemplateSheetState extends ConsumerState<_TemplateSheet> {
               controller: _amountCtrl,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.recurringAmount),
+              decoration: InputDecoration(
+                labelText: l10n.recurringAmount,
+                prefixIcon: const Icon(Icons.tune_outlined),
+              ),
             ),
             SizedBox(height: context.space.sm),
             SegmentedButton<RecurringFrequency>(
@@ -434,12 +519,46 @@ class _TemplateSheetState extends ConsumerState<_TemplateSheet> {
               onSelectionChanged: (s) => setState(() => _frequency = s.first),
             ),
             SizedBox(height: context.space.sm),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.recurringNextDate),
-              subtitle: Text(nextLabel),
-              trailing: const Icon(Icons.calendar_today_outlined),
+            AppCard(
               onTap: _pickDate,
+              color: context.colors.surfaceContainerHigh,
+              border: const Border.fromBorderSide(BorderSide.none),
+              shadows: const [],
+              padding: EdgeInsets.symmetric(
+                horizontal: context.space.md,
+                vertical: context.space.sm,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 20,
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                  SizedBox(width: context.space.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.recurringNextDate,
+                          style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
+                        SizedBox(height: context.space.xxs),
+                        Text(nextLabel, style: context.texts.titleMedium),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.edit_calendar_outlined,
+                    size: 20,
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
             if (widget.template != null)
               SwitchListTile(

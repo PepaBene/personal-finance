@@ -98,13 +98,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.scanReviewTitle),
-        actions: [
-          _docTypeMenu(),
-          TextButton(
-            onPressed: _busy ? null : _save,
-            child: _busy ? const ButtonSpinner() : Text(l10n.scanReviewSave),
-          ),
-        ],
+        actions: [_docTypeMenu()],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -143,30 +137,23 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     }
     // No image preview yet (ingest lands later): show the raw OCR text so the
     // user can still cross-reference while correcting fields (docs/05 §6).
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(context.space.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.description_outlined,
-                    size: 18, color: context.colors.onSurfaceVariant),
-                SizedBox(width: context.space.xs),
-                Text(AppLocalizations.of(context).scanRecognizedText,
-                    style: context.texts.titleSmall),
-              ],
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(
+            title: AppLocalizations.of(context).scanRecognizedText,
+          ),
+          SizedBox(height: context.space.sm),
+          SelectableText(
+            ocr?.fullText.trim().isNotEmpty ?? false
+                ? ocr!.fullText
+                : AppLocalizations.of(context).scanNoPreview,
+            style: context.texts.bodySmall?.copyWith(
+              color: context.colors.onSurfaceVariant,
             ),
-            SizedBox(height: context.space.sm),
-            SelectableText(
-              ocr?.fullText.trim().isNotEmpty ?? false
-                  ? ocr!.fullText
-                  : AppLocalizations.of(context).scanNoPreview,
-              style: context.texts.bodySmall,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -182,43 +169,91 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
     return AnimatedBuilder(
       animation: _c,
-      builder: (context, _) => ListView(
-        padding: EdgeInsets.all(context.space.md),
-        children: [
-          if (showInlineImage && widget.draft.ocr != null) ...[
-            _imagePane(context),
-            SizedBox(height: context.space.md),
-          ],
-          _accountDropdown(accounts),
-          SizedBox(height: context.space.sm),
-          _currencyDropdown(currencies),
-          SizedBox(height: context.space.md),
-          _merchantField(context),
-          SizedBox(height: context.space.sm),
-          _dateField(context),
-          SizedBox(height: context.space.sm),
-          _totalField(context),
-          SizedBox(height: context.space.md),
-          Text(l10n.scanLineItems, style: context.texts.titleSmall),
-          SizedBox(height: context.space.xs),
-          for (var i = 0; i < _c.lines.length; i++)
-            _lineRow(context, i, categories),
-          TextButton.icon(
-            onPressed: _addLine,
-            icon: const Icon(Icons.add),
-            label: Text(l10n.scanAddItem),
-          ),
-          const Divider(),
-          _reconciliationRow(context),
-          if (_error != null) ...[
-            SizedBox(height: context.space.sm),
-            Text(
-              _error!,
-              style: context.texts.bodySmall
-                  ?.copyWith(color: context.semantic.danger),
+      builder: (context, _) => Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.space.contentMaxWidth),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              context.space.md,
+              context.space.md,
+              context.space.md,
+              context.space.xxxl,
             ),
-          ],
-        ],
+            children: [
+              if (showInlineImage && widget.draft.ocr != null) ...[
+                _imagePane(context),
+                SizedBox(height: context.space.md),
+              ],
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _accountDropdown(accounts),
+                    SizedBox(height: context.space.md),
+                    _currencyDropdown(currencies),
+                    SizedBox(height: context.space.md),
+                    _merchantField(context),
+                    SizedBox(height: context.space.md),
+                    _dateField(context),
+                    SizedBox(height: context.space.md),
+                    _totalField(context),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.space.md),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SectionHeader(title: l10n.scanLineItems),
+                    SizedBox(height: context.space.sm),
+                    for (var i = 0; i < _c.lines.length; i++)
+                      _lineRow(context, i, categories),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _addLine,
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.scanAddItem),
+                      ),
+                    ),
+                    const Divider(),
+                    SizedBox(height: context.space.xs),
+                    _reconciliationRow(context),
+                  ],
+                ),
+              ),
+              if (_error != null) ...[
+                SizedBox(height: context.space.md),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 18,
+                      color: context.semantic.danger,
+                    ),
+                    SizedBox(width: context.space.xs),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: context.texts.bodySmall
+                            ?.copyWith(color: context.semantic.danger),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              SizedBox(height: context.space.lg),
+              FilledButton(
+                onPressed: _busy ? null : _save,
+                child: _busy
+                    ? const ButtonSpinner()
+                    : Text(l10n.scanReviewSave),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

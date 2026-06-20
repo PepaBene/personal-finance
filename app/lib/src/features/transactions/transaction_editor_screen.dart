@@ -150,51 +150,111 @@ class _TransactionEditorScreenState
               ? l10n.transactionEditorEditTitle
               : l10n.transactionEditorNewTitle,
         ),
-        actions: [
-          TextButton(
-            onPressed: _busy ? null : _save,
-            child: _busy
-                ? const ButtonSpinner()
-                : Text(l10n.transactionEditorSave),
-          ),
-        ],
       ),
-      body: ListView(
-        padding: EdgeInsets.all(context.space.md),
-        children: [
-          _typeSelector(),
-          SizedBox(height: context.space.md),
-          _dateTile(context),
-          SizedBox(height: context.space.sm),
-          ..._accountFields(context, accounts),
-          SizedBox(height: context.space.sm),
-          _currencyField(currencies),
-          if (_currency != _baseCurrency) ...[
-            SizedBox(height: context.space.sm),
-            _rateField(),
-          ],
-          SizedBox(height: context.space.md),
-          if (_type == TxType.transfer)
-            _amountField(l10n.transactionAmount)
-          else
-            _amountOrSplit(context, categories),
-          SizedBox(height: context.space.md),
-          TextField(
-            controller: _noteCtrl,
-            decoration: InputDecoration(labelText: l10n.transactionNote),
-          ),
-          if (_error != null) ...[
-            SizedBox(height: context.space.sm),
-            Text(
-              _error!,
-              style: context.texts.bodySmall?.copyWith(
-                color: context.semantic.danger,
-              ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.space.contentMaxWidth),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              context.space.md,
+              context.space.md,
+              context.space.md,
+              context.space.xxxl,
             ),
-          ],
-        ],
+            children: [
+              _typeSelector(),
+              SizedBox(height: context.space.md),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SectionHeader(title: l10n.transactionAccount),
+                    SizedBox(height: context.space.md),
+                    _dateTile(context),
+                    SizedBox(height: context.space.md),
+                    ..._withGaps(_accountFields(context, accounts)),
+                    SizedBox(height: context.space.md),
+                    _currencyField(currencies),
+                    if (_currency != _baseCurrency) ...[
+                      SizedBox(height: context.space.md),
+                      _rateField(),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(height: context.space.md),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SectionHeader(title: l10n.transactionAmount),
+                    SizedBox(height: context.space.md),
+                    if (_type == TxType.transfer)
+                      _amountField(l10n.transactionAmount, prominent: true)
+                    else
+                      _amountOrSplit(context, categories),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.space.md),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SectionHeader(title: l10n.transactionNote),
+                    SizedBox(height: context.space.md),
+                    TextField(
+                      controller: _noteCtrl,
+                      decoration:
+                          InputDecoration(labelText: l10n.transactionNote),
+                    ),
+                  ],
+                ),
+              ),
+              if (_error != null) ...[
+                SizedBox(height: context.space.md),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 18,
+                      color: context.semantic.danger,
+                    ),
+                    SizedBox(width: context.space.xs),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: context.texts.bodySmall?.copyWith(
+                          color: context.semantic.danger,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              SizedBox(height: context.space.lg),
+              FilledButton(
+                onPressed: _busy ? null : _save,
+                child: _busy
+                    ? const ButtonSpinner()
+                    : Text(l10n.transactionEditorSave),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  /// Inserts vertical [context.space.md] gaps between a list of field widgets.
+  List<Widget> _withGaps(List<Widget> widgets) {
+    final out = <Widget>[];
+    for (var i = 0; i < widgets.length; i++) {
+      if (i > 0) out.add(SizedBox(height: context.space.md));
+      out.add(widgets[i]);
+    }
+    return out;
   }
 
   Widget _typeSelector() {
@@ -226,11 +286,8 @@ class _TransactionEditorScreenState
     final d = _date;
     final text =
         '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.event),
-      title: Text(text),
-      trailing: const Icon(Icons.edit_calendar_outlined),
+    return InkWell(
+      borderRadius: context.radii.mdRadius,
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
@@ -240,6 +297,13 @@ class _TransactionEditorScreenState
         );
         if (picked != null) setState(() => _date = picked);
       },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          prefixIcon: Icon(Icons.event_outlined),
+          suffixIcon: Icon(Icons.edit_calendar_outlined),
+        ),
+        child: Text(text, style: context.texts.bodyLarge),
+      ),
     );
   }
 
@@ -401,8 +465,8 @@ class _TransactionEditorScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _amountField(l10n.transactionAmount),
-        SizedBox(height: context.space.sm),
+        _amountField(l10n.transactionAmount, prominent: true),
+        SizedBox(height: context.space.md),
         Align(
           alignment: Alignment.centerLeft,
           child: selected == null
@@ -530,10 +594,16 @@ class _TransactionEditorScreenState
     );
   }
 
-  Widget _amountField(String label) {
+  Widget _amountField(String label, {bool prominent = false}) {
     return TextField(
       controller: _amountCtrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textAlign: prominent ? TextAlign.center : TextAlign.start,
+      style: prominent
+          ? AppTypography.moneyStyle(36, useDisplay: true).copyWith(
+              color: context.colors.onSurface,
+            )
+          : null,
       decoration: InputDecoration(labelText: label),
     );
   }

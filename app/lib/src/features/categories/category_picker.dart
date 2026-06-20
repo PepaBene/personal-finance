@@ -95,22 +95,56 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
         child: Text(AppLocalizations.of(context).categoryPickerNoMatches),
       );
     }
-    return ListView(children: tiles);
+    return ListView(
+      padding: EdgeInsets.only(
+        top: context.space.xs,
+        bottom: context.space.lg,
+      ),
+      children: tiles,
+    );
   }
 
   Widget _tile(BuildContext context, CategoryEntity c, {required int indent}) {
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: context.space.md * indent),
-      leading: CircleAvatar(
-        backgroundColor: categoryColor(c.colorHex).withValues(alpha: 0.2),
-        child: Icon(
-          categoryIcon(c.icon),
-          size: 20,
-          color: categoryColor(c.colorHex),
+    final color = categoryColor(c.colorHex);
+    final isChild = indent > 0;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: context.space.lg * indent,
+        bottom: context.space.xs,
+      ),
+      child: AppCard(
+        onTap: () => Navigator.of(context).pop(c.id),
+        color: isChild
+            ? context.colors.surfaceContainerLow
+            : context.colors.surfaceContainerLowest,
+        padding: EdgeInsets.symmetric(
+          horizontal: context.space.sm,
+          vertical: context.space.xs,
+        ),
+        child: Row(
+          children: [
+            CategoryAvatar(
+              icon: categoryIcon(c.icon),
+              color: color,
+              size: isChild ? 38 : 44,
+            ),
+            SizedBox(width: context.space.md),
+            Expanded(
+              child: Text(
+                c.name,
+                style: context.texts.titleMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: context.colors.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
-      title: Text(c.name),
-      onTap: () => Navigator.of(context).pop(c.id),
     );
   }
 }

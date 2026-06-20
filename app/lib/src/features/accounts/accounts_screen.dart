@@ -48,22 +48,22 @@ class AccountsScreen extends ConsumerWidget {
                   label: Text(l10n.accountsAddAction),
                 ),
               )
-            : ListView.builder(
+            : ListView.separated(
+                padding: EdgeInsets.fromLTRB(
+                  context.space.md,
+                  context.space.md,
+                  context.space.md,
+                  // Leave room for the FAB so the last card isn't covered.
+                  context.space.xxxl + context.space.lg,
+                ),
                 itemCount: balances.length,
+                separatorBuilder: (_, __) =>
+                    SizedBox(height: context.space.sm),
                 itemBuilder: (context, i) {
                   final b = balances[i];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Icon(_iconFor(b.account.kind)),
-                    ),
-                    title: Text(b.account.name),
-                    subtitle: Text(b.account.kind.name),
-                    trailing: MoneyText(
-                      formattedAmount: formatter.format(b.balance),
-                      sign: b.balance.isNegative
-                          ? MoneySign.negative
-                          : MoneySign.neutral,
-                    ),
+                  return _AccountCard(
+                    balance: b,
+                    formatter: formatter,
                     onTap: () =>
                         _AccountSheet.show(context, ref, account: b.account),
                   );
@@ -72,14 +72,89 @@ class AccountsScreen extends ConsumerWidget {
       ),
     );
   }
-
-  IconData _iconFor(AccountKind kind) => switch (kind) {
-        AccountKind.cash => Icons.payments_outlined,
-        AccountKind.bank => Icons.account_balance_outlined,
-        AccountKind.card => Icons.credit_card_outlined,
-        AccountKind.other => Icons.account_balance_wallet_outlined,
-      };
 }
+
+/// A single account presented as a calm card: a tinted leading glyph (hue by
+/// account kind), the name + type/currency as a muted subtitle, and the live
+/// balance right-aligned as sign-aware [MoneyText].
+class _AccountCard extends StatelessWidget {
+  const _AccountCard({
+    required this.balance,
+    required this.formatter,
+    required this.onTap,
+  });
+
+  final AccountBalance balance;
+  final MoneyFormatter formatter;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final account = balance.account;
+    final color = _colorFor(context, account.kind);
+    final subtitle =
+        '${_kindLabel(account.kind)} · ${account.currencyCode}';
+    return AppCard(
+      onTap: onTap,
+      padding: EdgeInsets.all(context.space.md),
+      child: Row(
+        children: [
+          CategoryAvatar(icon: _iconFor(account.kind), color: color),
+          SizedBox(width: context.space.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  account.name,
+                  style: context.texts.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: context.space.xxs),
+                Text(
+                  subtitle,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: context.space.sm),
+          MoneyText(
+            formattedAmount: formatter.format(balance.balance),
+            sign: balance.balance.isNegative
+                ? MoneySign.negative
+                : MoneySign.neutral,
+            style: context.texts.titleMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _kindLabel(AccountKind kind) => kind.name;
+
+IconData _iconFor(AccountKind kind) => switch (kind) {
+      AccountKind.cash => Icons.payments_outlined,
+      AccountKind.bank => Icons.account_balance_outlined,
+      AccountKind.card => Icons.credit_card_outlined,
+      AccountKind.other => Icons.account_balance_wallet_outlined,
+    };
+
+/// A stable, calm hue per account kind drawn from the shared category palette.
+Color _colorFor(BuildContext context, AccountKind kind) =>
+    context.categoryColors.forIndex(switch (kind) {
+      AccountKind.cash => 4, // green
+      AccountKind.bank => 0, // blue
+      AccountKind.card => 6, // purple
+      AccountKind.other => 9, // neutral grey
+    });
 
 class _AccountSheet extends ConsumerStatefulWidget {
   const _AccountSheet({this.account});
@@ -191,17 +266,23 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
             widget.account == null
                 ? l10n.accountNewTitle
                 : l10n.accountEditTitle,
-            style: context.texts.titleLarge,
+            style: context.texts.headlineSmall,
           ),
-          SizedBox(height: context.space.md),
+          SizedBox(height: context.space.lg),
           TextField(
             controller: _nameCtrl,
-            decoration: InputDecoration(labelText: l10n.accountName),
+            decoration: InputDecoration(
+              labelText: l10n.accountName,
+              prefixIcon: const Icon(Icons.badge_outlined),
+            ),
           ),
           SizedBox(height: context.space.sm),
           DropdownButtonFormField<AccountKind>(
             value: _kind,
-            decoration: InputDecoration(labelText: l10n.accountType),
+            decoration: InputDecoration(
+              labelText: l10n.accountType,
+              prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
+            ),
             items: [
               for (final k in AccountKind.values)
                 DropdownMenuItem(value: k, child: Text(k.name)),
@@ -212,7 +293,10 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           DropdownButtonFormField<String>(
             value:
                 currencies.any((c) => c.code == _currency) ? _currency : null,
-            decoration: InputDecoration(labelText: l10n.accountCurrency),
+            decoration: InputDecoration(
+              labelText: l10n.accountCurrency,
+              prefixIcon: const Icon(Icons.payments_outlined),
+            ),
             items: [
               for (final c in currencies)
                 DropdownMenuItem(value: c.code, child: Text(c.code)),
@@ -223,7 +307,10 @@ class _AccountSheetState extends ConsumerState<_AccountSheet> {
           TextField(
             controller: _openingCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(labelText: l10n.accountOpeningBalance),
+            decoration: InputDecoration(
+              labelText: l10n.accountOpeningBalance,
+              prefixIcon: const Icon(Icons.tune_outlined),
+            ),
           ),
           if (_error != null) ...[
             SizedBox(height: context.space.sm),

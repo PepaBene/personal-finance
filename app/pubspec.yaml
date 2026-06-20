@@ -76,3 +76,15 @@ hooks:
 flutter:
   uses-material-design: true
   generate: true # enables flutter gen-l10n from l10n.yaml
+
+  # Brand typography (docs/12 §5). Variable fonts: a single file per family
+  # carries every weight; the design system selects weights via FontVariation
+  # 'wght' (and Fraunces' 'opsz' optical-size axis) in AppTypography. Bundled as
+  # assets — never fetched at runtime — so the app stays fully offline-first.
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces.ttf
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist.ttf

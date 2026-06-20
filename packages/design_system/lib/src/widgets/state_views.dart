@@ -166,3 +166,102 @@ class ButtonSpinner extends StatelessWidget {
     );
   }
 }
+
+/// A shimmering placeholder block. Compose these into content-shaped skeletons
+/// (a calmer, more premium loading state than a bare spinner). The shimmer
+/// sweeps a highlight across a neutral surface tile.
+class Skeleton extends StatefulWidget {
+  const Skeleton({
+    this.width,
+    this.height = 16,
+    this.borderRadius,
+    this.shape = BoxShape.rectangle,
+    super.key,
+  });
+
+  final double? width;
+  final double height;
+  final BorderRadius? borderRadius;
+  final BoxShape shape;
+
+  @override
+  State<Skeleton> createState() => _SkeletonState();
+}
+
+class _SkeletonState extends State<Skeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1300),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base = context.colors.surfaceContainerHigh;
+    final highlight = context.colors.surfaceContainerHighest;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final dx = (_c.value * 2) - 1; // -1 → 1 sweep
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            shape: widget.shape,
+            borderRadius: widget.shape == BoxShape.circle
+                ? null
+                : (widget.borderRadius ?? context.radii.smRadius),
+            gradient: LinearGradient(
+              begin: Alignment(dx - 1, 0),
+              end: Alignment(dx + 1, 0),
+              colors: [base, highlight, base],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// A ready-made list of shimmering rows for list/collection loading states.
+class SkeletonList extends StatelessWidget {
+  const SkeletonList({this.rows = 6, this.hasLeading = true, super.key});
+
+  final int rows;
+  final bool hasLeading;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: EdgeInsets.all(context.space.md),
+      itemCount: rows,
+      separatorBuilder: (_, __) => SizedBox(height: context.space.sm),
+      itemBuilder: (context, _) => Row(
+        children: [
+          if (hasLeading) ...[
+            const Skeleton(width: 44, height: 44, shape: BoxShape.circle),
+            SizedBox(width: context.space.sm),
+          ],
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Skeleton(width: 160, height: 14),
+                SizedBox(height: 8),
+                Skeleton(width: 96, height: 12),
+              ],
+            ),
+          ),
+          SizedBox(width: context.space.sm),
+          const Skeleton(width: 64, height: 16),
+        ],
+      ),
+    );
+  }
+}

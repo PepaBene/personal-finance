@@ -11,6 +11,7 @@ import '../../core/utils/error_text.dart';
 import '../../core/utils/money_formatter.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/enums.dart';
 import '../../domain/money.dart';
 import '../categories/category_visuals.dart';
 import '../transactions/capture_providers.dart';
@@ -105,74 +106,65 @@ class _BudgetTile extends ConsumerWidget {
     };
     final name = category?.name ?? l10n.dashboardUncategorized;
     final fraction = status.utilization.clamp(0.0, 1.0).toDouble();
-    return Card(
-      child: InkWell(
-        onTap: () => _BudgetSheet.show(context, ref, budget: status.budget),
-        borderRadius: BorderRadius.circular(context.radii.md),
-        child: Padding(
-          padding: EdgeInsets.all(context.space.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    final avatarColor = category == null
+        ? context.colors.outline
+        : categoryColor(category!.colorHex);
+    return AppCard(
+      onTap: () => _BudgetSheet.show(context, ref, budget: status.budget),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  if (category != null)
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundColor:
-                          categoryColor(category!.colorHex).withValues(
-                        alpha: 0.2,
-                      ),
-                      child: Icon(
-                        categoryIcon(category!.icon),
-                        size: 16,
-                        color: categoryColor(category!.colorHex),
-                      ),
-                    ),
-                  SizedBox(width: context.space.sm),
-                  Expanded(
-                    child: Text(name, style: context.texts.titleMedium),
-                  ),
-                  Icon(icon, size: 18, color: barColor),
-                  SizedBox(width: context.space.xs),
-                  Text(
-                    label,
-                    style: context.texts.labelMedium?.copyWith(color: barColor),
-                  ),
-                ],
+              CategoryAvatar(
+                icon: category == null
+                    ? Icons.category_outlined
+                    : categoryIcon(category!.icon),
+                color: avatarColor,
+                size: 40,
               ),
-              SizedBox(height: context.space.sm),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(context.radii.sm),
-                child: LinearProgressIndicator(
-                  value: fraction,
-                  minHeight: 8,
-                  backgroundColor: context.colors.surfaceContainerHighest,
-                  color: barColor,
-                ),
+              SizedBox(width: context.space.sm),
+              Expanded(
+                child: Text(name, style: context.texts.titleMedium),
               ),
-              SizedBox(height: context.space.xs),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.budgetSpentOfLimit(
-                      fmt.format(status.actual),
-                      fmt.format(status.limit),
-                    ),
-                    style: context.texts.bodySmall?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    '${(status.utilization * 100).round()}%',
-                    style: context.texts.labelMedium,
-                  ),
-                ],
+              Icon(icon, size: 18, color: barColor),
+              SizedBox(width: context.space.xs),
+              Text(
+                label,
+                style: context.texts.labelMedium?.copyWith(color: barColor),
               ),
             ],
           ),
-        ),
+          SizedBox(height: context.space.md),
+          ClipRRect(
+            borderRadius: context.radii.pillRadius,
+            child: LinearProgressIndicator(
+              value: fraction,
+              minHeight: 10,
+              backgroundColor: context.colors.surfaceContainerHigh,
+              color: barColor,
+            ),
+          ),
+          SizedBox(height: context.space.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.budgetSpentOfLimit(
+                  fmt.format(status.actual),
+                  fmt.format(status.limit),
+                ),
+                style: context.texts.bodySmall?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '${(status.utilization * 100).round()}%',
+                style: context.texts.labelMedium?.copyWith(color: barColor),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

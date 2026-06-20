@@ -41,6 +41,7 @@ class OcrOverlay extends StatelessWidget {
                 highlight: highlight,
                 boxColor: box,
                 accentColor: accent,
+                cornerRadius: context.radii.sm,
               ),
             ),
           ],
@@ -56,19 +57,22 @@ class _OcrBoxPainter extends CustomPainter {
     required this.highlight,
     required this.boxColor,
     required this.accentColor,
+    required this.cornerRadius,
   });
 
   final List<OcrWord> words;
   final String? highlight;
   final Color boxColor;
   final Color accentColor;
+  final double cornerRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final radius = Radius.circular(cornerRadius);
     final base = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = boxColor.withValues(alpha: 0.5);
+      ..color = boxColor.withValues(alpha: 0.35);
     final hit = highlight?.toLowerCase();
 
     for (final w in words) {
@@ -78,27 +82,30 @@ class _OcrBoxPainter extends CustomPainter {
         w.box.right * size.width,
         w.box.bottom * size.height,
       );
+      final rrect = RRect.fromRectAndRadius(rect, radius);
       final isHit =
           hit != null && hit.isNotEmpty && w.text.toLowerCase().contains(hit);
       if (isHit) {
-        canvas.drawRect(
-          rect,
-          Paint()..color = accentColor.withValues(alpha: 0.25),
+        canvas.drawRRect(
+          rrect,
+          Paint()..color = accentColor.withValues(alpha: 0.18),
         );
-        canvas.drawRect(
-          rect,
+        canvas.drawRRect(
+          rrect,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
             ..color = accentColor,
         );
       } else {
-        canvas.drawRect(rect, base);
+        canvas.drawRRect(rrect, base);
       }
     }
   }
 
   @override
   bool shouldRepaint(_OcrBoxPainter old) =>
-      old.highlight != highlight || old.words != words;
+      old.highlight != highlight ||
+      old.words != words ||
+      old.cornerRadius != cornerRadius;
 }

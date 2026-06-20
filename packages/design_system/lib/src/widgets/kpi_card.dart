@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../tokens/typography.dart';
+import 'app_card.dart';
 import 'money_text.dart';
 
-/// Dashboard KPI tile (docs/12 §4 KpiCard): label + big value, sign-aware color.
-/// Pure presentation — the caller pre-formats the value string.
+/// Dashboard KPI tile (docs/12 §4 KpiCard): a small label over a big,
+/// sign-aware money figure on a soft [AppCard]. Pure presentation — the caller
+/// pre-formats the value string.
 class KpiCard extends StatelessWidget {
   const KpiCard({
     required this.label,
@@ -31,38 +34,49 @@ class KpiCard extends StatelessWidget {
   }
 
   Widget _card(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(context.space.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 16, color: context.colors.onSurfaceVariant),
-                  SizedBox(width: context.space.xxs),
-                ],
-                Flexible(
-                  child: Text(
-                    label,
-                    style: context.texts.labelMedium?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+    final accent = switch (sign) {
+      MoneySign.positive => context.semantic.income,
+      MoneySign.negative => context.semantic.expense,
+      MoneySign.neutral => context.colors.onSurfaceVariant,
+    };
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              if (icon != null) ...[
+                Container(
+                  width: 26,
+                  height: 26,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.14),
+                    borderRadius: context.radii.smRadius,
                   ),
+                  child: Icon(icon, size: 15, color: accent),
                 ),
+                SizedBox(width: context.space.xs),
               ],
-            ),
-            SizedBox(height: context.space.xs),
-            MoneyText(
-              formattedAmount: value,
-              sign: sign,
-              style: context.texts.titleLarge,
-            ),
-          ],
-        ),
+              Flexible(
+                child: Text(
+                  label,
+                  style: context.texts.labelMedium?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: context.space.sm),
+          MoneyText(
+            formattedAmount: value,
+            sign: sign,
+            style: AppTypography.moneyStyle(22, wght: 600),
+          ),
+        ],
       ),
     );
   }

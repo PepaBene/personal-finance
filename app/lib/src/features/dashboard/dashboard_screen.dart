@@ -35,22 +35,40 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         _presetBar(context, ref),
         SizedBox(height: context.space.md),
-        _kpis(context, ref, fmt),
+        _hero(context, ref, fmt),
         _budgetAlerts(context, ref, fmt, categories),
         SizedBox(height: context.space.lg),
-        _Section(
-          title: l10n.dashboardSpendingByCategory,
-          child: _categorySection(context, ref, fmt, categories),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeader(title: l10n.dashboardSpendingByCategory),
+              SizedBox(height: context.space.md),
+              _categorySection(context, ref, fmt, categories),
+            ],
+          ),
         ),
         SizedBox(height: context.space.lg),
-        _Section(
-          title: l10n.dashboardSpendingOverTime,
-          child: _overTimeChart(context, ref),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeader(title: l10n.dashboardSpendingOverTime),
+              SizedBox(height: context.space.md),
+              _overTimeChart(context, ref),
+            ],
+          ),
         ),
         SizedBox(height: context.space.lg),
-        _Section(
-          title: l10n.dashboardIncomeVsExpense,
-          child: _incomeExpenseChart(context, ref),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeader(title: l10n.dashboardIncomeVsExpense),
+              SizedBox(height: context.space.md),
+              _incomeExpenseChart(context, ref),
+            ],
+          ),
         ),
         SizedBox(height: context.space.xl),
       ],
@@ -86,42 +104,29 @@ class DashboardScreen extends ConsumerWidget {
         RangePreset.last12Months => l10n.rangePresetLast12Months,
       };
 
-  Widget _kpis(BuildContext context, WidgetRef ref, MoneyFormatter fmt) {
+  /// The hero "spotlight" surface: the period Net as the big serif figure, with
+  /// Income and Expense folded into the footer stats (replaces the old KPI row).
+  Widget _hero(BuildContext context, WidgetRef ref, MoneyFormatter fmt) {
     final l10n = AppLocalizations.of(context);
     final async = ref.watch(summaryProvider);
     final summary = async.valueOrNull;
     final income = summary?.income;
     final expense = summary?.expense;
     final net = summary?.net;
-    return Row(
-      children: [
-        Expanded(
-          child: KpiCard(
-            label: l10n.dashboardIncome,
-            value: income == null ? '—' : fmt.format(income),
-            sign: MoneySign.positive,
-            icon: Icons.south_west,
-          ),
+    return SummaryHeroCard(
+      label: l10n.dashboardNet,
+      amount: net == null ? '—' : fmt.format(net),
+      icon: Icons.account_balance_outlined,
+      stats: [
+        HeroStat(
+          label: l10n.dashboardIncome,
+          value: income == null ? '—' : fmt.format(income),
+          icon: Icons.south_west,
         ),
-        SizedBox(width: context.space.sm),
-        Expanded(
-          child: KpiCard(
-            label: l10n.dashboardExpense,
-            value: expense == null ? '—' : fmt.format(expense),
-            sign: MoneySign.negative,
-            icon: Icons.north_east,
-          ),
-        ),
-        SizedBox(width: context.space.sm),
-        Expanded(
-          child: KpiCard(
-            label: l10n.dashboardNet,
-            value: net == null ? '—' : fmt.format(net),
-            sign: net == null
-                ? MoneySign.neutral
-                : (net.isNegative ? MoneySign.negative : MoneySign.positive),
-            icon: Icons.account_balance_outlined,
-          ),
+        HeroStat(
+          label: l10n.dashboardExpense,
+          value: expense == null ? '—' : fmt.format(expense),
+          icon: Icons.north_east,
         ),
       ],
     );
@@ -144,69 +149,66 @@ class DashboardScreen extends ConsumerWidget {
     if (alerts.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.only(top: context.space.md),
-      child: Card(
-        child: InkWell(
-          onTap: () => context.push(Routes.budgets),
-          borderRadius: BorderRadius.circular(context.radii.md),
-          child: Padding(
-            padding: EdgeInsets.all(context.space.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: AppCard(
+        onTap: () => context.push(Routes.budgets),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications_active_outlined,
-                      size: 18,
-                      color: context.semantic.warning,
-                    ),
-                    SizedBox(width: context.space.xs),
-                    Text(
-                      l10n.dashboardBudgetAlertsTitle,
-                      style: context.texts.titleSmall,
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.chevron_right, size: 18),
-                  ],
+                Icon(
+                  Icons.notifications_active_outlined,
+                  size: 18,
+                  color: context.semantic.warning,
                 ),
-                SizedBox(height: context.space.xs),
-                for (final s in alerts.take(3))
-                  Padding(
-                    padding: EdgeInsets.only(top: context.space.xs),
-                    child: Row(
-                      children: [
-                        Icon(
-                          s.level == BudgetAlertLevel.over
-                              ? Icons.error_outline
-                              : Icons.warning_amber_outlined,
-                          size: 16,
-                          color: s.level == BudgetAlertLevel.over
-                              ? context.semantic.danger
-                              : context.semantic.warning,
-                        ),
-                        SizedBox(width: context.space.xs),
-                        Expanded(
-                          child: Text(
-                            categoryById(categories, s.budget.categoryId)
-                                    ?.name ??
-                                l10n.dashboardUncategorized,
-                          ),
-                        ),
-                        Text(
-                          l10n.budgetSpentOfLimit(
-                            fmt.format(s.actual),
-                            fmt.format(s.limit),
-                          ),
-                          style: context.texts.bodySmall?.copyWith(
-                            color: context.colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                SizedBox(width: context.space.xs),
+                Text(
+                  l10n.dashboardBudgetAlertsTitle,
+                  style: context.texts.titleSmall,
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: context.colors.onSurfaceVariant,
+                ),
               ],
             ),
-          ),
+            SizedBox(height: context.space.xs),
+            for (final s in alerts.take(3))
+              Padding(
+                padding: EdgeInsets.only(top: context.space.sm),
+                child: Row(
+                  children: [
+                    Icon(
+                      s.level == BudgetAlertLevel.over
+                          ? Icons.error_outline
+                          : Icons.warning_amber_outlined,
+                      size: 16,
+                      color: s.level == BudgetAlertLevel.over
+                          ? context.semantic.danger
+                          : context.semantic.warning,
+                    ),
+                    SizedBox(width: context.space.xs),
+                    Expanded(
+                      child: Text(
+                        categoryById(categories, s.budget.categoryId)?.name ??
+                            l10n.dashboardUncategorized,
+                      ),
+                    ),
+                    Text(
+                      l10n.budgetSpentOfLimit(
+                        fmt.format(s.actual),
+                        fmt.format(s.limit),
+                      ),
+                      style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -236,7 +238,7 @@ class DashboardScreen extends ConsumerWidget {
               color: cat == null
                   ? context.categoryColors.forIndex(i)
                   : categoryColor(cat.colorHex),
-              radius: 56,
+              radius: 48,
               showTitle: false,
             ),
           );
@@ -252,13 +254,13 @@ class DashboardScreen extends ConsumerWidget {
                 child: PieChart(
                   PieChartData(
                     sections: sections,
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 36,
+                    sectionsSpace: 3,
+                    centerSpaceRadius: 48,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: context.space.sm),
+            SizedBox(height: context.space.md),
             for (final t in top) _legendRow(context, ref, fmt, categories, t),
           ],
         );
@@ -278,13 +280,26 @@ class DashboardScreen extends ConsumerWidget {
         cat?.name ?? AppLocalizations.of(context).dashboardUncategorized;
     final color =
         cat == null ? context.colors.outline : categoryColor(cat.colorHex);
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(radius: 8, backgroundColor: color),
-      title: Text(name),
-      trailing: MoneyText(formattedAmount: fmt.format(t.total)),
+    return InkWell(
       onTap: () => _drillDown(context, ref, t.categoryId, name),
+      borderRadius: context.radii.smRadius,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: context.space.xs),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            SizedBox(width: context.space.sm),
+            Expanded(
+              child: Text(name, style: context.texts.bodyMedium),
+            ),
+            MoneyText(formattedAmount: fmt.format(t.total)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -301,26 +316,39 @@ class DashboardScreen extends ConsumerWidget {
           for (var i = 0; i < points.length; i++)
             FlSpot(i.toDouble(), points[i].outflow.amount.toDouble()),
         ];
-        return SizedBox(
-          height: 180,
-          child: LineChart(
-            LineChartData(
-              titlesData: const FlTitlesData(show: false),
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              minY: 0,
-              lineBarsData: [
-                LineChartBarData(
-                  spots: spots,
-                  isCurved: true,
-                  color: context.semantic.expense,
-                  dotData: const FlDotData(show: false),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: context.semantic.expense.withValues(alpha: 0.12),
+        final line = context.semantic.expense;
+        return ExcludeSemantics(
+          child: SizedBox(
+            height: 180,
+            child: LineChart(
+              LineChartData(
+                titlesData: const FlTitlesData(show: false),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                lineTouchData: const LineTouchData(enabled: false),
+                minY: 0,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    curveSmoothness: 0.3,
+                    barWidth: 2.5,
+                    color: line,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          line.withValues(alpha: 0.20),
+                          line.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -337,6 +365,9 @@ class DashboardScreen extends ConsumerWidget {
         if (points.isEmpty) {
           return _EmptyChart(AppLocalizations.of(context).dashboardNoData);
         }
+        final radius = BorderRadius.vertical(
+          top: Radius.circular(context.radii.sm),
+        );
         final groups = <BarChartGroupData>[
           for (var i = 0; i < points.length; i++)
             BarChartGroupData(
@@ -346,23 +377,28 @@ class DashboardScreen extends ConsumerWidget {
                   toY: points[i].inflow.amount.toDouble(),
                   color: context.semantic.income,
                   width: 6,
+                  borderRadius: radius,
                 ),
                 BarChartRodData(
                   toY: points[i].outflow.amount.toDouble(),
                   color: context.semantic.expense,
                   width: 6,
+                  borderRadius: radius,
                 ),
               ],
             ),
         ];
-        return SizedBox(
-          height: 180,
-          child: BarChart(
-            BarChartData(
-              titlesData: const FlTitlesData(show: false),
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              barGroups: groups,
+        return ExcludeSemantics(
+          child: SizedBox(
+            height: 180,
+            child: BarChart(
+              BarChartData(
+                titlesData: const FlTitlesData(show: false),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barTouchData: BarTouchData(enabled: false),
+                barGroups: groups,
+              ),
             ),
           ),
         );
@@ -431,35 +467,18 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(context.space.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(title, style: context.texts.titleMedium),
-            SizedBox(height: context.space.sm),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ChartPlaceholder extends StatelessWidget {
   const _ChartPlaceholder();
   @override
-  Widget build(BuildContext context) => const SizedBox(
+  Widget build(BuildContext context) => SizedBox(
         height: 180,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: Skeleton(
+            width: 140,
+            height: 140,
+            borderRadius: context.radii.mdRadius,
+          ),
+        ),
       );
 }
 
