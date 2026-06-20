@@ -149,12 +149,14 @@ IconData _iconFor(AccountKind kind) => switch (kind) {
 
 /// A stable, calm hue per account kind drawn from the shared category palette.
 Color _colorFor(BuildContext context, AccountKind kind) =>
-    context.categoryColors.forIndex(switch (kind) {
-      AccountKind.cash => 4, // green
-      AccountKind.bank => 0, // blue
-      AccountKind.card => 6, // purple
-      AccountKind.other => 9, // neutral grey
-    });
+    context.categoryColors.forIndex(
+      switch (kind) {
+        AccountKind.cash => 4, // green
+        AccountKind.bank => 0, // blue
+        AccountKind.card => 6, // purple
+        AccountKind.other => 9, // neutral grey
+      },
+    );
 
 class _AccountSheet extends ConsumerStatefulWidget {
   const _AccountSheet({this.account});

@@ -194,79 +194,99 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: context.space.contentMaxWidth),
-          child: Padding(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
             padding: EdgeInsets.all(context.space.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 48,
-                  color: context.colors.primary,
-                ),
-                SizedBox(height: context.space.md),
-                Text(
-                  l10n.lockTitle,
-                  style: context.texts.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: context.space.xs),
-                Text(
-                  l10n.lockHint,
-                  style: context.texts.bodyMedium?.copyWith(
-                    color: context.colors.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: context.space.lg),
-                TextField(
-                  controller: _passphrase,
-                  obscureText: true,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: l10n.lockPassphraseLabel,
-                  ),
-                  onSubmitted: (_) => _busy ? null : _submit(),
-                ),
-                if (_error != null) ...[
-                  SizedBox(height: context.space.sm),
-                  Text(
-                    _error!,
-                    style: context.texts.bodySmall?.copyWith(
-                      color: context.semantic.danger,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: context.space.contentMaxWidth),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: context.space.xxl + context.space.md,
+                      height: context.space.xxl + context.space.md,
+                      decoration: BoxDecoration(
+                        gradient: context.gradients.hero,
+                        borderRadius: context.radii.lgRadius,
+                        boxShadow: context.elevation.hero,
+                      ),
+                      child: Icon(
+                        Icons.lock_outline,
+                        size: context.space.xl,
+                        color: context.gradients.heroOn,
+                      ),
                     ),
                   ),
-                ],
-                SizedBox(height: context.space.lg),
-                FilledButton(
-                  onPressed: _busy ? null : _submit,
-                  child: _busy
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.lockUnlockAction),
-                ),
-                if (ref.watch(biometricUnlockAvailableProvider).valueOrNull ??
-                    false) ...[
+                  SizedBox(height: context.space.lg),
+                  Text(
+                    l10n.lockTitle,
+                    style: context.texts.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: context.space.xs),
+                  Text(
+                    l10n.lockHint,
+                    style: context.texts.bodyMedium?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: context.space.xl),
+                  AppCard(
+                    padding: EdgeInsets.all(context.space.lg),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _passphrase,
+                          obscureText: true,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            labelText: l10n.lockPassphraseLabel,
+                          ),
+                          onSubmitted: (_) => _busy ? null : _submit(),
+                        ),
+                        if (_error != null) ...[
+                          SizedBox(height: context.space.md),
+                          Text(
+                            _error!,
+                            style: context.texts.bodySmall?.copyWith(
+                              color: context.semantic.danger,
+                            ),
+                          ),
+                        ],
+                        SizedBox(height: context.space.lg),
+                        FilledButton(
+                          onPressed: _busy ? null : _submit,
+                          child: _busy
+                              ? const ButtonSpinner()
+                              : Text(l10n.lockUnlockAction),
+                        ),
+                        if (ref
+                                .watch(biometricUnlockAvailableProvider)
+                                .valueOrNull ??
+                            false) ...[
+                          SizedBox(height: context.space.sm),
+                          OutlinedButton.icon(
+                            onPressed: _busy ? null : _biometricUnlock,
+                            icon: const Icon(Icons.fingerprint),
+                            label: Text(l10n.lockBiometricAction),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   SizedBox(height: context.space.sm),
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _biometricUnlock,
-                    icon: const Icon(Icons.fingerprint),
-                    label: Text(l10n.lockBiometricAction),
+                  TextButton(
+                    onPressed: _busy ? null : _recoverFlow,
+                    child: Text(l10n.lockForgotPassphrase),
                   ),
                 ],
-                SizedBox(height: context.space.xs),
-                TextButton(
-                  onPressed: _busy ? null : _recoverFlow,
-                  child: Text(l10n.lockForgotPassphrase),
-                ),
-              ],
+              ),
             ),
           ),
         ),

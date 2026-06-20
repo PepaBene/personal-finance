@@ -46,15 +46,20 @@ class AppShell extends ConsumerWidget {
         final wide = constraints.maxWidth >= _breakpoint;
         return Scaffold(
           appBar: AppBar(
-            title: Text(l10n.appTitle),
+            titleSpacing: context.space.lg,
+            title: Text(
+              l10n.appTitle,
+              style: context.texts.headlineSmall,
+            ),
             actions: [
               const _SyncStatus(),
+              SizedBox(width: context.space.xxs),
               IconButton(
                 tooltip: l10n.commonSignOut,
                 icon: const Icon(Icons.logout),
                 onPressed: () => _signOut(context, ref, l10n),
               ),
-              SizedBox(width: context.space.xs),
+              SizedBox(width: context.space.sm),
             ],
           ),
           body: wide
@@ -64,10 +69,17 @@ class AppShell extends ConsumerWidget {
                       extended: constraints.maxWidth >= 1024,
                       selectedIndex: currentIndex,
                       onDestinationSelected: onSelect,
+                      groupAlignment: -0.85,
+                      labelType: constraints.maxWidth >= 1024
+                          ? NavigationRailLabelType.none
+                          : NavigationRailLabelType.all,
                       destinations: [
                         for (final d in destinations)
                           NavigationRailDestination(
                             icon: Icon(d.icon),
+                            padding: EdgeInsets.symmetric(
+                              vertical: context.space.xxs,
+                            ),
                             label: Text(d.label),
                           ),
                       ],
@@ -101,7 +113,12 @@ class AppShell extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.commonSignOut),
-        content: Text(l10n.signOutConfirmBody),
+        content: Text(
+          l10n.signOutConfirmBody,
+          style: context.texts.bodyMedium?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
